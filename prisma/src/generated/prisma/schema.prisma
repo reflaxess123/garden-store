@@ -1,0 +1,83 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider        = "prisma-client-js"
+  output          = "./src/generated/prisma"
+  previewFeatures = ["fullTextSearch", "filteredRelationCount"]
+  binaryTargets   = ["native"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Category {
+  id          String    @id @default(uuid())
+  slug        String    @unique
+  name        String
+  description String?
+  products    Product[]
+}
+
+model Product {
+  id              String      @id @default(uuid())
+  slug            String      @unique
+  name            String
+  description     String?
+  price           Decimal     @db.Decimal(10, 2)
+  discount        Decimal?    @db.Decimal(10, 2)
+  characteristics Json?
+  imageUrl        String?
+  categoryId      String
+  category        Category    @relation(fields: [categoryId], references: [id])
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  favourites      Favourite[]
+  cartItems       CartItem[]
+}
+
+model User {
+  id         String      @id @default(uuid())
+  email      String      @unique
+  fullName   String?
+  isAdmin    Boolean     @default(false)
+  favourites Favourite[]
+  cartItems  CartItem[]
+  orders     Order[]
+}
+
+model Favourite {
+  id        String  @id @default(uuid())
+  userId    String
+  productId String
+  user      User    @relation(fields: [userId], references: [id])
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@unique([userId, productId])
+}
+
+model CartItem {
+  id        String  @id @default(uuid())
+  userId    String
+  productId String
+  quantity  Int     @default(1)
+  user      User    @relation(fields: [userId], references: [id])
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@unique([userId, productId])
+}
+
+model Order {
+  id        String   @id @default(uuid())
+  userId    String
+  total     Decimal  @db.Decimal(10, 2)
+  status    String   @default("pending") // pending, paid, shipped, cancelled
+  items     Json
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+}

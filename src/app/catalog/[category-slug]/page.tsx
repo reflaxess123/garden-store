@@ -8,19 +8,27 @@ interface CategoryPageProps {
   params: {
     "category-slug": string;
   };
+  searchParams: {
+    q?: string;
+  };
 }
 
-export default async function CategoryPage({ params }: CategoryPageProps) {
+export default async function CategoryPage({
+  params,
+  searchParams,
+}: CategoryPageProps) {
   const categorySlug = (await params)["category-slug"];
+  const searchQuery = (await searchParams).q;
 
   const category = await getCategoryBySlug(categorySlug);
 
-  if (!category) {
+  if (!category && categorySlug !== "all") {
     notFound();
   }
 
   const initialProducts = await getProductsByCategorySlug(categorySlug, {
     limit: 20,
+    searchQuery: searchQuery || undefined,
   });
 
   return (
@@ -28,15 +36,19 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
       <Breadcrumbs
         items={[
           { label: "Каталог", href: "/catalog" },
-          { label: category.name, href: `/catalog/${category.slug}` },
+          {
+            label: category?.name || "Все товары",
+            href: `/catalog/${categorySlug}`,
+          },
         ]}
       />
       <h1 className="text-3xl font-bold mt-4 mb-6 text-center">
-        {category.name}
+        {category?.name || "Все товары"}
       </h1>
       <InfiniteProductList
         initialProducts={initialProducts}
-        categorySlug={category.slug}
+        categorySlug={categorySlug}
+        searchQuery={searchQuery}
       />
     </main>
   );

@@ -1,3 +1,8 @@
+"use client";
+
+import { useCart } from "@/features/cart/CartContext";
+import { FavouriteButton } from "@/features/manage-favourites/ui/FavouriteButton";
+import { useFavourites } from "@/features/manage-favourites/useFavourites";
 import { Button } from "@/shared/ui/button";
 import {
   Card,
@@ -18,7 +23,7 @@ interface Product {
   description: string | null;
   price: number;
   discount?: number | null;
-  imageUrl?: string | null;
+  imageUrl: string | null;
 }
 
 interface ProductCardProps {
@@ -30,6 +35,14 @@ export function ProductCard({ product }: ProductCardProps) {
     ? (product.price - (product.discount || 0)).toFixed(2)
     : product.price.toFixed(2);
   const originalPrice = product.price.toFixed(2);
+
+  const { isProductFavourite } = useFavourites();
+  const initialIsFavourite = isProductFavourite(product.id);
+  const { addItem } = useCart();
+
+  const handleAddToCart = () => {
+    addItem(product, 1); // Добавляем 1 единицу товара
+  };
 
   return (
     <Card className="group relative overflow-hidden rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out flex flex-col h-full">
@@ -44,6 +57,12 @@ export function ProductCard({ product }: ProductCardProps) {
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 className="object-cover transition-transform duration-300 group-hover:scale-105"
               />
+              <div className="absolute top-2 right-2 z-10">
+                <FavouriteButton
+                  productId={product.id}
+                  initialIsFavourite={initialIsFavourite}
+                />
+              </div>
             </div>
           )}
         </CardHeader>
@@ -69,7 +88,7 @@ export function ProductCard({ product }: ProductCardProps) {
         </CardContent>
       </Link>
       <div className="p-4 pt-0">
-        <Button className="w-full">
+        <Button className="w-full" onClick={handleAddToCart}>
           <ShoppingCart className="h-4 w-4 mr-2" /> В корзину
         </Button>
       </div>

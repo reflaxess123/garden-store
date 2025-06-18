@@ -4,6 +4,7 @@ import { Minus, Plus, ShoppingCart, XCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { useCart } from "@/features/cart/CartContext";
+import { formatPrice } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import { Separator } from "@/shared/ui/separator";
 import {
@@ -15,7 +16,14 @@ import {
 } from "@/shared/ui/sheet";
 
 const CartPanel = () => {
-  const { items, totalAmount, removeItem, updateQuantity } = useCart();
+  const {
+    items,
+    totalAmount,
+    removeItem,
+    updateQuantity,
+    isLoading,
+    isMerging,
+  } = useCart();
   const router = useRouter();
 
   return (
@@ -35,7 +43,11 @@ const CartPanel = () => {
           <SheetTitle>Ваша корзина</SheetTitle>
         </SheetHeader>
         <div className="flex-1 overflow-y-auto pr-4">
-          {items.length === 0 ? (
+          {isLoading || isMerging ? (
+            <div className="flex flex-col items-center justify-center h-full text-gray-500">
+              <p className="text-lg">Загрузка корзины...</p>
+            </div>
+          ) : items.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-gray-500">
               <XCircle className="h-12 w-12 mb-4" />
               <p className="text-lg">Ваша корзина пуста</p>
@@ -46,7 +58,7 @@ const CartPanel = () => {
           ) : (
             <div className="space-y-4">
               {items.map((item) => (
-                <div key={item.id} className="flex items-center space-x-4">
+                <div key={item.cartId} className="flex items-center space-x-4">
                   {item.imageUrl && (
                     <img
                       src={item.imageUrl}
@@ -56,15 +68,18 @@ const CartPanel = () => {
                   )}
                   <div className="flex-1">
                     <h3 className="font-medium">{item.name}</h3>
-                    <p className="text-gray-600 text-sm">{item.price} руб.</p>
+                    <p className="text-gray-600 text-sm">
+                      {formatPrice(item.priceSnapshot)}
+                    </p>
                     <div className="flex items-center space-x-2 mt-1">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() =>
-                          updateQuantity(item.id, item.quantity - 1)
+                          updateQuantity(item.cartId, item.quantity - 1)
                         }
                         disabled={item.quantity <= 1}
+                        aria-label="Уменьшить количество"
                       >
                         <Minus className="h-4 w-4" />
                       </Button>
@@ -75,15 +90,16 @@ const CartPanel = () => {
                         variant="outline"
                         size="sm"
                         onClick={() =>
-                          updateQuantity(item.id, item.quantity + 1)
+                          updateQuantity(item.cartId, item.quantity + 1)
                         }
+                        aria-label="Увеличить количество"
                       >
                         <Plus className="h-4 w-4" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => removeItem(item.id)}
+                        onClick={() => removeItem(item.cartId)}
                         className="text-red-500 hover:text-red-600"
                       >
                         Удалить
@@ -100,7 +116,7 @@ const CartPanel = () => {
             <Separator className="my-4" />
             <div className="flex justify-between font-bold text-lg mb-4">
               <span>Итого:</span>
-              <span>{totalAmount.toFixed(2)} руб.</span>
+              <span>{formatPrice(totalAmount)}</span>
             </div>
             <Button onClick={() => router.push("/checkout")} className="w-full">
               Оформить заказ

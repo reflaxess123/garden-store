@@ -1,8 +1,10 @@
 import { createSupabaseAdminClient } from "@/shared/api/supabaseClient";
+
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import type { NextFetchEvent } from "next/server";
 import { NextResponse, type NextRequest } from "next/server";
 
-export async function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest, event: NextFetchEvent) {
   const response = NextResponse.next({
     request,
   });

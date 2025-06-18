@@ -1,5 +1,3 @@
-import { createSupabaseServerClient } from "@/shared/api/supabaseClient";
-
 export interface Category {
   id: string;
   slug: string;
@@ -8,34 +6,32 @@ export interface Category {
   imageUrl: string | null;
 }
 
-export async function getAllCategories(): Promise<Category[]> {
-  const supabase = await createSupabaseServerClient();
-  const { data, error } = await supabase
-    .from("categories")
-    .select("id, slug, name, description, imageUrl");
+const getBaseUrl = () => {
+  if (typeof window !== "undefined") return ""; // Use relative path on client-side
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+  return "http://localhost:3000";
+};
 
-  if (error) {
-    console.error("Error fetching categories:", error);
+export async function getAllCategories(): Promise<Category[]> {
+  const baseUrl = getBaseUrl();
+  const response = await fetch(`${baseUrl}/api/categories`);
+  if (!response.ok) {
+    console.error("Error fetching categories:", response.statusText);
     return [];
   }
-
+  const data = await response.json();
   return data as Category[];
 }
 
 export async function getCategoryBySlug(
   slug: string
 ): Promise<Category | null> {
-  const supabase = await createSupabaseServerClient();
-  const { data, error } = await supabase
-    .from("categories")
-    .select("id, slug, name, description, imageUrl")
-    .eq("slug", slug)
-    .single();
-
-  if (error) {
-    console.error(`Error fetching category with slug ${slug}:`, error);
+  const baseUrl = getBaseUrl();
+  const response = await fetch(`${baseUrl}/api/categories?slug=${slug}`);
+  if (!response.ok) {
+    console.error("Error fetching category by slug:", response.statusText);
     return null;
   }
-
+  const data = await response.json();
   return data as Category;
 }

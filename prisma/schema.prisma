@@ -51,6 +51,8 @@ model User {              // расширение auth.users через profile
   favourites    Favourite[]
   cartItems     CartItem[]
   orders        Order[]
+
+  @@map("auth.users")
 }
 
 model Favourite {
@@ -63,12 +65,13 @@ model Favourite {
 }
 
 model CartItem {
-  id        String   @id @default(uuid())
-  userId    String
-  productId String
-  quantity  Int      @default(1)
-  user      User     @relation(fields:[userId], references:[id])
-  product   Product  @relation(fields:[productId], references:[id])
+  id            String   @id @default(uuid())
+  userId        String
+  productId     String
+  quantity      Int      @default(1)
+  priceSnapshot Decimal  @db.Decimal(10,2)
+  user          User     @relation(fields:[userId], references:[id])
+  product       Product  @relation(fields:[productId], references:[id])
   @@unique([userId, productId])
 }
 

@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { useCart } from "@/features/cart/CartContext";
+import { useFavourites } from "@/features/manage-favourites/useFavourites";
 import { BadgeIcon } from "@/shared/ui/BadgeIcon";
 import { Button } from "@/shared/ui/button";
 import {
@@ -23,10 +24,8 @@ import CartPanel from "@/widgets/CartPanel";
 const Header = () => {
   const { user } = useAuth();
   const { totalItems: cartItemCount } = useCart();
+  const { favoriteItemCount } = useFavourites();
   const router = useRouter();
-
-  // Заглушка для количества избранного
-  const favoriteItemCount = 0; // TODO: заменить на реальное значение из контекста избранного
 
   const handleSignOut = async () => {
     await supabaseClient.auth.signOut();
@@ -55,7 +54,7 @@ const Header = () => {
                 {/* Здесь будет SearchInput для мобильной версии, пока скрыт */}
                 {/* <SearchInput /> */}
                 <Link href="/favourites" className="flex items-center gap-2">
-                  <Heart className="h-5 w-5" /> Избранное
+                  <Heart className="h-5 w-5" /> Избранное ({favoriteItemCount})
                 </Link>
                 <CartPanel />
                 {user ? (

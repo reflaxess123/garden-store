@@ -6,6 +6,7 @@ interface GetProductsOptions {
   offset?: number;
   sortBy?: "createdAt" | "price" | "name";
   sortOrder?: "asc" | "desc";
+  searchQuery?: string;
 }
 
 export async function getProductsClient(
@@ -18,14 +19,26 @@ export async function getProductsClient(
     offset = 0,
     sortBy = "createdAt",
     sortOrder = "desc",
+    searchQuery,
   } = options || {};
 
-  const { data, error } = await supabase
+  let queryBuilder = supabase
     .from("products")
     .select("*, categories(name)")
-    .eq("categories.slug", categorySlug)
     .order(sortBy, { ascending: sortOrder === "asc" })
     .range(offset, offset + limit - 1);
+
+  if (categorySlug !== "all") {
+    queryBuilder = queryBuilder.eq("categories.slug", categorySlug);
+  }
+
+  if (searchQuery) {
+    queryBuilder = queryBuilder.or(
+      `name.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`
+    );
+  }
+
+  const { data, error } = await queryBuilder;
 
   if (error) {
     console.error("Error fetching products:", error);

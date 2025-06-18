@@ -8,7 +8,7 @@ export default async function ProductPage({
 }: {
   params: { "product-slug": string };
 }) {
-  const productSlug = params["product-slug"];
+  const { "product-slug": productSlug } = await params;
   const product = await getProductBySlug(productSlug);
 
   if (!product) {
@@ -21,8 +21,8 @@ export default async function ProductPage({
         items={[
           { label: "Каталог", href: "/catalog" },
           {
-            label: product.category.name,
-            href: `/catalog/${product.category.slug}`,
+            label: product.category?.name || "",
+            href: `/catalog/${product.category?.slug || ""}`,
           },
           { label: product.name, href: `/product/${product.slug}` },
         ]}

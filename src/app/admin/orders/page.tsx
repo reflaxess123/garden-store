@@ -18,9 +18,9 @@ interface OrderItem {
   priceSnapshot: number;
   name: string;
   imageUrl?: string | null;
-  status: string;
-  userId: string;
-  order_items: OrderItem[];
+  // status: string;
+  // userId: string;
+  // order_items: OrderItem[];
 }
 
 interface Order {
@@ -35,7 +35,7 @@ interface Order {
   totalAmount: number;
   status: string;
   userId: string;
-  order_items: OrderItem[];
+  orderItems: OrderItem[];
 }
 
 export default function AdminOrdersPage() {
@@ -189,21 +189,25 @@ export default function AdminOrdersPage() {
                     </p>
                     <h3 className="font-semibold mt-2 mb-1">Товары:</h3>
                     <ul className="space-y-1">
-                      {order.order_items.map((item, index) => (
-                        <li key={index} className="flex items-center space-x-2">
-                          {item.imageUrl && (
-                            <img
-                              src={item.imageUrl}
-                              alt={item.name}
-                              className="h-10 w-10 object-cover rounded-md"
-                            />
-                          )}
-                          <span>
-                            {item.name} x {item.quantity} (
-                            {formatPrice(item.priceSnapshot)})
-                          </span>
-                        </li>
-                      ))}
+                      {order.orderItems &&
+                        order.orderItems.map((item, index) => (
+                          <li
+                            key={index}
+                            className="flex items-center space-x-2"
+                          >
+                            {item.imageUrl && (
+                              <img
+                                src={item.imageUrl}
+                                alt={item.name}
+                                className="h-10 w-10 object-cover rounded-md"
+                              />
+                            )}
+                            <span>
+                              {item.name} x {item.quantity} (
+                              {formatPrice(item.priceSnapshot)})
+                            </span>
+                          </li>
+                        ))}
                     </ul>
                   </div>
                 </div>

@@ -48,7 +48,7 @@ import {
   getAdminCategories,
 } from "@/entities/category/admin-api";
 import {
-  AdminProduct,
+  AdminProductClient,
   createAdminProduct,
   CreateProductPayload,
   deleteAdminProduct,
@@ -56,7 +56,9 @@ import {
   updateAdminProduct,
   UpdateProductPayload,
 } from "@/entities/product/admin-api";
+import { getBestsellers, Product } from "@/entities/product/api";
 import { formatPrice } from "@/shared/lib/utils";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Textarea } from "@/shared/ui/textarea";
 import Image from "next/image";
 
@@ -68,18 +70,14 @@ const productFormSchema = z.object({
   price: z.coerce.number().min(0.01, "Цена должна быть больше 0."),
   discount: z.coerce.number().min(0).optional().or(z.literal("")),
   characteristics: z.string().optional().or(z.literal("")),
-  imageUrl: z
-    .string()
-    .url("Неверный формат URL изображения.")
-    .optional()
-    .or(z.literal("")),
+  imageUrl: z.string().optional().or(z.literal("")),
   categoryId: z.string().min(1, "Категория обязательна."),
 });
 
 type ProductFormValues = z.infer<typeof productFormSchema>;
 
 interface ProductFormDialogProps {
-  product?: AdminProduct; // Optional for editing
+  product: AdminProductClient | null; // Optional for editing
   onSuccess: () => void;
   children: React.ReactNode; // Trigger button
 }
@@ -107,8 +105,8 @@ function ProductFormDialog({
       name: product?.name || "",
       slug: product?.slug || "",
       description: product?.description || "",
-      price: product?.price || 0,
-      discount: product?.discount || 0,
+      price: product?.price ? parseFloat(product.price) : 0,
+      discount: product?.discount ? parseFloat(product.discount) : 0,
       characteristics: JSON.stringify(product?.characteristics, null, 2) || "",
       imageUrl: product?.imageUrl || "",
       categoryId: product?.categoryId || "",
@@ -158,8 +156,8 @@ function ProductFormDialog({
       name: values.name,
       slug: values.slug,
       description: values.description || null,
-      price: values.price,
-      discount: values.discount || null,
+      price: values.price.toString(),
+      discount: values.discount ? values.discount.toString() : null,
       characteristics: characteristicsParsed,
       imageUrl: values.imageUrl || null,
       categoryId: values.categoryId,
@@ -403,113 +401,171 @@ function DeleteProductDialog({
 
 export default function AdminProductsPage() {
   const queryClient = useQueryClient();
+  const [isNewProductDialogOpen, setIsNewProductDialogOpen] = useState(false);
+  const [editingProduct, setEditingProduct] =
+    useState<AdminProductClient | null>(null);
 
-  const {
-    data: products = [],
-    isLoading,
-    isError,
-    error,
-  } = useQuery<AdminProduct[]>({
+  const { data: products, isLoading } = useQuery<AdminProductClient[]>({
     queryKey: ["adminProducts"],
     queryFn: getAdminProducts,
   });
 
+  const { data: bestsellers, isLoading: isLoadingBestsellers } = useQuery<
+    Product[]
+  >({
+    queryKey: ["bestsellers"],
+    queryFn: () => getBestsellers(5),
+  });
+
+  const { mutate: deleteMutate, isPending: isDeleting } = useMutation({
+    mutationFn: (id: string) => deleteAdminProduct(id),
+    onSuccess: () => {
+      toast.success("Продукт успешно удален!");
+      queryClient.invalidateQueries({ queryKey: ["adminProducts"] });
+      queryClient.invalidateQueries({ queryKey: ["bestsellers"] });
+    },
+    onError: (error) => {
+      toast.error(`Ошибка при удалении продукта: ${error.message}`);
+    },
+  });
+
   const handleSuccess = () => {
-    // Optionally refetch or re-validate if needed, useQueryClient.invalidateQueries handles this
+    setEditingProduct(null);
+    setIsNewProductDialogOpen(false);
   };
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[calc(100vh-140px)]">
-        <Loader2 className="h-8 w-8 animate-spin" />
-        <p className="ml-2">Загрузка продуктов...</p>
-      </div>
-    );
-  }
-
-  if (isError) {
-    return (
-      <div className="text-center text-red-500 min-h-[calc(100vh-140px)] flex items-center justify-center">
-        Ошибка загрузки продуктов: {error?.message}
-      </div>
+      <main className="container mx-auto p-4 md:p-8">
+        <h1 className="text-3xl font-bold mb-6">Управление продуктами</h1>
+        <p>Загрузка продуктов...</p>
+      </main>
     );
   }
 
   return (
-    <div className="container mx-auto p-4">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Управление продуктами</h1>
-        <ProductFormDialog onSuccess={handleSuccess}>
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Добавить продукт
-          </Button>
-        </ProductFormDialog>
-      </div>
+    <main className="container mx-auto p-4 md:p-8">
+      <h1 className="text-3xl font-bold mb-6">Управление продуктами</h1>
 
-      {products.length === 0 ? (
-        <p className="text-center text-muted-foreground">
-          Нет доступных продуктов. Создайте первый!
-        </p>
-      ) : (
-        <div className="border rounded-md">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[80px]">Изображение</TableHead>
-                <TableHead>Имя</TableHead>
-                <TableHead>Slug</TableHead>
-                <TableHead>Цена</TableHead>
-                <TableHead>Категория</TableHead>
-                <TableHead>Заказано раз</TableHead>
-                <TableHead className="text-right">Действия</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {products.map((product) => (
-                <TableRow key={product.id}>
-                  <TableCell>
+      {/* Панель популярных продуктов */}
+      <section className="mb-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Самые популярные продукты</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {isLoadingBestsellers ? (
+              <p>Загрузка популярных продуктов...</p>
+            ) : bestsellers && bestsellers.length > 0 ? (
+              <ul className="space-y-2">
+                {bestsellers.map((product) => (
+                  <li
+                    key={product.id}
+                    className="flex items-center space-x-4 p-2 border rounded-md"
+                  >
                     {product.imageUrl && (
                       <Image
                         src={product.imageUrl}
                         alt={product.name}
                         width={40}
                         height={40}
-                        className="rounded-md object-cover mr-2 inline-block"
+                        className="rounded-md object-cover"
                       />
                     )}
-                    {product.name}
-                  </TableCell>
-                  <TableCell>{product.slug}</TableCell>
-                  <TableCell>{formatPrice(product.price)}</TableCell>
-                  <TableCell>{product.category.name}</TableCell>
-                  <TableCell>{product.timesOrdered}</TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end space-x-2">
-                      <ProductFormDialog
-                        product={product}
-                        onSuccess={handleSuccess}
-                      >
-                        <Button variant="outline" size="icon">
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                      </ProductFormDialog>
-                      <DeleteProductDialog
-                        productId={product.id}
-                        onSuccess={handleSuccess}
-                      >
-                        <Button variant="destructive" size="icon">
-                          <Trash className="h-4 w-4" />
-                        </Button>
-                      </DeleteProductDialog>
+                    <div>
+                      <p className="font-semibold">{product.name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        Заказано раз: {product.timesOrdered || 0}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        Цена: {formatPrice(parseFloat(product.price))}
+                      </p>
                     </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      )}
-    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-muted-foreground">
+                Нет данных о популярных продуктах.
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      </section>
+
+      <div className="flex justify-end mb-4">
+        <ProductFormDialog
+          onSuccess={handleSuccess}
+          product={editingProduct}
+          key={editingProduct?.id || "new"}
+        >
+          <Button onClick={() => setEditingProduct(null)}>
+            <Plus className="mr-2 h-4 w-4" /> Добавить продукт
+          </Button>
+        </ProductFormDialog>
+      </div>
+
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Изображение</TableHead>
+            <TableHead>Имя</TableHead>
+            <TableHead>Slug</TableHead>
+            <TableHead>Категория</TableHead>
+            <TableHead>Цена</TableHead>
+            <TableHead>Скидка</TableHead>
+            <TableHead>Заказано раз</TableHead>
+            <TableHead className="text-right">Действия</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {products?.map((product) => (
+            <TableRow key={product.id}>
+              <TableCell>
+                {product.imageUrl && (
+                  <Image
+                    src={product.imageUrl}
+                    alt={product.name}
+                    width={40}
+                    height={40}
+                    className="rounded-md object-cover"
+                  />
+                )}
+              </TableCell>
+              <TableCell className="font-medium">{product.name}</TableCell>
+              <TableCell>{product.slug}</TableCell>
+              <TableCell>{product.category?.name}</TableCell>
+              <TableCell>{formatPrice(parseFloat(product.price))}</TableCell>
+              <TableCell>
+                {product.discount
+                  ? formatPrice(parseFloat(product.discount))
+                  : "-"}
+              </TableCell>
+              <TableCell>{product.timesOrdered}</TableCell>
+              <TableCell className="text-right">
+                <div className="flex justify-end space-x-2">
+                  <ProductFormDialog
+                    onSuccess={handleSuccess}
+                    product={product}
+                  >
+                    <Button variant="outline" size="icon">
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  </ProductFormDialog>
+                  <DeleteProductDialog
+                    productId={product.id}
+                    onSuccess={handleSuccess}
+                  >
+                    <Button variant="destructive" size="icon">
+                      <Trash className="h-4 w-4" />
+                    </Button>
+                  </DeleteProductDialog>
+                </div>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </main>
   );
 }

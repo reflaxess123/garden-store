@@ -1,15 +1,29 @@
 import { Product } from "@prisma/client";
 
-export interface AdminProduct extends Product {
+export interface AdminProductClient
+  extends Omit<Product, "price" | "discount"> {
   category: { name: string };
+  price: string;
+  discount: string | null;
+}
+
+// Helper function to map Prisma Product to AdminProductClient
+export function mapProductToAdminProductClient(
+  product: Product & { category: { name: string } }
+): AdminProductClient {
+  return {
+    ...product,
+    price: product.price.toString(),
+    discount: product.discount?.toString() || null,
+  };
 }
 
 export interface CreateProductPayload {
   name: string;
   slug: string;
   description?: string | null;
-  price: number;
-  discount?: number | null;
+  price: string;
+  discount?: string | null;
   characteristics?: Record<string, unknown> | null;
   imageUrl?: string | null;
   categoryId: string;
@@ -17,7 +31,7 @@ export interface CreateProductPayload {
 
 export type UpdateProductPayload = Partial<CreateProductPayload>;
 
-export async function getAdminProducts(): Promise<AdminProduct[]> {
+export async function getAdminProducts(): Promise<AdminProductClient[]> {
   const res = await fetch("/api/admin/products");
 
   if (!res.ok) {
@@ -26,12 +40,12 @@ export async function getAdminProducts(): Promise<AdminProduct[]> {
     throw new Error(errorData.details || "Failed to fetch admin products");
   }
 
-  return (await res.json()) as AdminProduct[];
+  return (await res.json()) as AdminProductClient[];
 }
 
 export async function createAdminProduct(
   payload: CreateProductPayload
-): Promise<AdminProduct> {
+): Promise<AdminProductClient> {
   const res = await fetch("/api/admin/products", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -44,13 +58,13 @@ export async function createAdminProduct(
     throw new Error(errorData.details || "Failed to create admin product");
   }
 
-  return (await res.json()) as AdminProduct;
+  return (await res.json()) as AdminProductClient;
 }
 
 export async function updateAdminProduct(
   id: string,
   payload: UpdateProductPayload
-): Promise<AdminProduct> {
+): Promise<AdminProductClient> {
   const res = await fetch(`/api/admin/products/${id}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
@@ -63,7 +77,7 @@ export async function updateAdminProduct(
     throw new Error(errorData.details || "Failed to update admin product");
   }
 
-  return (await res.json()) as AdminProduct;
+  return (await res.json()) as AdminProductClient;
 }
 
 export async function deleteAdminProduct(id: string): Promise<void> {

@@ -42,15 +42,22 @@ export async function middleware(request: NextRequest, event: NextFetchEvent) {
   if (user) {
     const supabaseAdmin = createSupabaseAdminClient();
     const { data: userData, error } = await supabaseAdmin
-      .from("User")
+      .from("profiles")
       .select("isAdmin")
       .eq("id", user.id)
       .single();
+
+    if (error) {
+      console.error("Error fetching isAdmin status in middleware:", error);
+    }
 
     if (userData) {
       isAdmin = userData.isAdmin;
     }
   }
+
+  console.log("User ID in middleware:", user?.id);
+  console.log("isAdmin status in middleware:", isAdmin);
 
   // Если пользователь не авторизован и пытается получить доступ к защищенному маршруту
   if (

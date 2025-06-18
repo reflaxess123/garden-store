@@ -48,26 +48,15 @@ model Product {
   @@schema("public")
 }
 
-model User {
-  id            String     @id @map("id") // Maps to auth.users.id
-  email         String     @unique @map("email") // Maps to auth.users.email
-  profile       Profile?   // One-to-one relationship with Profile
+// New Profile model in 'public' schema for custom user data
+model Profile {
+  id        String     @id @map("id") // The ID is directly the user ID from auth.users
+  fullName  String?
+  isAdmin   Boolean  @default(false)
 
   favourites    Favourite[]
   cartItems     CartItem[]
   orders        Order[]
-
-  @@map("users") // Important: maps to 'users' table in the 'auth' schema
-  @@schema("auth")
-}
-
-// New Profile model in 'public' schema for custom user data
-model Profile {
-  id        String   @id @map("id") // The ID is directly the user ID from auth.users
-  fullName  String?
-  isAdmin   Boolean  @default(false)
-
-  user      User     @relation(fields: [id], references: [id])
 
   @@map("profiles")
   @@schema("public")
@@ -77,7 +66,7 @@ model Favourite {
   id        String   @id @default(uuid())
   userId    String
   productId String
-  user      User     @relation(fields:[userId], references:[id]) // Relates to the User model
+  profile   Profile     @relation(fields:[userId], references:[id]) // Relates to the Profile model
   product   Product  @relation(fields:[productId], references:[id])
   @@unique([userId, productId])
   @@schema("public")
@@ -89,7 +78,7 @@ model CartItem {
   productId     String
   quantity      Int      @default(1)
   priceSnapshot Decimal  @db.Decimal(10,2)
-  user          User     @relation(fields:[userId], references:[id]) // Relates to the User model
+  profile       Profile     @relation(fields:[userId], references:[id]) // Relates to the Profile model
   product       Product  @relation(fields:[productId], references:[id])
   @@unique([userId, productId])
   @@schema("public")
@@ -101,7 +90,7 @@ model Order {
   totalAmount Decimal     @db.Decimal(10,2)
   status      String      @default("pending")  // pending, paid, shipped, cancelled
   createdAt   DateTime    @default(now())
-  user        User        @relation(fields:[userId], references:[id]) // Relates to the User model
+  profile     Profile     @relation(fields:[userId], references:[id]) // Relates to the Profile model
   fullName    String // Keep these fields as snapshots at time of order
   email       String // Keep these fields as snapshots at time of order
   address     String

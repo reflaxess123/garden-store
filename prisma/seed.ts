@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -6,11 +6,40 @@ async function main() {
   console.log(`Start seeding ...`);
 
   // Очистка данных перед сидированием
+  console.log(`Deleting existing order items...`);
+  await prisma.orderItem.deleteMany();
+  console.log(`Deleting existing orders...`);
+  await prisma.order.deleteMany();
+  console.log(`Deleting existing carts...`);
+  await prisma.cartItem.deleteMany();
+  console.log(`Deleting existing favourites...`);
+  await prisma.favourite.deleteMany();
   console.log(`Deleting existing products...`);
   await prisma.product.deleteMany();
   console.log(`Deleting existing categories...`);
   await prisma.category.deleteMany();
+  console.log(`Deleting existing profiles...`);
+  await prisma.profile.deleteMany();
   console.log(`Existing data deleted.`);
+
+  // Создание тестовых пользователей (профилей)
+  const user1 = await prisma.profile.create({
+    data: {
+      id: "28ad2b7d-02d6-4f84-b1c3-1ee26e6b4b58", // Ваш реальный ID администратора
+      fullName: "John Doe",
+      isAdmin: true,
+    },
+  });
+
+  // const user2 = await prisma.profile.create({
+  //   data: {
+  //     id: "5a9c0c1b-2b4a-4a2a-8b1a-2c3d4e5f6a7b", // Произвольный валидный UUID для второго пользователя
+  //     fullName: "Jane Smith",
+  //     isAdmin: false,
+  //   },
+  // });
+
+  console.log(`Created users: ${user1.fullName}`);
 
   // Создание категорий
   const categoryShovels = await prisma.category.upsert({
@@ -182,6 +211,74 @@ async function main() {
   console.log(
     `Created ${numberOfAdditionalProducts} additional random products.`
   );
+
+  // Получаем все созданные продукты для генерации заказов
+  const allProducts = await prisma.product.findMany();
+  if (allProducts.length === 0) {
+    console.warn(
+      "No products found to create orders. Please ensure products are seeded first."
+    );
+    return;
+  }
+
+  // Создание случайных заказов
+  const numberOfOrders = 50; // Количество случайных заказов
+  const statuses = [
+    "pending",
+    "processing",
+    "shipped",
+    "delivered",
+    "cancelled",
+  ];
+  const users = [user1];
+
+  for (let i = 0; i < numberOfOrders; i++) {
+    const randomUser = users[Math.floor(Math.random() * users.length)];
+    const orderItems: Prisma.OrderItemCreateWithoutOrderInput[] = [];
+    let totalAmount = 0;
+    const numberOfOrderItems = Math.floor(Math.random() * 3) + 1; // От 1 до 3 товаров в заказе
+
+    for (let j = 0; j < numberOfOrderItems; j++) {
+      const randomProduct =
+        allProducts[Math.floor(Math.random() * allProducts.length)];
+      const quantity = Math.floor(Math.random() * 5) + 1; // От 1 до 5 единиц каждого товара
+      const priceSnapshot = randomProduct.price.toNumber(); // Цена продукта на момент заказа
+      orderItems.push({
+        productId: randomProduct.id,
+        quantity,
+        priceSnapshot,
+        name: randomProduct.name,
+        imageUrl: randomProduct.imageUrl,
+      });
+      totalAmount += priceSnapshot * quantity;
+
+      // Увеличиваем счетчик timesOrdered для продукта
+      await prisma.product.update({
+        where: { id: randomProduct.id },
+        data: { timesOrdered: { increment: quantity } },
+      });
+    }
+
+    const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
+
+    await prisma.order.create({
+      data: {
+        userId: randomUser.id,
+        totalAmount: parseFloat(totalAmount.toFixed(2)),
+        status: randomStatus,
+        fullName: randomUser.fullName || "Guest User",
+        email: `user${i}@example.com`, // Для тестовых пользователей используем фиктивный email
+        address: `Улица ${i + 1}, Дом ${(i % 10) + 1}`,
+        city: `Город ${(i % 5) + 1}`,
+        postalCode: `12345${i % 10}`,
+        phone: `+7999${1000000 + i}`,
+        orderItems: {
+          create: orderItems,
+        },
+      },
+    });
+  }
+  console.log(`Created ${numberOfOrders} random orders.`);
 
   console.log(`Seeding finished.`);
 }

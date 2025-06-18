@@ -1,5 +1,6 @@
 "use client";
 
+import { Product } from "@/entities/product/api";
 import { useCart } from "@/features/cart/CartContext";
 import { FavouriteButton } from "@/features/manage-favourites/ui/FavouriteButton";
 import { useFavourites } from "@/features/manage-favourites/useFavourites";
@@ -15,26 +16,19 @@ import { ShoppingCart } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
-// Заглушка для типа Product, так как Product API еще не создан
-interface Product {
-  id: string;
-  slug: string;
-  name: string;
-  description: string | null;
-  price: number;
-  discount?: number | null;
-  imageUrl: string | null;
-}
-
 interface ProductCardProps {
   product: Product;
 }
 
 export function ProductCard({ product }: ProductCardProps) {
-  const displayPrice = product.discount
-    ? (product.price - (product.discount || 0)).toFixed(2)
-    : product.price.toFixed(2);
-  const originalPrice = product.price.toFixed(2);
+  const price = parseFloat(product.price); // Преобразуем цену в число
+  const discount =
+    product.discount !== null ? parseFloat(product.discount) : null;
+
+  const displayPrice = discount
+    ? (price - (discount || 0)).toFixed(2)
+    : price.toFixed(2);
+  const originalPrice = price.toFixed(2);
 
   const { isProductFavourite, isLoading: isFavouritesLoading } =
     useFavourites();

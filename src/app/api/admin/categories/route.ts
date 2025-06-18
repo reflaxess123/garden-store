@@ -32,28 +32,15 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const products = await prisma.product.findMany({
-      include: {
-        category: {
-          select: {
-            name: true,
-          },
-        },
-      },
+    const categories = await prisma.category.findMany({
       orderBy: {
-        createdAt: "desc",
+        name: "asc",
       },
     });
 
-    const productsSerialized = products.map((product) => ({
-      ...product,
-      price: product.price.toString(),
-      discount: product.discount?.toString() || null,
-    }));
-
-    return NextResponse.json(productsSerialized);
+    return NextResponse.json(categories);
   } catch (e: unknown) {
-    console.error("Error fetching admin products:", e);
+    console.error("Error fetching admin categories:", e);
     return NextResponse.json(
       {
         error: "Server error",
@@ -93,27 +80,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const newProduct = await prisma.product.create({
-      data: {
-        ...body,
-        price: parseFloat(body.price),
-        discount: body.discount ? parseFloat(body.discount) : null,
-      },
+    const newCategory = await prisma.category.create({
+      data: body,
     });
 
-    return NextResponse.json(
-      {
-        ...newProduct,
-        price: newProduct.price.toString(),
-        discount: newProduct.discount?.toString() || null,
-      },
-      { status: 201 }
-    );
+    return NextResponse.json(newCategory, { status: 201 });
   } catch (e: unknown) {
-    console.error("Error creating product:", e);
+    console.error("Error creating category:", e);
     return NextResponse.json(
       {
-        error: "Failed to create product",
+        error: "Failed to create category",
         details: e instanceof Error ? e.message : String(e),
       },
       { status: 500 }

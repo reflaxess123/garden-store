@@ -5,67 +5,15 @@ import {
 import { prisma } from "@/shared/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(req: NextRequest) {
-  try {
-    const supabase = await createSupabaseServerClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Проверяем, является ли пользователь администратором
-    const supabaseAdmin = createSupabaseAdminClient();
-    const { data: userData, error: adminError } = await supabaseAdmin
-      .from("profiles")
-      .select("isAdmin")
-      .eq("id", user.id)
-      .single();
-
-    if (adminError || !userData?.isAdmin) {
-      return NextResponse.json(
-        { error: "Forbidden: Not an admin" },
-        { status: 403 }
-      );
-    }
-
-    const products = await prisma.product.findMany({
-      include: {
-        category: {
-          select: {
-            name: true,
-          },
-        },
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
-
-    const productsSerialized = products.map((product) => ({
-      ...product,
-      price: product.price.toString(),
-      discount: product.discount?.toString() || null,
-    }));
-
-    return NextResponse.json(productsSerialized);
-  } catch (e: unknown) {
-    console.error("Error fetching admin products:", e);
-    return NextResponse.json(
-      {
-        error: "Server error",
-        details: e instanceof Error ? e.message : String(e),
-      },
-      { status: 500 }
-    );
-  }
+interface CategoryRouteContext {
+  params: {
+    id: string;
+  };
 }
 
-export async function POST(req: NextRequest) {
+export async function PATCH(req: NextRequest, context: CategoryRouteContext) {
   try {
+    const { id } = context.params;
     const body = await req.json();
 
     const supabase = await createSupabaseServerClient();
@@ -93,27 +41,70 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const newProduct = await prisma.product.create({
-      data: {
-        ...body,
-        price: parseFloat(body.price),
-        discount: body.discount ? parseFloat(body.discount) : null,
+    const updatedCategory = await prisma.category.update({
+      where: {
+        id: id,
+      },
+      data: body,
+    });
+
+    return NextResponse.json(updatedCategory, { status: 200 });
+  } catch (e: unknown) {
+    console.error("Error updating category:", e);
+    return NextResponse.json(
+      {
+        error: "Failed to update category",
+        details: e instanceof Error ? e.message : String(e),
+      },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(req: NextRequest, context: CategoryRouteContext) {
+  try {
+    const { id } = context.params;
+
+    const supabase = await createSupabaseServerClient();
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Проверяем, является ли пользователь администратором
+    const supabaseAdmin = createSupabaseAdminClient();
+    const { data: userData, error: adminError } = await supabaseAdmin
+      .from("profiles")
+      .select("isAdmin")
+      .eq("id", user.id)
+      .single();
+
+    if (adminError || !userData?.isAdmin) {
+      return NextResponse.json(
+        { error: "Forbidden: Not an admin" },
+        { status: 403 }
+      );
+    }
+
+    await prisma.category.delete({
+      where: {
+        id: id,
       },
     });
 
     return NextResponse.json(
-      {
-        ...newProduct,
-        price: newProduct.price.toString(),
-        discount: newProduct.discount?.toString() || null,
-      },
-      { status: 201 }
+      { message: "Category deleted successfully" },
+      { status: 200 }
     );
   } catch (e: unknown) {
-    console.error("Error creating product:", e);
+    console.error("Error deleting category:", e);
     return NextResponse.json(
       {
-        error: "Failed to create product",
+        error: "Failed to delete category",
         details: e instanceof Error ? e.message : String(e),
       },
       { status: 500 }

@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
     // Проверяем, является ли пользователь администратором
     const supabaseAdmin = createSupabaseAdminClient();
     const { data: userData, error: adminError } = await supabaseAdmin
-      .from("User")
+      .from("profiles")
       .select("isAdmin")
       .eq("id", user.id)
       .single();
@@ -35,10 +35,6 @@ export async function GET(req: NextRequest) {
     const orders = await prisma.order.findMany({
       include: {
         orderItems: true, // Включаем связанные позиции заказа
-        user: {
-          // Включаем информацию о пользователе
-          select: { email: true, fullName: true, id: true },
-        },
       },
       orderBy: {
         createdAt: "desc",

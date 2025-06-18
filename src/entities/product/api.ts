@@ -3,14 +3,15 @@ export interface Product {
   slug: string;
   name: string;
   description: string | null;
-  price: number;
-  discount: number | null;
+  price: string;
+  discount: string | null;
   characteristics: Record<string, unknown> | null;
   imageUrl: string | null;
   categoryId: string;
   category?: { name: string; slug: string; id: string };
   createdAt: string;
   updatedAt: string;
+  timesOrdered: number;
 }
 
 const getBaseUrl = () => {
@@ -75,12 +76,16 @@ export async function getProductById(id: string): Promise<Product | null> {
 export async function getBestsellers(limit: number = 10): Promise<Product[]> {
   const baseUrl = getBaseUrl();
   const response = await fetch(
-    `${baseUrl}/api/products/bestsellers?limit=${limit}`
+    `${baseUrl}/api/products/bestsellers?limit=${limit}`,
+    {
+      cache: "no-store",
+    }
   );
   if (!response.ok) {
     console.error("Error fetching bestsellers:", response.statusText);
     return [];
   }
   const data = await response.json();
+  console.log("Bestsellers data from API (getBestsellers):", data);
   return data as Product[];
 }

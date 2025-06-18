@@ -9,6 +9,7 @@ export async function GET() {
       },
       take: 10, // Получаем топ-10 хитов продаж
     });
+    console.log("Bestsellers data from API (route handler):", bestsellers);
     return NextResponse.json(bestsellers);
   } catch (e: unknown) {
     console.error("Error fetching bestsellers:", e);

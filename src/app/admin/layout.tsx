@@ -1,9 +1,11 @@
 "use client";
 
+import { useAuth } from "@/features/auth/AuthContext";
 import { cn } from "@/shared/lib/utils";
-import { Home, Package, ShoppingBag, Tags } from "lucide-react";
+import { Home, Loader2, Package, ShoppingBag, Tags } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 interface AdminNavLinkProps {
   href: string;
@@ -33,6 +35,31 @@ export default function AdminLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const { user, isLoading } = useAuth();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  useEffect(() => {
+    if (!isLoading) {
+      if (!user) {
+        // Если пользователь не авторизован, перенаправляем на страницу входа
+        router.push(`/login?callback=${encodeURIComponent(pathname)}`);
+      } else if (!user.user_metadata?.isAdmin) {
+        // Если пользователь авторизован, но не админ, перенаправляем на главную
+        router.push("/");
+      }
+    }
+  }, [user, isLoading, router, pathname]);
+
+  if (isLoading || !user || !user.user_metadata?.isAdmin) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin mr-2" />
+        <p>Загрузка...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
       <div className="hidden border-r bg-muted/40 md:block">

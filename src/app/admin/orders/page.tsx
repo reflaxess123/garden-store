@@ -1,32 +1,7 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Eye, Loader2 } from "lucide-react";
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { z } from "zod";
-
-import { Button } from "@/shared/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/shared/ui/dialog";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/shared/ui/form";
-import { Label } from "@/shared/ui/label";
+import { formatPrice } from "@/shared/lib/utils";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import {
   Select,
   SelectContent,
@@ -34,164 +9,148 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/shared/ui/table";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
-import {
-  AdminOrder,
-  getAdminOrders,
-  updateAdminOrder,
-  UpdateOrderPayload,
-} from "@/entities/order/admin-api";
-import { formatPrice } from "@/shared/lib/utils";
-
-// Zod schema for order status update validation
-const orderStatusSchema = z.object({
-  status: z.string().min(1, "Статус обязателен."),
-});
-
-type OrderStatusValues = z.infer<typeof orderStatusSchema>;
-
-interface OrderDetailsDialogProps {
-  order: AdminOrder;
-  onSuccess: () => void;
-  children: React.ReactNode;
+interface OrderItem {
+  productId: string;
+  quantity: number;
+  priceSnapshot: number;
+  name: string;
+  imageUrl?: string | null;
+  status: string;
+  userId: string;
+  order_items: OrderItem[];
 }
 
-function OrderDetailsDialog({
-  order,
-  onSuccess,
-  children,
-}: OrderDetailsDialogProps) {
-  const [open, setOpen] = useState(false);
-  const queryClient = useQueryClient();
+interface Order {
+  id: string;
+  createdAt: string;
+  fullName: string;
+  email: string;
+  address: string;
+  city: string;
+  postalCode: string;
+  phone: string;
+  totalAmount: number;
+  status: string;
+  userId: string;
+  order_items: OrderItem[];
+}
 
-  const form = useForm<OrderStatusValues>({
-    resolver: zodResolver(orderStatusSchema),
-    defaultValues: {
-      status: order.status,
-    },
-  });
+export default function AdminOrdersPage() {
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState<boolean>(false);
 
-  const {
-    mutate: updateMutate,
-    isPending: isUpdating,
-    error: updateError,
-  } = useMutation({
-    mutationFn: (data: { id: string; payload: UpdateOrderPayload }) =>
-      updateAdminOrder(data.id, data.payload),
-    onSuccess: () => {
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const res = await fetch("/api/admin/orders");
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.error || "Failed to fetch orders");
+        }
+        const data = await res.json();
+        setOrders(data);
+      } catch (err: unknown) {
+        console.error("Error fetching admin orders:", err);
+        setError(
+          err instanceof Error ? err.message : "Не удалось загрузить заказы."
+        );
+        toast.error(
+          err instanceof Error ? err.message : "Не удалось загрузить заказы."
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchOrders();
+  }, []);
+
+  const handleStatusChange = async (orderId: string, newStatus: string) => {
+    setIsUpdatingStatus(true);
+    try {
+      const res = await fetch(`/api/admin/orders/${orderId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Failed to update order status");
+      }
+
+      setOrders((prevOrders) =>
+        prevOrders.map((order) =>
+          order.id === orderId ? { ...order, status: newStatus } : order
+        )
+      );
       toast.success("Статус заказа успешно обновлен!");
-      queryClient.invalidateQueries({ queryKey: ["adminOrders"] });
-      setOpen(false);
-      onSuccess();
-    },
-    onError: (error) => {
-      toast.error(`Ошибка при обновлении статуса заказа: ${error.message}`);
-    },
-  });
-
-  const onSubmit = (values: OrderStatusValues) => {
-    updateMutate({
-      id: order.id,
-      payload: { status: values.status },
-    });
+    } catch (err: unknown) {
+      console.error("Error updating order status:", err);
+      toast.error(
+        err instanceof Error
+          ? err.message
+          : "Не удалось обновить статус заказа."
+      );
+    } finally {
+      setIsUpdatingStatus(false);
+    }
   };
 
+  const handleApproveOrder = async (orderId: string) => {
+    // Эта функция теперь может быть удалена или изменена для других целей
+    // так как мы реализуем изменение статуса через handleStatusChange
+    toast.info(`Order ${orderId} approved (dummy action)`);
+  };
+
+  if (loading) {
+    return (
+      <main className="container mx-auto p-4 md:p-8">
+        <h1 className="text-3xl font-bold mb-6">Управление заказами</h1>
+        <p>Загрузка заказов...</p>
+      </main>
+    );
+  }
+
+  if (error) {
+    return (
+      <main className="container mx-auto p-4 md:p-8">
+        <h1 className="text-3xl font-bold mb-6">Управление заказами</h1>
+        <p className="text-destructive">Ошибка: {error}</p>
+      </main>
+    );
+  }
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>
-            Детали заказа #{order.id.substring(0, 8)}...
-          </DialogTitle>
-          <DialogDescription>
-            Просмотр и обновление статуса заказа.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div>
-            <Label>ID Заказа:</Label>
-            <p className="font-medium">{order.id}</p>
-          </div>
-          <div>
-            <Label>Пользователь:</Label>
-            <p className="font-medium">{order.user?.email || "N/A"}</p>
-          </div>
-          <div>
-            <Label>Дата заказа:</Label>
-            <p className="font-medium">
-              {new Date(order.createdAt).toLocaleDateString()}
-            </p>
-          </div>
-          <div>
-            <Label>Итоговая сумма:</Label>
-            <p className="font-medium">{formatPrice(order.total)}</p>
-          </div>
-
-          <h3 className="text-lg font-semibold mt-4">Позиции заказа:</h3>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Название</TableHead>
-                <TableHead>Количество</TableHead>
-                <TableHead>Цена за ед.</TableHead>
-                <TableHead>Всего</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {order.orderItem.length === 0 ? (
-                <TableRow>
-                  <TableCell
-                    colSpan={4}
-                    className="text-center text-muted-foreground"
-                  >
-                    В этом заказе нет товаров.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                order.orderItem.map((item) => (
-                  <TableRow key={item.id}>
-                    <TableCell>{item.product?.name || "N/A"}</TableCell>
-                    <TableCell>{item.quantity}</TableCell>
-                    <TableCell>{formatPrice(item.priceSnapshot)}</TableCell>
-                    <TableCell>
-                      {formatPrice(item.priceSnapshot * item.quantity)}
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
-
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="grid gap-4 py-4"
-          >
-            <FormField
-              control={form.control}
-              name="status"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Статус заказа</FormLabel>
+    <main className="container mx-auto p-4 md:p-8">
+      <h1 className="text-3xl font-bold mb-6">Управление заказами</h1>
+      {orders.length === 0 ? (
+        <p className="text-muted-foreground">Заказов пока нет.</p>
+      ) : (
+        <div className="space-y-6">
+          {orders.map((order) => (
+            <Card key={order.id}>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-lg font-medium">
+                  Заказ #{order.id.slice(0, 8)}
+                </CardTitle>
+                <div className="flex items-center gap-2">
                   <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
+                    onValueChange={(newStatus) =>
+                      handleStatusChange(order.id, newStatus)
+                    }
+                    value={order.status}
+                    disabled={isUpdatingStatus}
                   >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Выберите статус" />
-                      </SelectTrigger>
-                    </FormControl>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Изменить статус" />
+                    </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="pending">В ожидании</SelectItem>
                       <SelectItem value="processing">В обработке</SelectItem>
@@ -200,111 +159,59 @@ function OrderDetailsDialog({
                       <SelectItem value="cancelled">Отменен</SelectItem>
                     </SelectContent>
                   </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <DialogFooter>
-              <Button type="submit" disabled={isUpdating}>
-                {isUpdating && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                )}
-                Обновить статус
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-export default function AdminOrdersPage() {
-  const queryClient = useQueryClient();
-
-  const {
-    data: orders = [],
-    isLoading,
-    isError,
-    error,
-  } = useQuery<AdminOrder[]>({
-    queryKey: ["adminOrders"],
-    queryFn: getAdminOrders,
-  });
-
-  const handleSuccess = () => {
-    // Invalidate queries will refetch
-  };
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[calc(100vh-140px)]">
-        <Loader2 className="h-8 w-8 animate-spin" />
-        <p className="ml-2">Загрузка заказов...</p>
-      </div>
-    );
-  }
-
-  if (isError) {
-    return (
-      <div className="text-center text-red-500 min-h-[calc(100vh-140px)] flex items-center justify-center">
-        Ошибка загрузки заказов: {error?.message}
-      </div>
-    );
-  }
-
-  return (
-    <div className="container mx-auto p-4">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Управление заказами</h1>
-        {/* <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          Добавить заказ (обычно не делается через админ-панель)
-        </Button> */}
-      </div>
-
-      {orders.length === 0 ? (
-        <p className="text-center text-muted-foreground">
-          Нет доступных заказов.
-        </p>
-      ) : (
-        <div className="border rounded-md">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>ID Заказа</TableHead>
-                <TableHead>Пользователь</TableHead>
-                <TableHead>Дата</TableHead>
-                <TableHead>Сумма</TableHead>
-                <TableHead>Статус</TableHead>
-                <TableHead className="text-right">Действия</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {orders.map((order) => (
-                <TableRow key={order.id}>
-                  <TableCell className="font-medium">
-                    #{order.id.substring(0, 8)}...
-                  </TableCell>
-                  <TableCell>{order.user?.email || "N/A"}</TableCell>
-                  <TableCell>
-                    {new Date(order.createdAt).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell>{formatPrice(order.total)}</TableCell>
-                  <TableCell>{order.status}</TableCell>
-                  <TableCell className="text-right">
-                    <OrderDetailsDialog order={order} onSuccess={handleSuccess}>
-                      <Button variant="outline" size="icon">
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                    </OrderDetailsDialog>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p>
+                      <strong>Пользователь:</strong> {order.fullName} (
+                      {order.email})
+                    </p>
+                    <p>
+                      <strong>ID пользователя:</strong> {order.userId}
+                    </p>
+                    <p>
+                      <strong>Дата:</strong>{" "}
+                      {new Date(order.createdAt).toLocaleDateString()}
+                    </p>
+                    <p>
+                      <strong>Итого:</strong> {formatPrice(order.totalAmount)}
+                    </p>
+                    <p>
+                      <strong>Телефон:</strong> {order.phone}
+                    </p>
+                  </div>
+                  <div>
+                    <p>
+                      <strong>Адрес:</strong> {order.address}, {order.city},{" "}
+                      {order.postalCode}
+                    </p>
+                    <h3 className="font-semibold mt-2 mb-1">Товары:</h3>
+                    <ul className="space-y-1">
+                      {order.order_items.map((item, index) => (
+                        <li key={index} className="flex items-center space-x-2">
+                          {item.imageUrl && (
+                            <img
+                              src={item.imageUrl}
+                              alt={item.name}
+                              className="h-10 w-10 object-cover rounded-md"
+                            />
+                          )}
+                          <span>
+                            {item.name} x {item.quantity} (
+                            {formatPrice(item.priceSnapshot)})
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       )}
-    </div>
+    </main>
   );
 }

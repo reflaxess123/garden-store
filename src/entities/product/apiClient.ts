@@ -66,28 +66,29 @@ export async function createOrder(
   items: OrderItem[],
   totalAmount: number
 ) {
-  const supabase = supabaseClient;
+  const res = await fetch("/api/orders", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      fullName,
+      email,
+      address,
+      city,
+      postalCode,
+      phone,
+      orderItems: items,
+      totalAmount,
+    }),
+  });
 
-  const { data, error } = await supabase.functions.invoke(
-    "checkout_create_order",
-    {
-      body: {
-        fullName,
-        email,
-        address,
-        city,
-        postalCode,
-        phone,
-        orderItems: items,
-        totalAmount,
-      },
-    }
-  );
-
-  if (error) {
-    console.error("Error creating order:", error);
-    throw new Error("Failed to create order");
+  if (!res.ok) {
+    const errorData = await res.json();
+    console.error("Error creating order:", errorData);
+    throw new Error(errorData.details || "Failed to create order");
   }
 
+  const data = await res.json();
   return data;
 }

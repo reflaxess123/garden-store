@@ -35,7 +35,7 @@ export async function middleware(request: NextRequest, event: NextFetchEvent) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const protectedRoutes = ["/profile", "/favourites", "/cart"];
+  const protectedRoutes = ["/profile", "/favourites", "/cart", "/checkout"];
   const isAdminRoute = request.nextUrl.pathname.startsWith("/admin");
 
   let isAdmin = false;

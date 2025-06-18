@@ -62,6 +62,9 @@ const Header = () => {
                     <Link href="/profile" className="flex items-center gap-2">
                       <UserCircle2 className="h-5 w-5" /> Профиль
                     </Link>
+                    <Link href="/orders" className="flex items-center gap-2">
+                      <UserCircle2 className="h-5 w-5" /> Заказы
+                    </Link>
                     {user.user_metadata?.isAdmin && (
                       <Link href="/admin" className="flex items-center gap-2">
                         Админ-панель
@@ -125,11 +128,12 @@ const Header = () => {
                     <Link href="/profile">
                       <DropdownMenuItem>Профиль</DropdownMenuItem>
                     </Link>
-                    {user.user_metadata?.isAdmin && (
-                      <Link href="/admin">
-                        <DropdownMenuItem>Админ-панель</DropdownMenuItem>
-                      </Link>
-                    )}
+                    <Link href="/orders">
+                      <DropdownMenuItem>Заказы</DropdownMenuItem>
+                    </Link>
+                    <Link href="/favourites">
+                      <DropdownMenuItem>Избранное</DropdownMenuItem>
+                    </Link>
                     <DropdownMenuItem onClick={handleSignOut}>
                       Выйти
                     </DropdownMenuItem>

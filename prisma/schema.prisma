@@ -5,12 +5,14 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  schemas  = ["public", "auth"]
 }
 
 model Category {
@@ -22,6 +24,7 @@ model Category {
   products    Product[]
 
   @@map("categories")
+  @@schema("public")
 }
 
 model Product {
@@ -41,6 +44,7 @@ model Product {
   cartItems     CartItem[]
 
   @@map("products")
+  @@schema("public")
 }
 
 model User {              // расширение auth.users через profile
@@ -53,6 +57,7 @@ model User {              // расширение auth.users через profile
   orders        Order[]
 
   @@map("auth.users")
+  @@schema("auth")
 }
 
 model Favourite {
@@ -62,6 +67,7 @@ model Favourite {
   user      User     @relation(fields:[userId], references:[id])
   product   Product  @relation(fields:[productId], references:[id])
   @@unique([userId, productId])
+  @@schema("public")
 }
 
 model CartItem {
@@ -73,14 +79,38 @@ model CartItem {
   user          User     @relation(fields:[userId], references:[id])
   product       Product  @relation(fields:[productId], references:[id])
   @@unique([userId, productId])
+  @@schema("public")
 }
 
 model Order {
-  id          String   @id @default(uuid())
+  id          String      @id @default(uuid())
   userId      String
-  total       Decimal  @db.Decimal(10,2)
-  status      String   @default("pending")  // pending, paid, shipped, cancelled
-  items       Json
-  createdAt   DateTime @default(now())
-  user        User     @relation(fields:[userId], references:[id])
+  totalAmount Decimal     @db.Decimal(10,2)
+  status      String      @default("pending")  // pending, paid, shipped, cancelled
+  createdAt   DateTime    @default(now())
+  user        User        @relation(fields:[userId], references:[id])
+  fullName    String
+  email       String
+  address     String
+  city        String
+  postalCode  String
+  phone       String
+  orderItems  OrderItem[]
+
+  @@map("orders")
+  @@schema("public")
+}
+
+model OrderItem {
+  id            String    @id @default(uuid())
+  orderId       String
+  productId     String
+  quantity      Int
+  priceSnapshot Decimal   @db.Decimal(10,2)
+  name          String
+  imageUrl      String?
+  order         Order     @relation(fields:[orderId], references:[id])
+
+  @@map("order_items")
+  @@schema("public")
 }

@@ -9,6 +9,14 @@ interface GetProductsOptions {
   searchQuery?: string;
 }
 
+interface OrderItem {
+  productId: string;
+  quantity: number;
+  priceSnapshot: number;
+  name: string;
+  imageUrl?: string | null;
+}
+
 export async function getProductsClient(
   categorySlug: string,
   options?: GetProductsOptions
@@ -46,4 +54,40 @@ export async function getProductsClient(
   }
 
   return data as Product[];
+}
+
+export async function createOrder(
+  fullName: string,
+  email: string,
+  address: string,
+  city: string,
+  postalCode: string,
+  phone: string,
+  items: OrderItem[],
+  totalAmount: number
+) {
+  const supabase = supabaseClient;
+
+  const { data, error } = await supabase.functions.invoke(
+    "checkout_create_order",
+    {
+      body: {
+        fullName,
+        email,
+        address,
+        city,
+        postalCode,
+        phone,
+        orderItems: items,
+        totalAmount,
+      },
+    }
+  );
+
+  if (error) {
+    console.error("Error creating order:", error);
+    throw new Error("Failed to create order");
+  }
+
+  return data;
 }

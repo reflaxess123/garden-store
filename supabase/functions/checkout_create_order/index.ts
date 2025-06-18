@@ -35,8 +35,28 @@ interface EdgeFunctionCartItem {
 }
 
 serve(async (req: Request) => {
+  // Handle CORS preflight requests
+  if (req.method === "OPTIONS") {
+    return new Response("ok", {
+      headers: {
+        "Access-Control-Allow-Origin": "*", // Allow all origins for development
+        "Access-Control-Allow-Headers":
+          "authorization, x-client-info, apikey, content-type",
+      },
+    });
+  }
+
+  const corsHeaders = {
+    "Access-Control-Allow-Origin": "*", // Allow all origins for development
+    "Access-Control-Allow-Headers":
+      "authorization, x-client-info, apikey, content-type",
+  };
+
   if (req.method !== "POST") {
-    return new Response("Method Not Allowed", { status: 405 });
+    return new Response("Method Not Allowed", {
+      status: 405,
+      headers: corsHeaders, // Apply CORS headers
+    });
   }
 
   try {
@@ -46,7 +66,7 @@ serve(async (req: Request) => {
         JSON.stringify({ error: "Missing Authorization header" }),
         {
           status: 401,
-          headers: { "Content-Type": "application/json" },
+          headers: { ...corsHeaders, "Content-Type": "application/json" }, // Apply CORS headers
         }
       );
     }
@@ -71,76 +91,66 @@ serve(async (req: Request) => {
         JSON.stringify({ error: "Unauthorized", details: authError?.message }),
         {
           status: 401,
-          headers: { "Content-Type": "application/json" },
+          headers: { ...corsHeaders, "Content-Type": "application/json" }, // Apply CORS headers
         }
       );
     }
 
     const userId = userAuth.user.id;
 
-    // Fetch cart items (to pass to RPC, it's safer to fetch them server-side)
-    const { data: cartItemsRaw, error: cartError } = await supabase
-      .from("CartItem")
-      .select(
-        `id, productId, quantity, priceSnapshot, product:products(name, imageUrl)`
-      ) // Note: product will be an array here
-      .eq("userId", userId);
+    // Parse request body for order details
+    const {
+      fullName,
+      email,
+      address,
+      city,
+      postalCode,
+      phone,
+      orderItems,
+      totalAmount,
+    } = await req.json();
 
-    if (cartError) {
-      console.error("Error fetching cart items in Edge Function:", cartError);
+    if (
+      !fullName ||
+      !email ||
+      !address ||
+      !city ||
+      !postalCode ||
+      !phone ||
+      !orderItems ||
+      !totalAmount
+    ) {
       return new Response(
-        JSON.stringify({
-          error: "Failed to fetch cart items",
-          details: cartError.message,
-        }),
+        JSON.stringify({ error: "Missing order details in request body" }),
         {
-          status: 500,
-          headers: { "Content-Type": "application/json" },
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" }, // Apply CORS headers
         }
       );
     }
 
-    if (!cartItemsRaw || cartItemsRaw.length === 0) {
-      return new Response(JSON.stringify({ error: "Cart is empty" }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
-
-    const cartItems: EdgeFunctionCartItem[] = (
-      cartItemsRaw as RawCartItemFromSupabase[]
-    ).map((item: RawCartItemFromSupabase) => ({
-      id: item.id,
-      productId: item.productId,
-      quantity: item.quantity,
-      priceSnapshot: item.priceSnapshot,
-      name: item.product[0]?.name || "Unknown",
-      imageUrl: item.product[0]?.imageUrl || null,
-    }));
-
-    // Prepare items for RPC, ensuring correct structure and type casting for product details
-    const orderItemsForRpc = cartItems.map((item) => ({
-      productId: item.productId,
-      quantity: item.quantity,
-      priceSnapshot: item.priceSnapshot,
-      name: item.name,
-      imageUrl: item.imageUrl,
-    }));
-
     // Call the PostgreSQL RPC function to create the order
-    // The actual transaction logic (insert order, insert items, clear cart) will be in this RPC
     const { data: orderResult, error: rpcError } = await supabase.rpc(
       "create_order",
       {
+        p_address: address,
+        p_city: city,
+        p_email: email,
+        p_full_name: fullName,
+        p_order_items: orderItems,
+        p_phone: phone,
+        p_postal_code: postalCode,
+        p_total_amount: totalAmount,
         p_user_id: userId,
-        p_cart_items: orderItemsForRpc,
       }
     );
 
     if (rpcError) {
       console.error(
         "Error calling create_order RPC from Edge Function:",
-        rpcError
+        rpcError.message,
+        rpcError.details,
+        rpcError.hint
       );
       return new Response(
         JSON.stringify({
@@ -149,17 +159,16 @@ serve(async (req: Request) => {
         }),
         {
           status: 500,
-          headers: { "Content-Type": "application/json" },
+          headers: { ...corsHeaders, "Content-Type": "application/json" }, // Apply CORS headers
         }
       );
     }
 
     return new Response(JSON.stringify({ orderId: orderResult }), {
       status: 200,
-      headers: { "Content-Type": "application/json" },
+      headers: { ...corsHeaders, "Content-Type": "application/json" }, // Apply CORS headers
     });
   } catch (error: unknown) {
-    // Явно указываем unknown
     const errorMessage = error instanceof Error ? error.message : String(error);
     console.error("Unexpected error in Edge Function:", error);
     return new Response(
@@ -169,7 +178,7 @@ serve(async (req: Request) => {
       }),
       {
         status: 500,
-        headers: { "Content-Type": "application/json" },
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, // Apply CORS headers
       }
     );
   }

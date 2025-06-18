@@ -3,7 +3,16 @@
 import { supabaseClient } from "@/shared/api/supabaseBrowserClient";
 import { formatPrice } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/shared/ui/dialog";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -33,6 +42,8 @@ export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [orderToDelete, setOrderToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -78,6 +89,36 @@ export default function OrdersPage() {
     fetchOrders();
   }, []);
 
+  const handleDeleteOrder = async () => {
+    if (!orderToDelete) return;
+
+    try {
+      const res = await fetch("/api/orders", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId: orderToDelete }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        toast.error(data.error || "Ошибка при удалении заказа");
+      } else {
+        setOrders((prev) => prev.filter((o) => o.id !== orderToDelete));
+        toast.success("Заказ успешно удалён!");
+      }
+    } catch (e) {
+      toast.error("Ошибка при удалении заказа");
+    } finally {
+      setIsDeleteDialogOpen(false);
+      setOrderToDelete(null);
+    }
+  };
+
+  const openDeleteDialog = (orderId: string) => {
+    setOrderToDelete(orderId);
+    setIsDeleteDialogOpen(true);
+  };
+
   if (loading) {
     return (
       <main className="container mx-auto p-4 md:p-8">
@@ -109,7 +150,16 @@ export default function OrdersPage() {
                 <CardTitle className="text-lg font-medium">
                   Заказ #{order.id.slice(0, 8)}
                 </CardTitle>
-                <Badge variant="outline">{order.status}</Badge>
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline">{order.status}</Badge>
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={() => openDeleteDialog(order.id)}
+                  >
+                    Удалить
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
@@ -161,6 +211,29 @@ export default function OrdersPage() {
           ))}
         </div>
       )}
+
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Подтверждение удаления</DialogTitle>
+            <DialogDescription>
+              Вы уверены, что хотите удалить этот заказ? Это действие
+              необратимо.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsDeleteDialogOpen(false)}
+            >
+              Отмена
+            </Button>
+            <Button variant="destructive" onClick={handleDeleteOrder}>
+              Удалить
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </main>
   );
 }

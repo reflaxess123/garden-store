@@ -36,7 +36,8 @@ export function ProductCard({ product }: ProductCardProps) {
     : product.price.toFixed(2);
   const originalPrice = product.price.toFixed(2);
 
-  const { isProductFavourite } = useFavourites();
+  const { isProductFavourite, isLoading: isFavouritesLoading } =
+    useFavourites();
   const initialIsFavourite = isProductFavourite(product.id);
   const { addItem } = useCart();
 
@@ -57,14 +58,15 @@ export function ProductCard({ product }: ProductCardProps) {
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 className="object-cover transition-transform duration-300 group-hover:scale-105"
               />
-              <div className="absolute top-2 right-2 z-10">
-                <FavouriteButton
-                  productId={product.id}
-                  initialIsFavourite={initialIsFavourite}
-                />
-              </div>
             </div>
           )}
+          <div className="absolute top-2 right-2 z-10">
+            <FavouriteButton
+              productId={product.id}
+              initialIsFavourite={initialIsFavourite}
+              isLoading={isFavouritesLoading}
+            />
+          </div>
         </CardHeader>
         <CardContent className="flex-grow flex flex-col p-4 pt-2">
           <CardTitle className="text-lg font-semibold mb-1 text-foreground group-hover:text-primary transition-colors duration-200 line-clamp-2">

@@ -8,11 +8,13 @@ import { useFavourites } from "../useFavourites";
 interface FavouriteButtonProps {
   productId: string;
   initialIsFavourite: boolean;
+  isLoading: boolean;
 }
 
 export function FavouriteButton({
   productId,
   initialIsFavourite,
+  isLoading,
 }: FavouriteButtonProps) {
   const { toggleFavourite } = useFavourites();
   const [isFavourite, setIsFavourite] = useState(initialIsFavourite);
@@ -32,6 +34,7 @@ export function FavouriteButton({
       size="icon"
       onClick={handleToggleFavourite}
       aria-pressed={isFavourite}
+      disabled={isLoading}
       className={
         isFavourite
           ? "text-red-500 hover:text-red-600 transition-colors duration-200"

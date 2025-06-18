@@ -9,11 +9,13 @@ interface FavouriteItem {
 }
 
 export const useFavourites = () => {
-  const { user } = useAuth();
+  const { user, isLoading: isAuthLoading } = useAuth();
   const supabase = supabaseClient;
   const queryClient = useQueryClient();
 
-  const { data: favourites, isLoading } = useQuery<FavouriteItem[]>({
+  const { data: favourites, isLoading: isFavouritesLoading } = useQuery<
+    FavouriteItem[]
+  >({
     queryKey: ["favourites", user?.id],
     queryFn: async () => {
       if (!user) {
@@ -74,7 +76,7 @@ export const useFavourites = () => {
 
   return {
     favourites: favourites || [],
-    isLoading,
+    isLoading: isFavouritesLoading || isAuthLoading,
     isProductFavourite,
     toggleFavourite,
     favoriteItemCount: favourites?.length || 0,

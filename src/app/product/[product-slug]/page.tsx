@@ -2,6 +2,7 @@ import { getProductBySlug } from "@/entities/product/api";
 import { Breadcrumbs } from "@/widgets/Breadcrumbs";
 import Image from "next/image";
 import { notFound } from "next/navigation";
+import { ProductActions } from "./ProductActions";
 
 export default async function ProductPage({
   params,
@@ -45,7 +46,7 @@ export default async function ProductPage({
           <p className="text-3xl font-semibold text-primary mb-6">
             {product.price} ₽
           </p>
-          {/* Здесь можно добавить кнопки для добавления в корзину/избранное */}
+          <ProductActions product={product} />
           <h3 className="text-2xl font-semibold mb-4">Характеристики:</h3>
           {product.characteristics && (
             <ul className="list-disc list-inside space-y-2">

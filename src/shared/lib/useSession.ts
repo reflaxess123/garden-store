@@ -13,6 +13,20 @@ export function useSession() {
   useEffect(() => {
     console.log("useSession useEffect ran.");
 
+    const getInitialSession = async () => {
+      const {
+        data: { session },
+        error,
+      } = await supabaseClient.auth.getSession();
+      if (error) {
+        console.error("Error getting initial session:", error);
+      }
+      setUser(session?.user ?? null);
+      setIsLoading(false);
+    };
+
+    getInitialSession();
+
     const { data: authListener } = supabaseClient.auth.onAuthStateChange(
       (_event, session) => {
         console.log("Auth state changed:", _event, session);

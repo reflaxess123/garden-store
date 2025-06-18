@@ -13,8 +13,14 @@ function Loading() {
   );
 }
 
-export function AuthGuard({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading } = useSession();
+export function AuthGuard({
+  children,
+  adminOnly = false,
+}: {
+  children: React.ReactNode;
+  adminOnly?: boolean;
+}) {
+  const { isAuthenticated, isLoading, user } = useSession();
   const router = useRouter();
 
   if (isLoading) {
@@ -26,6 +32,12 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     const currentPath = window.location.pathname + window.location.search;
     router.replace(`/login?callback=${encodeURIComponent(currentPath)}`);
     return null; // Don't render children until authenticated or redirected
+  }
+
+  if (adminOnly && (!user || !user.isAdmin) && !isLoading) {
+    // Redirect non-admin users from admin-only routes
+    router.replace("/"); // Or a specific access denied page
+    return null;
   }
 
   if (!isAuthenticated && isLoading) {

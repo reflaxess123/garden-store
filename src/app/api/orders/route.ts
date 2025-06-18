@@ -2,13 +2,24 @@ import { createSupabaseServerClient } from "@/shared/api/supabaseClient";
 import { prisma } from "@/shared/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
-type OrderItemInput = {
+interface OrderItemInput {
   productId: string;
   quantity: number;
   priceSnapshot: number;
   name: string;
   imageUrl?: string | null;
-};
+}
+
+interface CreateOrderRequestBody {
+  fullName: string;
+  email: string;
+  address: string;
+  city: string;
+  postalCode: string;
+  phone: string;
+  orderItems: OrderItemInput[];
+  totalAmount: number;
+}
 
 export async function DELETE(req: NextRequest) {
   try {
@@ -41,10 +52,13 @@ export async function DELETE(req: NextRequest) {
     // Потом сам заказ
     await prisma.order.delete({ where: { id: orderId } });
     return NextResponse.json({ success: true });
-  } catch (e: any) {
+  } catch (e: unknown) {
     console.error("Error deleting order:", e);
     return NextResponse.json(
-      { error: "Server error", details: e.message || String(e) },
+      {
+        error: "Server error",
+        details: e instanceof Error ? e.message : String(e),
+      },
       { status: 500 }
     );
   }
@@ -68,7 +82,7 @@ export async function POST(req: NextRequest) {
       phone,
       orderItems,
       totalAmount,
-    } = await req.json();
+    } = (await req.json()) as CreateOrderRequestBody;
 
     if (
       !fullName ||
@@ -98,7 +112,7 @@ export async function POST(req: NextRequest) {
         phone,
         totalAmount,
         orderItems: {
-          create: (orderItems as OrderItemInput[]).map((item) => ({
+          create: orderItems.map((item) => ({
             productId: item.productId,
             quantity: item.quantity,
             priceSnapshot: item.priceSnapshot,
@@ -111,7 +125,7 @@ export async function POST(req: NextRequest) {
     });
 
     // Обновляем timesOrdered для каждого продукта
-    for (const item of orderItems as OrderItemInput[]) {
+    for (const item of orderItems) {
       const product = await prisma.product.findUnique({
         where: { id: item.productId },
       });
@@ -124,10 +138,13 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ orderId: order.id });
-  } catch (e: any) {
+  } catch (e: unknown) {
     console.error("Error creating order:", e);
     return NextResponse.json(
-      { error: "Server error", details: e.message || String(e) },
+      {
+        error: "Server error",
+        details: e instanceof Error ? e.message : String(e),
+      },
       { status: 500 }
     );
   }

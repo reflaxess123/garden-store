@@ -1,11 +1,10 @@
 "use client";
 
-import { useSession } from "@/shared/lib/useSession";
-import { User } from "@supabase/supabase-js";
+import { CustomUser, useSession } from "@/shared/lib/useSession";
 import { createContext, ReactNode, useContext } from "react";
 
 interface AuthContextType {
-  user: User | null;
+  user: CustomUser | null;
   isLoading: boolean;
 }
 

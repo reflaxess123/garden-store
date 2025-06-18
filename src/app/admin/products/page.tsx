@@ -458,9 +458,10 @@ export default function AdminProductsPage() {
               <TableRow>
                 <TableHead className="w-[80px]">Изображение</TableHead>
                 <TableHead>Имя</TableHead>
+                <TableHead>Slug</TableHead>
                 <TableHead>Цена</TableHead>
                 <TableHead>Категория</TableHead>
-                <TableHead>Создан</TableHead>
+                <TableHead>Заказано раз</TableHead>
                 <TableHead className="text-right">Действия</TableHead>
               </TableRow>
             </TableHeader>
@@ -468,27 +469,21 @@ export default function AdminProductsPage() {
               {products.map((product) => (
                 <TableRow key={product.id}>
                   <TableCell>
-                    {product.imageUrl ? (
+                    {product.imageUrl && (
                       <Image
                         src={product.imageUrl}
                         alt={product.name}
-                        width={60}
-                        height={60}
-                        className="rounded-md object-cover"
+                        width={40}
+                        height={40}
+                        className="rounded-md object-cover mr-2 inline-block"
                       />
-                    ) : (
-                      <div className="h-[60px] w-[60px] flex items-center justify-center bg-muted rounded-md text-muted-foreground text-xs">
-                        Нет изо.
-                      </div>
                     )}
+                    {product.name}
                   </TableCell>
-                  <TableCell className="font-medium">{product.name}</TableCell>
+                  <TableCell>{product.slug}</TableCell>
                   <TableCell>{formatPrice(product.price)}</TableCell>
-                  <TableCell>{product.categoryId}</TableCell>
-                  {/* TODO: Replace with actual category name */}
-                  <TableCell>
-                    {new Date(product.createdAt).toLocaleDateString()}
-                  </TableCell>
+                  <TableCell>{product.category.name}</TableCell>
+                  <TableCell>{product.timesOrdered}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end space-x-2">
                       <ProductFormDialog

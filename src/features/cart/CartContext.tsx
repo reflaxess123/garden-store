@@ -156,21 +156,33 @@ export function CartProvider({ children }: { children: ReactNode }) {
     if (user?.id && localCart.length > 0 && !isMerging) {
       setIsMerging(true);
       const mergeCart = async () => {
-        const { data, error } = await supabaseClient.rpc("merge_cart", {
-          local: localCart.map((item) => ({
-            productId: item.productId,
-            quantity: item.quantity,
-            priceSnapshot: item.priceSnapshot,
-          })),
-        });
-        if (error) {
-          console.error("Error merging cart:", error);
-        } else {
+        try {
+          const response = await fetch("/api/cart/merge", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              localCart: localCart.map((item) => ({
+                productId: item.productId,
+                quantity: item.quantity,
+                priceSnapshot: item.priceSnapshot,
+              })),
+            }),
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
           setLocalCart([]); // Clear local cart after merge
           localStorage.removeItem("anonymousCart");
           queryClient.invalidateQueries({ queryKey: ["cart"] }); // Invalidate cart query to refetch merged cart
+        } catch (error) {
+          console.error("Error merging cart:", error);
+        } finally {
+          setIsMerging(false);
         }
-        setIsMerging(false);
       };
       mergeCart();
     }

@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 
 import { useCart } from "@/features/cart/CartContext";
 import { useFavourites } from "@/features/manage-favourites/useFavourites";
+import { Badge } from "@/shared/ui/badge";
 import { BadgeIcon } from "@/shared/ui/BadgeIcon";
 import { Button } from "@/shared/ui/button";
 import {
@@ -120,6 +121,14 @@ const Header = () => {
                 >
                   {/* Заглушка аватара */}
                   <UserCircle2 className="h-8 w-8" />
+                  {user?.isAdmin && (
+                    <Badge
+                      variant="destructive"
+                      className="absolute -top-1 -right-1 h-4 w-auto rounded-full px-2 py-0 text-xs font-semibold"
+                    >
+                      Админ
+                    </Badge>
+                  )}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56" align="end" forceMount>
@@ -134,6 +143,11 @@ const Header = () => {
                     <Link href="/favourites">
                       <DropdownMenuItem>Избранное</DropdownMenuItem>
                     </Link>
+                    {user.isAdmin && (
+                      <Link href="/admin">
+                        <DropdownMenuItem>Админ-панель</DropdownMenuItem>
+                      </Link>
+                    )}
                     <DropdownMenuItem onClick={handleSignOut}>
                       Выйти
                     </DropdownMenuItem>

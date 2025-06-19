@@ -73,10 +73,11 @@ async def test_signup(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_signup_existing_email(client: AsyncClient):
     # Сначала регистрируем пользователя
+    unique_email = f"existing_{uuid.uuid4()}@example.com"
     await client.post(
         "/api/auth/signup",
         json={
-            "email": "existing@example.com",
+            "email": unique_email,
             "password": "password123",
             "confirmPassword": "password123",
         },
@@ -85,7 +86,7 @@ async def test_signup_existing_email(client: AsyncClient):
     response = await client.post(
         "/api/auth/signup",
         json={
-            "email": "existing@example.com",
+            "email": unique_email,
             "password": "newpassword",
             "confirmPassword": "newpassword",
         },
@@ -109,10 +110,11 @@ async def test_signup_password_mismatch(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_signin(client: AsyncClient):
     # Сначала регистрируем пользователя для входа
+    unique_email = f"signinuser_{uuid.uuid4()}@example.com"
     await client.post(
         "/api/auth/signup",
         json={
-            "email": "signinuser@example.com",
+            "email": unique_email,
             "password": "securepassword",
             "confirmPassword": "securepassword",
         },
@@ -121,7 +123,7 @@ async def test_signin(client: AsyncClient):
     # Затем пытаемся войти
     response = await client.post(
         "/api/auth/signin",
-        json={"email": "signinuser@example.com", "password": "securepassword"},
+        json={"email": unique_email, "password": "securepassword"},
     )
     assert response.status_code == 200
     assert "access_token" in response.json()
@@ -140,17 +142,18 @@ async def test_signin_invalid_credentials(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_logout(client: AsyncClient):
     # Сначала логинимся, чтобы получить куки
+    unique_email = f"logoutuser_{uuid.uuid4()}@example.com"
     signup_response = await client.post(
         "/api/auth/signup",
         json={
-            "email": "logoutuser@example.com",
+            "email": unique_email,
             "password": "logoutpassword",
             "confirmPassword": "logoutpassword",
         },
     )
     login_response = await client.post(
         "/api/auth/signin",
-        json={"email": "logoutuser@example.com", "password": "logoutpassword"},
+        json={"email": unique_email, "password": "logoutpassword"},
     )
     assert login_response.status_code == 200
     
@@ -164,10 +167,11 @@ async def test_logout(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_reset_password(client: AsyncClient):
     # Сначала регистрируем пользователя
+    unique_email = f"resetpassword_{uuid.uuid4()}@example.com"
     await client.post(
         "/api/auth/signup",
         json={
-            "email": "resetpassword@example.com",
+            "email": unique_email,
             "password": "oldpassword",
             "confirmPassword": "oldpassword",
         },
@@ -175,7 +179,7 @@ async def test_reset_password(client: AsyncClient):
 
     response = await client.post(
         "/api/auth/reset-password",
-        json={"email": "resetpassword@example.com"},
+        json={"email": unique_email},
     )
     assert response.status_code == 200
     assert "message" in response.json()

@@ -5,6 +5,7 @@ from app.db import models
 from app.schemas import ProductInDB
 from typing import List, Optional
 import uuid
+from sqlalchemy import select
 
 router = APIRouter()
 
@@ -13,10 +14,9 @@ async def get_product_by_id(
     product_id: uuid.UUID, db: Session = Depends(get_db)
 ):
     product = (
-        db.query(models.Product)
+        (await db.execute(select(models.Product)
         .options(joinedload(models.Product.category))
-        .filter(models.Product.id == product_id)
-        .first()
+        .filter(models.Product.id == product_id))).scalar_one_or_none()
     )
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
@@ -25,11 +25,10 @@ async def get_product_by_id(
 @router.get("/products/bestsellers", response_model=List[ProductInDB])
 async def get_bestsellers(db: Session = Depends(get_db), limit: int = 10):
     bestsellers = (
-        db.query(models.Product)
+        (await db.execute(select(models.Product)
         .options(joinedload(models.Product.category))
         .order_by(models.Product.times_ordered.desc())
-        .limit(limit)
-        .all()
+        .limit(limit))).scalars().all()
     )
     return bestsellers
 
@@ -38,10 +37,9 @@ async def get_product_by_slug(
     product_slug: str, db: Session = Depends(get_db)
 ):
     product = (
-        db.query(models.Product)
+        (await db.execute(select(models.Product)
         .options(joinedload(models.Product.category))
-        .filter(models.Product.slug == product_slug)
-        .first()
+        .filter(models.Product.slug == product_slug))).scalar_one_or_none()
     )
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
@@ -51,14 +49,13 @@ async def get_product_by_slug(
 async def get_products_by_category_slug(
     category_slug: str, db: Session = Depends(get_db)
 ):
-    category = db.query(models.Category).filter(models.Category.slug == category_slug).first()
+    category = (await db.execute(select(models.Category).filter(models.Category.slug == category_slug))).scalar_one_or_none()
     if not category:
-        raise HTTPException(status_code=404, detail="Category not found")
+        return []
     
     products = (
-        db.query(models.Product)
+        (await db.execute(select(models.Product)
         .options(joinedload(models.Product.category))
-        .filter(models.Product.category_id == category.id)
-        .all()
+        .filter(models.Product.category_id == category.id))).scalars().all()
     )
     return products 

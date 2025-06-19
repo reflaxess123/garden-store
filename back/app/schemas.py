@@ -41,7 +41,9 @@ class CategoryBase(BaseModel):
     name: str
     slug: str
     description: Optional[str] = None
-    imageUrl: Optional[str] = None
+    imageUrl: Optional[str] = Field(None, alias="image_url", serialization_alias="imageUrl")
+
+    model_config = {"from_attributes": True, "populate_by_name": True}
 
 class CategoryCreate(CategoryBase):
     pass
@@ -53,8 +55,7 @@ class CategoryUpdate(CategoryBase):
 class CategoryInDB(CategoryBase):
     id: uuid.UUID
 
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True, "populate_by_name": True}
 # endregion
 
 # region Product Schemas
@@ -65,8 +66,10 @@ class ProductBase(BaseModel):
     price: Decimal = Field(..., decimal_places=2)
     discount: Optional[Decimal] = Field(None, decimal_places=2)
     characteristics: Optional[Dict[str, Any]] = None
-    imageUrl: Optional[str] = None
-    categoryId: uuid.UUID
+    imageUrl: Optional[str] = Field(None, alias="image_url", serialization_alias="imageUrl")
+    categoryId: uuid.UUID = Field(..., alias="category_id", serialization_alias="categoryId")
+
+    model_config = {"from_attributes": True, "populate_by_name": True}
 
 class ProductCreate(ProductBase):
     pass
@@ -79,13 +82,13 @@ class ProductUpdate(ProductBase):
 
 class ProductInDB(ProductBase):
     id: uuid.UUID
-    createdAt: datetime
-    updatedAt: datetime
-    timesOrdered: int
+    createdAt: datetime = Field(..., alias="created_at", serialization_alias="createdAt")
+    updatedAt: Optional[datetime] = Field(None, alias="updated_at", serialization_alias="updatedAt")
+    timesOrdered: int = Field(..., alias="times_ordered", serialization_alias="timesOrdered")
+    categoryId: uuid.UUID = Field(..., alias="category_id", serialization_alias="categoryId")
     category: Optional[CategoryInDB] = None # For embedding category info
 
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True, "populate_by_name": True}
 
 # endregion
 
@@ -116,31 +119,34 @@ class CartMergeRequest(BaseModel):
 
 # region Order Schemas
 class OrderItemBase(BaseModel):
-    productId: uuid.UUID
+    productId: uuid.UUID = Field(..., alias="product_id", serialization_alias="productId")
     quantity: int
-    priceSnapshot: Decimal = Field(..., decimal_places=2)
+    priceSnapshot: Decimal = Field(..., alias="price_snapshot", serialization_alias="priceSnapshot", decimal_places=2)
     name: str
-    imageUrl: Optional[str] = None
+    imageUrl: Optional[str] = Field(None, alias="image_url", serialization_alias="imageUrl")
+
+    model_config = {"from_attributes": True, "populate_by_name": True}
 
 class OrderItemCreate(OrderItemBase):
     pass
 
 class OrderItemInDB(OrderItemBase):
     id: uuid.UUID
-    orderId: uuid.UUID
+    orderId: uuid.UUID = Field(..., alias="order_id", serialization_alias="orderId")
 
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True, "populate_by_name": True}
 
 class OrderBase(BaseModel):
-    fullName: str
+    fullName: str = Field(..., alias="full_name", serialization_alias="fullName")
     email: str
     address: str
     city: str
-    postalCode: str
+    postalCode: str = Field(..., alias="postal_code", serialization_alias="postalCode")
     phone: str
-    totalAmount: Decimal = Field(..., decimal_places=2)
-    orderItems: List[OrderItemCreate]
+    totalAmount: Decimal = Field(..., alias="total_amount", serialization_alias="totalAmount", decimal_places=2)
+    orderItems: List[OrderItemCreate] = Field(..., alias="order_items", serialization_alias="orderItems")
+
+    model_config = {"from_attributes": True, "populate_by_name": True}
 
 class OrderCreate(OrderBase):
     pass
@@ -150,14 +156,12 @@ class OrderUpdateStatus(BaseModel):
 
 class OrderInDB(OrderBase):
     id: uuid.UUID
-    userId: uuid.UUID
+    userId: uuid.UUID = Field(..., alias="user_id", serialization_alias="userId")
     status: str
-    createdAt: datetime
-    
-    orderItems: List[OrderItemInDB] = [] # Nested order items
+    createdAt: datetime = Field(..., alias="created_at", serialization_alias="createdAt")
+    orderItems: List[OrderItemInDB] = Field(default_factory=list, alias="order_items", serialization_alias="orderItems")
 
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True, "populate_by_name": True}
 # endregion
 
 # region Favourite Schemas

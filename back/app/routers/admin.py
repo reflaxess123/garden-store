@@ -18,7 +18,7 @@ async def get_admin_categories(
 ):
     result = await db.execute(select(models.Category))
     categories = result.scalars().all()
-    return categories
+    return [CategoryInDB.model_validate(cat, from_attributes=True) for cat in categories]
 
 @router.post("/admin/categories", response_model=CategoryInDB, status_code=status.HTTP_201_CREATED)
 async def create_admin_category(
@@ -30,11 +30,16 @@ async def create_admin_category(
     if db_category:
         raise HTTPException(status_code=400, detail="Category with this slug already exists")
 
-    db_category = models.Category(**category_in.dict())
+    db_category = models.Category(
+        name=category_in.name,
+        slug=category_in.slug,
+        description=category_in.description,
+        image_url=category_in.imageUrl
+    )
     db.add(db_category)
     await db.commit()
     await db.refresh(db_category)
-    return db_category
+    return CategoryInDB.model_validate(db_category, from_attributes=True)
 
 @router.patch("/admin/categories/{category_id}", response_model=CategoryInDB)
 async def update_admin_category(
@@ -48,12 +53,15 @@ async def update_admin_category(
     
     update_data = category_in.dict(exclude_unset=True)
     for key, value in update_data.items():
-        setattr(db_category, key, value)
+        if key == "imageUrl":
+            setattr(db_category, "image_url", value)
+        else:
+            setattr(db_category, key, value)
     
     db.add(db_category)
     await db.commit()
     await db.refresh(db_category)
-    return db_category
+    return CategoryInDB.model_validate(db_category, from_attributes=True)
 
 @router.delete("/admin/categories/{category_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_admin_category(
@@ -78,7 +86,7 @@ async def get_admin_products(
 ):
     result = await db.execute(select(models.Product).options(joinedload(models.Product.category)))
     products = result.scalars().unique().all()
-    return products
+    return [ProductInDB.model_validate(prod, from_attributes=True) for prod in products]
 
 @router.post("/admin/products", response_model=ProductInDB, status_code=status.HTTP_201_CREATED)
 async def create_admin_product(
@@ -90,11 +98,20 @@ async def create_admin_product(
     if db_product:
         raise HTTPException(status_code=400, detail="Product with this slug already exists")
 
-    db_product = models.Product(**product_in.dict())
+    db_product = models.Product(
+        name=product_in.name,
+        slug=product_in.slug,
+        description=product_in.description,
+        price=product_in.price,
+        discount=product_in.discount,
+        characteristics=product_in.characteristics,
+        image_url=product_in.imageUrl,
+        category_id=product_in.categoryId
+    )
     db.add(db_product)
     await db.commit()
     await db.refresh(db_product)
-    return db_product
+    return ProductInDB.model_validate(db_product, from_attributes=True)
 
 @router.get("/admin/products/{product_id}", response_model=ProductInDB)
 async def get_admin_product(
@@ -105,7 +122,7 @@ async def get_admin_product(
     product = result.scalars().first()
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
-    return product
+    return ProductInDB.model_validate(product, from_attributes=True)
 
 @router.delete("/admin/products/{product_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_admin_product(
@@ -133,12 +150,17 @@ async def update_admin_product(
     
     update_data = product_in.dict(exclude_unset=True)
     for key, value in update_data.items():
-        setattr(db_product, key, value)
+        if key == "imageUrl":
+            setattr(db_product, "image_url", value)
+        elif key == "categoryId":
+            setattr(db_product, "category_id", value)
+        else:
+            setattr(db_product, key, value)
     
     db.add(db_product)
     await db.commit()
     await db.refresh(db_product)
-    return db_product
+    return ProductInDB.model_validate(db_product, from_attributes=True)
 # endregion
 
 # region Admin Orders
@@ -149,7 +171,7 @@ async def get_admin_orders(
 ):
     result = await db.execute(select(models.Order).options(joinedload(models.Order.order_items)))
     orders = result.scalars().unique().all()
-    return orders
+    return [OrderInDB.model_validate(order, from_attributes=True) for order in orders]
 
 @router.patch("/admin/orders/{order_id}", response_model=OrderInDB)
 async def update_admin_order_status(
@@ -165,5 +187,5 @@ async def update_admin_order_status(
     db.add(db_order)
     await db.commit()
     await db.refresh(db_order)
-    return db_order
+    return OrderInDB.model_validate(db_order, from_attributes=True)
 # endregion 

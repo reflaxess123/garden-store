@@ -4,6 +4,7 @@ from app.db.database import get_db
 from app.db import models
 from app.schemas import CategoryInDB
 from typing import List, Optional
+from sqlalchemy import select
 
 router = APIRouter()
 
@@ -13,10 +14,10 @@ async def get_categories(
     db: Session = Depends(get_db)
 ):
     if slug and slug != "all":
-        category = db.query(models.Category).filter(models.Category.slug == slug).first()
+        category = (await db.execute(select(models.Category).filter(models.Category.slug == slug))).scalar_one_or_none()
         if not category:
             raise HTTPException(status_code=404, detail="Category not found")
         return [category]
     
-    categories = db.query(models.Category).all()
+    categories = (await db.execute(select(models.Category))).scalars().all()
     return categories 

@@ -12,6 +12,10 @@ RUN npm ci --verbose
 # Копируем исходный код (исключая .env через .dockerignore)
 COPY . .
 
+# Объявляем ARG для переменных сборки
+ARG NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+
 # Очищаем кеш Next.js
 RUN rm -rf .next
 

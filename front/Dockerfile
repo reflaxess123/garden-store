@@ -15,11 +15,6 @@ COPY . .
 # Очищаем кеш Next.js
 RUN rm -rf .next
 
-# Проверяем наличие критических файлов
-RUN ls -la src/shared/lib/utils.ts && \
-    echo "Checking TypeScript config..." && \
-    cat tsconfig.json | grep -A 5 -B 5 "paths"
-
 # Собираем Next.js приложение
 RUN npm run build
 

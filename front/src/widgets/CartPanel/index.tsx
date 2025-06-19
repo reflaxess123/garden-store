@@ -14,6 +14,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/shared/ui/sheet";
+import { useEffect, useState } from "react";
 
 const CartPanel = () => {
   const {
@@ -25,13 +26,18 @@ const CartPanel = () => {
     isMerging,
   } = useCart();
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <Sheet>
       <SheetTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">
           <ShoppingCart className="h-6 w-6" />
-          {items.length > 0 && (
+          {mounted && items.length > 0 && (
             <span className="absolute -right-2 -top-2 h-5 w-5 justify-center rounded-full bg-red-500 p-0 text-xs text-white flex items-center justify-center">
               {items.length}
             </span>

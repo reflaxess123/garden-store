@@ -1,6 +1,6 @@
-import { Category } from "@prisma/client";
+import { CategoryInDB } from "@/shared/api/generated/types";
 
-export type AdminCategory = Category;
+export type AdminCategory = CategoryInDB;
 
 export interface CreateCategoryPayload {
   name: string;
@@ -16,7 +16,7 @@ export interface UpdateCategoryPayload {
   imageUrl?: string | null;
 }
 
-export async function getAdminCategories(): Promise<Category[]> {
+export async function getAdminCategories(): Promise<CategoryInDB[]> {
   const res = await fetch("/api/admin/categories");
 
   if (!res.ok) {
@@ -25,12 +25,12 @@ export async function getAdminCategories(): Promise<Category[]> {
     throw new Error(errorData.details || "Failed to fetch admin categories");
   }
 
-  return (await res.json()) as Category[];
+  return (await res.json()) as CategoryInDB[];
 }
 
 export async function createAdminCategory(
   payload: CreateCategoryPayload
-): Promise<Category> {
+): Promise<CategoryInDB> {
   const res = await fetch("/api/admin/categories", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -43,13 +43,13 @@ export async function createAdminCategory(
     throw new Error(errorData.details || "Failed to create admin category");
   }
 
-  return (await res.json()) as Category;
+  return (await res.json()) as CategoryInDB;
 }
 
 export async function updateAdminCategory(
   id: string,
   payload: UpdateCategoryPayload
-): Promise<Category> {
+): Promise<CategoryInDB> {
   const res = await fetch(`/api/admin/categories/${id}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
@@ -62,7 +62,7 @@ export async function updateAdminCategory(
     throw new Error(errorData.details || "Failed to update admin category");
   }
 
-  return (await res.json()) as Category;
+  return (await res.json()) as CategoryInDB;
 }
 
 export async function deleteAdminCategory(id: string): Promise<void> {

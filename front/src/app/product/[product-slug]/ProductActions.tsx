@@ -1,6 +1,6 @@
 "use client";
 
-import { useCart } from "@/features/cart/CartContext";
+import { useCart } from "@/features/cart/useCart";
 import { FavouriteButton } from "@/features/manage-favourites/ui/FavouriteButton";
 import { useFavourites } from "@/features/manage-favourites/useFavourites";
 import { Button } from "@/shared/ui/button";

@@ -3,7 +3,7 @@
 import { Minus, Plus, ShoppingCart, XCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-import { useCart } from "@/features/cart/CartContext";
+import { useCart } from "@/features/cart/useCart";
 import { formatPrice } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import { Separator } from "@/shared/ui/separator";

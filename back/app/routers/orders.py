@@ -19,6 +19,10 @@ async def create_order(
     current_user: CustomUser = Depends(get_current_user)
 ):
     user_id = current_user.id
+    
+    # Отладка: выводим доступные атрибуты
+    print(f"DEBUG: order_in attributes: {dir(order_in)}")
+    print(f"DEBUG: order_in dict: {order_in.model_dump()}")
 
     try:
         # Создаем новый заказ

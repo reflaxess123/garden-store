@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
 interface ProductRouteContext {
   params: {
@@ -10,7 +10,7 @@ interface ProductRouteContext {
 
 export async function GET(req: NextRequest, context: ProductRouteContext) {
   try {
-    const { id } = context.params;
+    const { id } = await context.params;
 
     const response = await fetch(`${API_BASE_URL}/api/admin/products/${id}`, {
       method: "GET",
@@ -45,7 +45,7 @@ export async function GET(req: NextRequest, context: ProductRouteContext) {
 
 export async function DELETE(req: NextRequest, context: ProductRouteContext) {
   try {
-    const { id } = context.params;
+    const { id } = await context.params;
 
     const response = await fetch(`${API_BASE_URL}/api/admin/products/${id}`, {
       method: "DELETE",
@@ -79,7 +79,7 @@ export async function DELETE(req: NextRequest, context: ProductRouteContext) {
 
 export async function PATCH(req: NextRequest, context: ProductRouteContext) {
   try {
-    const { id } = context.params;
+    const { id } = await context.params;
     const body = await req.json();
 
     const response = await fetch(`${API_BASE_URL}/api/admin/products/${id}`, {

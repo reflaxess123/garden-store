@@ -18,6 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/ui/dialog";
+import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -25,6 +26,7 @@ export default function OrdersPage() {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [orderToDelete, setOrderToDelete] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
   const {
     data: orders,
@@ -40,12 +42,32 @@ export default function OrdersPage() {
     if (!orderToDelete) return;
 
     try {
+      // Оптимистично удаляем заказ из UI
+      queryClient.setQueryData(
+        ["getUserOrdersApiOrdersGet"],
+        (old: OrderInDB[] | undefined) => {
+          if (!old) return [];
+          return old.filter((order) => order.id !== orderToDelete);
+        }
+      );
+
       await deleteOrderMutation.mutateAsync({
         orderId: orderToDelete,
       });
+
       toast.success("Заказ успешно удалён!");
+
+      // Инвалидируем кэш для обновления данных
+      queryClient.invalidateQueries({
+        queryKey: ["getUserOrdersApiOrdersGet"],
+      });
     } catch (error) {
       toast.error("Ошибка при удалении заказа");
+
+      // Откатываем оптимистичное обновление при ошибке
+      queryClient.invalidateQueries({
+        queryKey: ["getUserOrdersApiOrdersGet"],
+      });
     } finally {
       setIsDeleteDialogOpen(false);
       setOrderToDelete(null);

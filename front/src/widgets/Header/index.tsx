@@ -4,7 +4,7 @@ import { useAuth } from "@/features/auth/AuthContext";
 import { Heart, Menu, UserCircle2 } from "lucide-react";
 import Link from "next/link";
 
-import { useCart } from "@/features/cart/CartContext";
+import { useCart } from "@/features/cart/useCart";
 import { useFavourites } from "@/features/manage-favourites/useFavourites";
 import { Badge } from "@/shared/ui/badge";
 import { BadgeIcon } from "@/shared/ui/BadgeIcon";

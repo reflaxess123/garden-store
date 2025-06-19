@@ -1,5 +1,4 @@
 import { AuthProvider } from "@/features/auth/AuthContext";
-import { CartProvider } from "@/features/cart/CartContext";
 import { QueryProvider } from "@/shared/lib/QueryProvider";
 import { ThemeProvider } from "@/shared/lib/ThemeProvider";
 import { Toaster } from "@/shared/ui/sonner";
@@ -18,7 +17,7 @@ const onest = Onest({
 export const metadata: Metadata = {
   title: "Garden Store v1",
   description:
-    "Next 13 App Router + FSD + Supabase (PostgreSQL + Auth) + Prisma + TanStack Query + TailwindCSS / shadcn-ui",
+    "Next 13 App Router + FSD + Python API + PostgreSQL + Auth + TanStack Query + TailwindCSS / shadcn-ui",
 };
 
 export default function RootLayout({
@@ -39,11 +38,9 @@ export default function RootLayout({
         >
           <QueryProvider>
             <AuthProvider>
-              <CartProvider>
-                <Header />
-                <main className="flex-grow">{children}</main>
-                <Footer />
-              </CartProvider>
+              <Header />
+              <main className="flex-grow">{children}</main>
+              <Footer />
             </AuthProvider>
           </QueryProvider>
           <Toaster />

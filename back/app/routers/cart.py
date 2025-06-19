@@ -109,7 +109,7 @@ async def remove_from_cart(
     if not cart_item:
         raise HTTPException(status_code=404, detail="Cart item not found")
     
-    db.delete(cart_item)
+    await db.delete(cart_item)
     await db.commit()
     return
 
@@ -125,7 +125,7 @@ async def clear_cart(
     cart_items = result.scalars().all()
     
     for item in cart_items:
-        db.delete(item)
+        await db.delete(item)
     
     await db.commit()
     return

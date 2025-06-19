@@ -7,7 +7,6 @@ import Link from "next/link";
 export default async function MarketingPage() {
   const categories = await getAllCategories();
   const bestsellers = await getBestsellers(4); // Получаем 4 самых продаваемых товара
-  console.log("Bestsellers data in MarketingPage:", bestsellers);
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">

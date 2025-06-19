@@ -86,6 +86,5 @@ export async function getBestsellers(limit: number = 10): Promise<Product[]> {
     return [];
   }
   const data = await response.json();
-  console.log("Bestsellers data from API (getBestsellers):", data);
   return data as Product[];
 }

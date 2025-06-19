@@ -1,21 +1,7 @@
-import { Product } from "@prisma/client";
+import { ProductInDB } from "@/shared/api/generated/types";
 
-export interface AdminProductClient
-  extends Omit<Product, "price" | "discount"> {
-  category: { name: string };
-  price: string;
-  discount: string | null;
-}
-
-// Helper function to map Prisma Product to AdminProductClient
-export function mapProductToAdminProductClient(
-  product: Product & { category: { name: string } }
-): AdminProductClient {
-  return {
-    ...product,
-    price: product.price.toString(),
-    discount: product.discount?.toString() || null,
-  };
+export interface AdminProductClient extends ProductInDB {
+  category?: { name: string };
 }
 
 export interface CreateProductPayload {

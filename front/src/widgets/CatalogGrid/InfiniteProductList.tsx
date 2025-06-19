@@ -22,7 +22,6 @@ export function InfiniteProductList({
     useInfiniteQuery({
       queryKey: ["products", categorySlug, searchQuery],
       queryFn: async ({ pageParam = 0 }) => {
-        console.log("Fetching products with pageParam:", pageParam);
         const products = await getProductsClient(categorySlug, {
           offset: pageParam,
           limit: 20,

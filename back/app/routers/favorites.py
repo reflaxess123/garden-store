@@ -85,6 +85,6 @@ async def remove_from_favorites(
     if not favorite:
         raise HTTPException(status_code=404, detail="Product not found in favorites")
     
-    db.delete(favorite)
+    await db.delete(favorite)
     await db.commit()
     return 

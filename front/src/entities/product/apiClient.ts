@@ -92,11 +92,11 @@ export async function createOrder(
       city,
       postal_code: postalCode,
       phone,
-      total_amount: totalAmount,
+      total_amount: Math.round(totalAmount * 100) / 100, // Округляем до 2 знаков после запятой
       order_items: items.map((item) => ({
         product_id: item.productId,
         quantity: item.quantity,
-        price_snapshot: item.priceSnapshot,
+        price_snapshot: Math.round(item.priceSnapshot * 100) / 100, // Округляем цену товара тоже
         name: item.name,
         image_url: item.imageUrl || null,
       })),

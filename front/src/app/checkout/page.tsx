@@ -1,7 +1,7 @@
 "use client";
 
 import { createOrder } from "@/entities/product/apiClient"; // Предполагаемый API для создания заказа
-import { useCart } from "@/features/cart/CartContext";
+import { useCart } from "@/features/cart/useCart";
 import { formatPrice } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import {

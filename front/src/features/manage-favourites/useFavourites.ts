@@ -7,6 +7,7 @@ import {
   useGetfavoritesapifavoritesget,
   useRemovefromfavoritesapifavoritesproductiddelete,
 } from "@/shared/api/generated";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface FavouriteItem {
   productId: string;
@@ -14,6 +15,7 @@ interface FavouriteItem {
 
 export const useFavourites = () => {
   const { user, isAuthenticated } = useAuth();
+  const queryClient = useQueryClient();
 
   // Получаем избранное с сервера
   const { data: favoritesData, isLoading: isFavouritesLoading } =
@@ -31,7 +33,7 @@ export const useFavourites = () => {
     return favourites.some((fav) => fav.productId === productId);
   };
 
-  // Мутации для добавления/удаления избранного
+  // Мутации для управления избранным
   const addMutation = useAddtofavoritesapifavoritesproductidpost();
   const removeMutation = useRemovefromfavoritesapifavoritesproductiddelete();
 
@@ -44,11 +46,55 @@ export const useFavourites = () => {
     const isCurrentlyFavourite = isProductFavourite(productId);
 
     if (isCurrentlyFavourite) {
-      // Remove from favourites
-      removeMutation.mutate(productId);
+      // Оптимистично удаляем из UI
+      queryClient.setQueryData(
+        ["getFavoritesApiFavoritesGet"],
+        (old: FavouriteInDB[] | undefined) => {
+          if (!old) return [];
+          return old.filter((fav) => fav.productId !== productId);
+        }
+      );
+
+      // Удаляем с сервера
+      removeMutation.mutate(productId, {
+        onSuccess: () => {
+          // Обновляем кэш после успешного удаления
+          queryClient.invalidateQueries({
+            queryKey: ["getFavoritesApiFavoritesGet"],
+          });
+        },
+        onError: () => {
+          // Откатываем оптимистичное обновление при ошибке
+          queryClient.invalidateQueries({
+            queryKey: ["getFavoritesApiFavoritesGet"],
+          });
+        },
+      });
     } else {
-      // Add to favourites
-      addMutation.mutate(productId);
+      // Оптимистично добавляем в UI
+      queryClient.setQueryData(
+        ["getFavoritesApiFavoritesGet"],
+        (old: FavouriteInDB[] | undefined) => {
+          if (!old) return [{ productId } as FavouriteInDB];
+          return [...old, { productId } as FavouriteInDB];
+        }
+      );
+
+      // Добавляем на сервер
+      addMutation.mutate(productId, {
+        onSuccess: () => {
+          // Обновляем кэш после успешного добавления
+          queryClient.invalidateQueries({
+            queryKey: ["getFavoritesApiFavoritesGet"],
+          });
+        },
+        onError: () => {
+          // Откатываем оптимистичное обновление при ошибке
+          queryClient.invalidateQueries({
+            queryKey: ["getFavoritesApiFavoritesGet"],
+          });
+        },
+      });
     }
   };
 

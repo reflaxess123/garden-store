@@ -25,6 +25,15 @@ async function fetchApi<T>(
     throw new Error(`HTTP error! status: ${response.status}`);
   }
 
+  // Если ответ 204 No Content или тело пустое, возвращаем undefined
+  if (
+    response.status === 204 ||
+    !response.headers.get('content-length') ||
+    response.headers.get('content-length') === '0'
+  ) {
+    return undefined as T;
+  }
+
   return response.json();
 }
 

@@ -2,30 +2,29 @@
 
 import { Button } from "@/shared/ui/button";
 import { Heart } from "lucide-react";
-import { useEffect, useState } from "react";
 import { useFavourites } from "../useFavourites";
 
 interface FavouriteButtonProps {
   productId: string;
-  initialIsFavourite: boolean;
-  isLoading: boolean;
+  initialIsFavourite?: boolean; // Делаем опциональным, так как теперь используем глобальное состояние
+  isLoading?: boolean;
 }
 
 export function FavouriteButton({
   productId,
-  initialIsFavourite,
   isLoading,
 }: FavouriteButtonProps) {
-  const { toggleFavourite } = useFavourites();
-  const [isFavourite, setIsFavourite] = useState(initialIsFavourite);
+  const {
+    toggleFavourite,
+    isProductFavourite,
+    isLoading: isFavouritesLoading,
+  } = useFavourites();
 
-  useEffect(() => {
-    setIsFavourite(initialIsFavourite);
-  }, [initialIsFavourite]);
+  const isFavourite = isProductFavourite(productId);
+  const isButtonLoading = isLoading || isFavouritesLoading;
 
   const handleToggleFavourite = async () => {
     await toggleFavourite(productId);
-    setIsFavourite((prev) => !prev);
   };
 
   return (
@@ -34,7 +33,7 @@ export function FavouriteButton({
       size="icon"
       onClick={handleToggleFavourite}
       aria-pressed={isFavourite}
-      disabled={isLoading}
+      disabled={isButtonLoading}
       className={
         isFavourite
           ? "text-red-500 hover:text-red-600 transition-colors duration-200"

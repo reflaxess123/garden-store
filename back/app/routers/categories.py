@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.database import get_db
 from app.db import models
 from app.schemas import CategoryInDB
@@ -11,7 +11,7 @@ router = APIRouter()
 @router.get("/categories", response_model=List[CategoryInDB])
 async def get_categories(
     slug: Optional[str] = None, 
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     if slug and slug != "all":
         category = (await db.execute(select(models.Category).filter(models.Category.slug == slug))).scalar_one_or_none()

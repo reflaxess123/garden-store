@@ -110,9 +110,12 @@ async def get_current_user(request: Request, db: AsyncSession = Depends(get_db))
     user = result.scalars().first()
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
-    return ProfileBase.from_orm(user)
+    
+    # Используем Pydantic v2 синтаксис
+    from app.schemas import CustomUser
+    return CustomUser.model_validate(user)
 
-def get_current_admin_user(current_user: ProfileBase = Depends(get_current_user)):
+def get_current_admin_user(current_user = Depends(get_current_user)):
     if not current_user.isAdmin:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions")
     return current_user

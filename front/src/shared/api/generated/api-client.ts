@@ -151,6 +151,27 @@ export function useUpdatepasswordapiauthupdatepasswordpost() {
   });
 }
 
+// Get Current User Info
+export async function getCurrentUserInfoApiAuthMeGet(
+): Promise<CustomUser> {
+  let url = `/api/auth/me`;
+  const options: RequestInit = {
+    method: 'GET',
+  };
+  return fetchApi<CustomUser>(url, options);
+}
+
+// React Query хук для getCurrentUserInfoApiAuthMeGet
+export function useGetcurrentuserinfoapiauthmeget(
+  options?: { enabled?: boolean }
+) {
+  return useQuery({
+    queryKey: ['getCurrentUserInfoApiAuthMeGet'],
+    queryFn: getCurrentUserInfoApiAuthMeGet,
+    ...options,
+  });
+}
+
 // Get Admin Categories
 export async function getAdminCategoriesApiAdminCategoriesGet(
 ): Promise<CategoryInDB[]> {

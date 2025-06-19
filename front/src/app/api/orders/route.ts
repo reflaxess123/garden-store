@@ -1,6 +1,6 @@
-import { createSupabaseServerClient } from "@/shared/api/supabaseClient";
-import { prisma } from "@/shared/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 interface OrderItemInput {
   productId: string;
@@ -23,34 +23,26 @@ interface CreateOrderRequestBody {
 
 export async function DELETE(req: NextRequest) {
   try {
-    const supabase = await createSupabaseServerClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-    const { orderId } = await req.json();
-    if (!orderId) {
-      return NextResponse.json(
-        { error: "orderId is required" },
-        { status: 400 }
-      );
-    }
-    // Проверяем, что заказ принадлежит пользователю
-    const order = await prisma.order.findUnique({
-      where: { id: orderId },
+    const body = await req.json();
+
+    const response = await fetch(`${API_BASE_URL}/api/orders`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: req.headers.get("cookie") || "",
+      },
+      body: JSON.stringify(body),
     });
-    if (!order || order.userId !== user.id) {
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Error deleting order:", errorText);
       return NextResponse.json(
-        { error: "Not found or forbidden" },
-        { status: 404 }
+        { error: `HTTP error! status: ${response.status}` },
+        { status: response.status }
       );
     }
-    // Сначала удаляем связанные order_items
-    await prisma.orderItem.deleteMany({ where: { orderId } });
-    // Потом сам заказ
-    await prisma.order.delete({ where: { id: orderId } });
+
     return NextResponse.json({ success: true });
   } catch (e: unknown) {
     console.error("Error deleting order:", e);
@@ -66,78 +58,28 @@ export async function DELETE(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const supabase = await createSupabaseServerClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-    const {
-      fullName,
-      email,
-      address,
-      city,
-      postalCode,
-      phone,
-      orderItems,
-      totalAmount,
-    } = (await req.json()) as CreateOrderRequestBody;
+    const body = await req.json();
 
-    if (
-      !fullName ||
-      !email ||
-      !address ||
-      !city ||
-      !postalCode ||
-      !phone ||
-      !orderItems ||
-      !totalAmount
-    ) {
+    const response = await fetch(`${API_BASE_URL}/api/orders`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: req.headers.get("cookie") || "",
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Error creating order:", errorText);
       return NextResponse.json(
-        { error: "Missing order details in request body" },
-        { status: 400 }
+        { error: `HTTP error! status: ${response.status}` },
+        { status: response.status }
       );
     }
 
-    // Создаём заказ и связанные order_items
-    const order = await prisma.order.create({
-      data: {
-        userId: user.id,
-        fullName,
-        email,
-        address,
-        city,
-        postalCode,
-        phone,
-        totalAmount,
-        orderItems: {
-          create: orderItems.map((item) => ({
-            productId: item.productId,
-            quantity: item.quantity,
-            priceSnapshot: item.priceSnapshot,
-            name: item.name,
-            imageUrl: item.imageUrl ?? null,
-          })),
-        },
-      },
-      include: { orderItems: true },
-    });
-
-    // Обновляем timesOrdered для каждого продукта
-    for (const item of orderItems) {
-      const product = await prisma.product.findUnique({
-        where: { id: item.productId },
-      });
-      if (product) {
-        await prisma.product.update({
-          where: { id: item.productId },
-          data: { timesOrdered: (product.timesOrdered || 0) + item.quantity },
-        });
-      }
-    }
-
-    return NextResponse.json({ orderId: order.id });
+    const result = await response.json();
+    return NextResponse.json(result);
   } catch (e: unknown) {
     console.error("Error creating order:", e);
     return NextResponse.json(

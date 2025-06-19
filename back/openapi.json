@@ -169,6 +169,25 @@
         }
       }
     },
+    "/api/auth/me": {
+      "get": {
+        "summary": "Get Current User Info",
+        "description": "Получить информацию о текущем пользователе",
+        "operationId": "get_current_user_info_api_auth_me_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomUser"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/admin/categories": {
       "get": {
         "summary": "Get Admin Categories",

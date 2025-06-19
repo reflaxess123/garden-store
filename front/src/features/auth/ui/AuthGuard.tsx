@@ -1,6 +1,6 @@
 "use client";
 
-import { useSession } from "@/shared/lib/useSession";
+import { useAuth } from "@/features/auth/AuthContext";
 import { useRouter } from "next/navigation";
 import React from "react";
 
@@ -20,7 +20,7 @@ export function AuthGuard({
   children: React.ReactNode;
   adminOnly?: boolean;
 }) {
-  const { isAuthenticated, isLoading, user } = useSession();
+  const { isAuthenticated, isLoading, user } = useAuth();
   const router = useRouter();
 
   if (isLoading) {

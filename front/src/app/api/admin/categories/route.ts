@@ -1,43 +1,28 @@
-import {
-  createSupabaseAdminClient,
-  createSupabaseServerClient,
-} from "@/shared/api/supabaseClient";
-import { prisma } from "@/shared/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
+
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 
 export async function GET(req: NextRequest) {
   try {
-    const supabase = await createSupabaseServerClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Проверяем, является ли пользователь администратором
-    const supabaseAdmin = createSupabaseAdminClient();
-    const { data: userData, error: adminError } = await supabaseAdmin
-      .from("profiles")
-      .select("isAdmin")
-      .eq("id", user.id)
-      .single();
-
-    if (adminError || !userData?.isAdmin) {
-      return NextResponse.json(
-        { error: "Forbidden: Not an admin" },
-        { status: 403 }
-      );
-    }
-
-    const categories = await prisma.category.findMany({
-      orderBy: {
-        name: "asc",
+    const response = await fetch(`${API_BASE_URL}/api/admin/categories`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: req.headers.get("cookie") || "",
       },
     });
 
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Error fetching admin categories:", errorText);
+      return NextResponse.json(
+        { error: `HTTP error! status: ${response.status}` },
+        { status: response.status }
+      );
+    }
+
+    const categories = await response.json();
     return NextResponse.json(categories);
   } catch (e: unknown) {
     console.error("Error fetching admin categories:", e);
@@ -55,35 +40,25 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
-    const supabase = await createSupabaseServerClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
+    const response = await fetch(`${API_BASE_URL}/api/admin/categories`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: req.headers.get("cookie") || "",
+      },
+      body: JSON.stringify(body),
+    });
 
-    if (userError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Проверяем, является ли пользователь администратором
-    const supabaseAdmin = createSupabaseAdminClient();
-    const { data: userData, error: adminError } = await supabaseAdmin
-      .from("profiles")
-      .select("isAdmin")
-      .eq("id", user.id)
-      .single();
-
-    if (adminError || !userData?.isAdmin) {
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Error creating category:", errorText);
       return NextResponse.json(
-        { error: "Forbidden: Not an admin" },
-        { status: 403 }
+        { error: `HTTP error! status: ${response.status}` },
+        { status: response.status }
       );
     }
 
-    const newCategory = await prisma.category.create({
-      data: body,
-    });
-
+    const newCategory = await response.json();
     return NextResponse.json(newCategory, { status: 201 });
   } catch (e: unknown) {
     console.error("Error creating category:", e);

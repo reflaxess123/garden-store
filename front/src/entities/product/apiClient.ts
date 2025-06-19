@@ -1,5 +1,9 @@
-import { supabaseClient } from "@/shared/api/supabaseBrowserClient";
-import { Product } from "./api";
+import {
+  createOrderApiOrdersPost,
+  getProductsByCategorySlugApiProductsCategoryCategorySlugGet,
+  OrderCreate,
+  ProductInDB,
+} from "@/shared/api/generated";
 
 interface GetProductsOptions {
   limit?: number;
@@ -20,40 +24,54 @@ interface OrderItem {
 export async function getProductsClient(
   categorySlug: string,
   options?: GetProductsOptions
-): Promise<Product[]> {
-  const supabase = supabaseClient;
-  const {
-    limit = 20,
-    offset = 0,
-    sortBy = "createdAt",
-    sortOrder = "desc",
-    searchQuery,
-  } = options || {};
+): Promise<ProductInDB[]> {
+  try {
+    // Используем сгенерированный API клиент
+    const products =
+      await getProductsByCategorySlugApiProductsCategoryCategorySlugGet(
+        categorySlug
+      );
 
-  let queryBuilder = supabase
-    .from("products")
-    .select("*, categories(name)")
-    .order(sortBy, { ascending: sortOrder === "asc" })
-    .range(offset, offset + limit - 1);
+    // Сортировка и фильтрация на клиенте (можно улучшить, добавив параметры в API)
+    let filteredProducts = [...products];
 
-  if (categorySlug !== "all") {
-    queryBuilder = queryBuilder.eq("categories.slug", categorySlug);
-  }
+    if (options?.searchQuery) {
+      const query = options.searchQuery.toLowerCase();
+      filteredProducts = filteredProducts.filter(
+        (product) =>
+          product.name.toLowerCase().includes(query) ||
+          product.description?.toLowerCase().includes(query)
+      );
+    }
 
-  if (searchQuery) {
-    queryBuilder = queryBuilder.or(
-      `name.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`
-    );
-  }
+    // Сортировка
+    if (options?.sortBy) {
+      filteredProducts.sort((a, b) => {
+        let aValue: any = a[options.sortBy!];
+        let bValue: any = b[options.sortBy!];
 
-  const { data, error } = await queryBuilder;
+        if (options.sortBy === "price") {
+          aValue = parseFloat(a.price);
+          bValue = parseFloat(b.price);
+        }
 
-  if (error) {
+        if (options.sortOrder === "desc") {
+          return bValue < aValue ? -1 : bValue > aValue ? 1 : 0;
+        } else {
+          return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+        }
+      });
+    }
+
+    // Пагинация
+    const start = options?.offset || 0;
+    const limit = options?.limit || 20;
+
+    return filteredProducts.slice(start, start + limit);
+  } catch (error) {
     console.error("Error fetching products:", error);
     return [];
   }
-
-  return data as Product[];
 }
 
 export async function createOrder(
@@ -66,29 +84,28 @@ export async function createOrder(
   items: OrderItem[],
   totalAmount: number
 ) {
-  const res = await fetch("/api/orders", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      fullName,
+  try {
+    const orderData: OrderCreate = {
+      full_name: fullName,
       email,
       address,
       city,
-      postalCode,
+      postal_code: postalCode,
       phone,
-      orderItems: items,
-      totalAmount,
-    }),
-  });
+      total_amount: totalAmount,
+      order_items: items.map((item) => ({
+        product_id: item.productId,
+        quantity: item.quantity,
+        price_snapshot: item.priceSnapshot,
+        name: item.name,
+        image_url: item.imageUrl || null,
+      })),
+    };
 
-  if (!res.ok) {
-    const errorData = await res.json();
-    console.error("Error creating order:", errorData);
-    throw new Error(errorData.details || "Failed to create order");
+    const result = await createOrderApiOrdersPost(orderData);
+    return result;
+  } catch (error) {
+    console.error("Error creating order:", error);
+    throw error;
   }
-
-  const data = await res.json();
-  return data;
 }

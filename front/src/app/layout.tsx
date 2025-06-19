@@ -1,4 +1,4 @@
-import { AuthContextProvider } from "@/features/auth/AuthContext";
+import { AuthProvider } from "@/features/auth/AuthContext";
 import { CartProvider } from "@/features/cart/CartContext";
 import { QueryProvider } from "@/shared/lib/QueryProvider";
 import { ThemeProvider } from "@/shared/lib/ThemeProvider";
@@ -38,13 +38,13 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <QueryProvider>
-            <AuthContextProvider>
+            <AuthProvider>
               <CartProvider>
                 <Header />
                 <main className="flex-grow">{children}</main>
                 <Footer />
               </CartProvider>
-            </AuthContextProvider>
+            </AuthProvider>
           </QueryProvider>
           <Toaster />
         </ThemeProvider>

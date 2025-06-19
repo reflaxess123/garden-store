@@ -103,4 +103,9 @@ async def update_password(data: UpdatePasswordSchema, current_user: CustomUser =
         data={"sub": str(user_to_update.id), "is_admin": user_to_update.is_admin},
         expires_delta=access_token_expires,
     )
-    return {"message": "Password updated successfully.", "access_token": access_token, "token_type": "bearer"} 
+    return {"message": "Password updated successfully.", "access_token": access_token, "token_type": "bearer"}
+
+@router.get("/auth/me", response_model=CustomUser)
+async def get_current_user_info(current_user: CustomUser = Depends(get_current_user)):
+    """Получить информацию о текущем пользователе"""
+    return current_user

@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload
 from app.db.database import get_db
 from app.db import models
 from app.schemas import CartMergeRequest, CartItemInDB, CustomUser, CartItemAdd, CartItemUpdate, CartItemDelete
@@ -12,7 +13,7 @@ router = APIRouter()
 
 @router.get("/cart", response_model=List[CartItemInDB])
 async def get_cart(
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     current_user: CustomUser = Depends(get_current_user)
 ):
     """Получить корзину текущего пользователя"""
@@ -27,7 +28,7 @@ async def get_cart(
 @router.post("/cart/add", response_model=CartItemInDB, status_code=status.HTTP_201_CREATED)
 async def add_to_cart(
     cart_item: CartItemAdd,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     current_user: CustomUser = Depends(get_current_user)
 ):
     """Добавить товар в корзину"""
@@ -71,7 +72,7 @@ async def add_to_cart(
 async def update_cart_item(
     item_id: uuid.UUID,
     update_data: CartItemUpdate,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     current_user: CustomUser = Depends(get_current_user)
 ):
     """Изменить количество товара в корзине"""
@@ -94,7 +95,7 @@ async def update_cart_item(
 @router.delete("/cart/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def remove_from_cart(
     item_id: uuid.UUID,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     current_user: CustomUser = Depends(get_current_user)
 ):
     """Удалить товар из корзины"""
@@ -108,13 +109,13 @@ async def remove_from_cart(
     if not cart_item:
         raise HTTPException(status_code=404, detail="Cart item not found")
     
-    await db.delete(cart_item)
+    db.delete(cart_item)
     await db.commit()
     return
 
 @router.delete("/cart", status_code=status.HTTP_204_NO_CONTENT)
 async def clear_cart(
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     current_user: CustomUser = Depends(get_current_user)
 ):
     """Очистить всю корзину"""
@@ -124,7 +125,7 @@ async def clear_cart(
     cart_items = result.scalars().all()
     
     for item in cart_items:
-        await db.delete(item)
+        db.delete(item)
     
     await db.commit()
     return
@@ -132,7 +133,7 @@ async def clear_cart(
 @router.post("/cart/merge", response_model=List[CartItemInDB])
 async def merge_cart(
     cart_merge_request: CartMergeRequest, 
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     current_user: CustomUser = Depends(get_current_user)
 ):
     user_id = current_user.id

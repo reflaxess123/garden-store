@@ -1,9 +1,7 @@
-import {
-  createSupabaseAdminClient,
-  createSupabaseServerClient,
-} from "@/shared/api/supabaseClient";
-import { prisma } from "@/shared/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
+
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 
 interface CategoryRouteContext {
   params: {
@@ -16,39 +14,26 @@ export async function PATCH(req: NextRequest, context: CategoryRouteContext) {
     const { id } = context.params;
     const body = await req.json();
 
-    const supabase = await createSupabaseServerClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
+    const response = await fetch(`${API_BASE_URL}/api/admin/categories/${id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: req.headers.get("cookie") || "",
+      },
+      body: JSON.stringify(body),
+    });
 
-    if (userError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Проверяем, является ли пользователь администратором
-    const supabaseAdmin = createSupabaseAdminClient();
-    const { data: userData, error: adminError } = await supabaseAdmin
-      .from("profiles")
-      .select("isAdmin")
-      .eq("id", user.id)
-      .single();
-
-    if (adminError || !userData?.isAdmin) {
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Error updating category:", errorText);
       return NextResponse.json(
-        { error: "Forbidden: Not an admin" },
-        { status: 403 }
+        { error: `HTTP error! status: ${response.status}` },
+        { status: response.status }
       );
     }
 
-    const updatedCategory = await prisma.category.update({
-      where: {
-        id: id,
-      },
-      data: body,
-    });
-
-    return NextResponse.json(updatedCategory, { status: 200 });
+    const updatedCategory = await response.json();
+    return NextResponse.json(updatedCategory);
   } catch (e: unknown) {
     console.error("Error updating category:", e);
     return NextResponse.json(
@@ -65,41 +50,24 @@ export async function DELETE(req: NextRequest, context: CategoryRouteContext) {
   try {
     const { id } = context.params;
 
-    const supabase = await createSupabaseServerClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Проверяем, является ли пользователь администратором
-    const supabaseAdmin = createSupabaseAdminClient();
-    const { data: userData, error: adminError } = await supabaseAdmin
-      .from("profiles")
-      .select("isAdmin")
-      .eq("id", user.id)
-      .single();
-
-    if (adminError || !userData?.isAdmin) {
-      return NextResponse.json(
-        { error: "Forbidden: Not an admin" },
-        { status: 403 }
-      );
-    }
-
-    await prisma.category.delete({
-      where: {
-        id: id,
+    const response = await fetch(`${API_BASE_URL}/api/admin/categories/${id}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: req.headers.get("cookie") || "",
       },
     });
 
-    return NextResponse.json(
-      { message: "Category deleted successfully" },
-      { status: 200 }
-    );
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Error deleting category:", errorText);
+      return NextResponse.json(
+        { error: `HTTP error! status: ${response.status}` },
+        { status: response.status }
+      );
+    }
+
+    return NextResponse.json({}, { status: 204 });
   } catch (e: unknown) {
     console.error("Error deleting category:", e);
     return NextResponse.json(

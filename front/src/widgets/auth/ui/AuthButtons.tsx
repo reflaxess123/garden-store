@@ -1,10 +1,11 @@
 import { useAuth } from "@/features/auth/AuthContext";
-import { supabaseClient } from "@/shared/api/supabaseBrowserClient";
+import { useLogoutapiauthlogoutpost } from "@/shared/api/generated";
 import { Button } from "@/shared/ui/button";
 import Link from "next/link";
 
 export function AuthButtons() {
   const { user, isLoading } = useAuth();
+  const logoutMutation = useLogoutapiauthlogoutpost();
 
   if (isLoading) {
     return <div>Загрузка...</div>;
@@ -13,11 +14,12 @@ export function AuthButtons() {
   if (user) {
     return (
       <Button
-        onClick={async () => {
-          await supabaseClient.auth.signOut();
+        onClick={() => {
+          logoutMutation.mutate();
         }}
+        disabled={logoutMutation.isPending}
       >
-        Выйти
+        {logoutMutation.isPending ? "Выход..." : "Выйти"}
       </Button>
     );
   } else {

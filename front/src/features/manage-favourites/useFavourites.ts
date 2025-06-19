@@ -1,46 +1,42 @@
 "use client";
 
 import { useAuth } from "@/features/auth/AuthContext";
-import { supabaseClient } from "@/shared/api/supabaseBrowserClient";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  FavouriteInDB,
+  useAddtofavoritesapifavoritesproductidpost,
+  useGetfavoritesapifavoritesget,
+  useRemovefromfavoritesapifavoritesproductiddelete,
+} from "@/shared/api/generated";
 
 interface FavouriteItem {
   productId: string;
 }
 
 export const useFavourites = () => {
-  const { user, isLoading: isAuthLoading } = useAuth();
-  const supabase = supabaseClient;
-  const queryClient = useQueryClient();
+  const { user, isAuthenticated } = useAuth();
 
-  const { data: favourites, isLoading: isFavouritesLoading } = useQuery<
-    FavouriteItem[]
-  >({
-    queryKey: ["favourites", user?.id],
-    queryFn: async () => {
-      if (!user) {
-        return [];
-      }
-      const { data, error } = await supabase
-        .from("Favourite")
-        .select("productId")
-        .eq("userId", user.id);
+  // Получаем избранное с сервера
+  const { data: favoritesData, isLoading: isFavouritesLoading } =
+    useGetfavoritesapifavoritesget({
+      enabled: isAuthenticated,
+    });
 
-      if (error) {
-        console.error("Error fetching favourites:", error);
-        throw error;
-      }
-      return data || [];
-    },
-    enabled: !!user, // Only run query if user is logged in
-  });
+  // Преобразуем данные в нужный формат
+  const favourites: FavouriteItem[] =
+    favoritesData?.map((fav: FavouriteInDB) => ({
+      productId: fav.productId,
+    })) || [];
 
   const isProductFavourite = (productId: string) => {
-    return favourites?.some((fav) => fav.productId === productId) || false;
+    return favourites.some((fav) => fav.productId === productId);
   };
 
+  // Мутации для добавления/удаления избранного
+  const addMutation = useAddtofavoritesapifavoritesproductidpost();
+  const removeMutation = useRemovefromfavoritesapifavoritesproductiddelete();
+
   const toggleFavourite = async (productId: string) => {
-    if (!user) {
+    if (!isAuthenticated) {
       console.warn("User not logged in. Cannot toggle favourite.");
       return;
     }
@@ -49,36 +45,18 @@ export const useFavourites = () => {
 
     if (isCurrentlyFavourite) {
       // Remove from favourites
-      const { error } = await supabase
-        .from("Favourite")
-        .delete()
-        .eq("userId", user.id)
-        .eq("productId", productId);
-
-      if (error) {
-        console.error("Error removing favourite:", error);
-        throw error;
-      }
+      removeMutation.mutate(productId);
     } else {
       // Add to favourites
-      const { error } = await supabase.from("Favourite").insert({
-        userId: user.id,
-        productId: productId,
-      });
-
-      if (error) {
-        console.error("Error adding favourite:", error);
-        throw error;
-      }
+      addMutation.mutate(productId);
     }
-    queryClient.invalidateQueries({ queryKey: ["favourites", user?.id] });
   };
 
   return {
-    favourites: favourites || [],
-    isLoading: isFavouritesLoading || isAuthLoading,
+    favourites,
+    isLoading: isFavouritesLoading,
     isProductFavourite,
     toggleFavourite,
-    favoriteItemCount: favourites?.length || 0,
+    favoriteItemCount: favourites.length,
   };
 };

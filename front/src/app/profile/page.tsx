@@ -1,30 +1,25 @@
 "use client";
 
 import { useAuth } from "@/features/auth/AuthContext";
-import { supabaseClient } from "@/shared/api/supabaseBrowserClient";
 import { Button } from "@/shared/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/shared/ui/card";
-import { useRouter } from "next/navigation";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 
 export default function ProfilePage() {
-  const { user, isLoading } = useAuth();
-  const router = useRouter();
+  const { user, logout, isLoading } = useAuth();
 
   const handleSignOut = async () => {
-    await supabaseClient.auth.signOut();
-    router.push("/login"); // Перенаправление на страницу входа после выхода
+    try {
+      await logout();
+    } catch (error) {
+      console.error("Ошибка выхода:", error);
+    }
   };
 
   if (isLoading) {
     return (
       <main className="container mx-auto p-4 md:p-8">
-        <p>Загрузка профиля...</p>
+        <h1 className="text-3xl font-bold mb-6">Профиль</h1>
+        <p>Загрузка...</p>
       </main>
     );
   }
@@ -32,42 +27,36 @@ export default function ProfilePage() {
   if (!user) {
     return (
       <main className="container mx-auto p-4 md:p-8">
-        <p>
-          Вы не авторизованы. Пожалуйста, войдите, чтобы просмотреть профиль.
-        </p>
-        <Button onClick={() => router.push("/login")}>Войти</Button>
+        <h1 className="text-3xl font-bold mb-6">Профиль</h1>
+        <p>Пожалуйста, войдите в систему для просмотра профиля.</p>
       </main>
     );
   }
 
   return (
     <main className="container mx-auto p-4 md:p-8">
-      <Card className="mx-auto max-w-md">
+      <h1 className="text-3xl font-bold mb-6">Профиль</h1>
+
+      <Card className="max-w-md">
         <CardHeader>
-          <CardTitle className="text-2xl">Профиль пользователя</CardTitle>
-          <CardDescription>
-            Здесь вы можете просмотреть свою информацию.
-          </CardDescription>
+          <CardTitle>Информация о пользователе</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <h3 className="font-semibold">Email:</h3>
-            <p>{user.email}</p>
+            <strong>Email:</strong> {user.email}
           </div>
-          {user.user_metadata?.fullName && (
+          {user.fullName && (
             <div>
-              <h3 className="font-semibold">Полное имя:</h3>
-              <p>{user.user_metadata.fullName}</p>
+              <strong>Имя:</strong> {user.fullName}
             </div>
           )}
-          {user.user_metadata?.isAdmin && (
-            <div>
-              <h3 className="font-semibold">Роль:</h3>
-              <p>Администратор</p>
-            </div>
-          )}
-          <Button onClick={handleSignOut} className="w-full">
-            Выйти из аккаунта
+          <div>
+            <strong>Роль:</strong>{" "}
+            {user.isAdmin ? "Администратор" : "Пользователь"}
+          </div>
+
+          <Button onClick={handleSignOut} variant="outline" className="w-full">
+            Выйти
           </Button>
         </CardContent>
       </Card>

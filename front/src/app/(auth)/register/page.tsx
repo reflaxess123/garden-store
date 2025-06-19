@@ -1,11 +1,15 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { z } from "zod";
 
+import { useAuth } from "@/features/auth/AuthContext";
+import { signUpSchema } from "@/features/auth/model";
+import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
 import { Button } from "@/shared/ui/button";
 import {
   Form,
@@ -16,14 +20,12 @@ import {
   FormMessage,
 } from "@/shared/ui/form";
 import { Input } from "@/shared/ui/input";
-import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
-import { signUpSchema, signUp } from "@/features/auth/model";
-import { useState } from "react";
 
 type SignUpFormValues = z.infer<typeof signUpSchema>;
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { signup } = useAuth();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
@@ -39,18 +41,18 @@ export default function RegisterPage() {
   async function onSubmit(values: SignUpFormValues) {
     setErrorMessage(null);
     setSuccessMessage(null);
-    const result = await signUp(values);
 
-    if (result.success) {
+    try {
+      await signup(values.email, values.password, values.confirmPassword);
       setSuccessMessage(
-        result.message ||
-          "Регистрация прошла успешно! Пожалуйста, проверьте вашу почту для подтверждения."
+        "Регистрация прошла успешно! Вы автоматически вошли в систему."
       );
-      // Опционально: перенаправление после успешной регистрации
-      // router.push("/login");
-    } else {
+      router.push("/");
+    } catch (error) {
       setErrorMessage(
-        result.error || "Произошла неизвестная ошибка при регистрации."
+        error instanceof Error
+          ? error.message
+          : "Произошла неизвестная ошибка при регистрации."
       );
     }
   }
@@ -111,7 +113,11 @@ export default function RegisterPage() {
               </FormItem>
             )}
           />
-          <Button type="submit" className="w-full">
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={form.formState.isSubmitting}
+          >
             Зарегистрироваться
           </Button>
         </form>

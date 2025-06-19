@@ -1,4 +1,9 @@
-import { supabaseClient } from "@/shared/api/supabaseBrowserClient";
+import {
+  resetPasswordApiAuthResetPasswordPost,
+  signinApiAuthSigninPost,
+  signupApiAuthSignupPost,
+  updatePasswordApiAuthUpdatePasswordPost,
+} from "@/shared/api/generated";
 import { z } from "zod";
 
 // Zod схемы для валидации форм
@@ -40,69 +45,53 @@ export const resetPasswordSchema = z.object({
 // Функции аутентификации
 
 export async function signInWithPassword(data: z.infer<typeof signInSchema>) {
-  const { email, password } = data;
-  const { data: userData, error } =
-    await supabaseClient.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-  if (error) {
-    return { success: false, error: error.message };
+  try {
+    const result = await signinApiAuthSigninPost(data);
+    return { success: true, token: result.access_token };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Ошибка входа",
+    };
   }
-  return { success: true, user: userData.user };
 }
 
 export async function signUp(data: z.infer<typeof signUpSchema>) {
-  const { email, password } = data;
-  const { data: userData, error } = await supabaseClient.auth.signUp({
-    email,
-    password,
-    options: {
-      data: {
-        // Добавляем isAdmin по умолчанию false при регистрации
-        isAdmin: false,
-      },
-    },
-  });
-
-  if (error) {
-    return { success: false, error: error.message };
-  }
-
-  // Если пользователь успешно зарегистрирован, но требует подтверждения email
-  if (userData.user && !userData.user.identities?.length) {
+  try {
+    const result = await signupApiAuthSignupPost(data);
+    return { success: true, user: result };
+  } catch (error) {
     return {
-      success: true,
-      user: userData.user,
-      message: "Пожалуйста, подтвердите вашу электронную почту.",
+      success: false,
+      error: error instanceof Error ? error.message : "Ошибка регистрации",
     };
   }
-
-  return { success: true, user: userData.user };
 }
 
 export async function sendPasswordResetEmail(email: string) {
-  const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
-    redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/auth/update-password`,
-  });
-
-  if (error) {
-    return { success: false, error: error.message };
+  try {
+    await resetPasswordApiAuthResetPasswordPost({ email });
+    return {
+      success: true,
+      message: "Инструкции по сбросу пароля отправлены на ваш email.",
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Ошибка сброса пароля",
+    };
   }
-  return {
-    success: true,
-    message: "Инструкции по сбросу пароля отправлены на ваш email.",
-  };
 }
 
 export async function updatePassword(password: string) {
-  const { error } = await supabaseClient.auth.updateUser({
-    password,
-  });
-
-  if (error) {
-    return { success: false, error: error.message };
+  try {
+    await updatePasswordApiAuthUpdatePasswordPost({ password });
+    return { success: true, message: "Ваш пароль успешно обновлен." };
+  } catch (error) {
+    return {
+      success: false,
+      error:
+        error instanceof Error ? error.message : "Ошибка обновления пароля",
+    };
   }
-  return { success: true, message: "Ваш пароль успешно обновлен." };
 }

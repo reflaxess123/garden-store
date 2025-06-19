@@ -1,57 +1,29 @@
-import {
-  createSupabaseAdminClient,
-  createSupabaseServerClient,
-} from "@/shared/api/supabaseClient";
-import { prisma } from "@/shared/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
+
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 
 export async function GET(req: NextRequest) {
   try {
-    const supabase = await createSupabaseServerClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Проверяем, является ли пользователь администратором
-    const supabaseAdmin = createSupabaseAdminClient();
-    const { data: userData, error: adminError } = await supabaseAdmin
-      .from("profiles")
-      .select("isAdmin")
-      .eq("id", user.id)
-      .single();
-
-    if (adminError || !userData?.isAdmin) {
-      return NextResponse.json(
-        { error: "Forbidden: Not an admin" },
-        { status: 403 }
-      );
-    }
-
-    const products = await prisma.product.findMany({
-      include: {
-        category: {
-          select: {
-            name: true,
-          },
-        },
-      },
-      orderBy: {
-        createdAt: "desc",
+    const response = await fetch(`${API_BASE_URL}/api/admin/products`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: req.headers.get("cookie") || "",
       },
     });
 
-    const productsSerialized = products.map((product) => ({
-      ...product,
-      price: product.price.toString(),
-      discount: product.discount?.toString() || null,
-    }));
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Error fetching admin products:", errorText);
+      return NextResponse.json(
+        { error: `HTTP error! status: ${response.status}` },
+        { status: response.status }
+      );
+    }
 
-    return NextResponse.json(productsSerialized);
+    const products = await response.json();
+    return NextResponse.json(products);
   } catch (e: unknown) {
     console.error("Error fetching admin products:", e);
     return NextResponse.json(
@@ -68,47 +40,26 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
-    const supabase = await createSupabaseServerClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
+    const response = await fetch(`${API_BASE_URL}/api/admin/products`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: req.headers.get("cookie") || "",
+      },
+      body: JSON.stringify(body),
+    });
 
-    if (userError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Проверяем, является ли пользователь администратором
-    const supabaseAdmin = createSupabaseAdminClient();
-    const { data: userData, error: adminError } = await supabaseAdmin
-      .from("profiles")
-      .select("isAdmin")
-      .eq("id", user.id)
-      .single();
-
-    if (adminError || !userData?.isAdmin) {
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Error creating product:", errorText);
       return NextResponse.json(
-        { error: "Forbidden: Not an admin" },
-        { status: 403 }
+        { error: `HTTP error! status: ${response.status}` },
+        { status: response.status }
       );
     }
 
-    const newProduct = await prisma.product.create({
-      data: {
-        ...body,
-        price: parseFloat(body.price),
-        discount: body.discount ? parseFloat(body.discount) : null,
-      },
-    });
-
-    return NextResponse.json(
-      {
-        ...newProduct,
-        price: newProduct.price.toString(),
-        discount: newProduct.discount?.toString() || null,
-      },
-      { status: 201 }
-    );
+    const newProduct = await response.json();
+    return NextResponse.json(newProduct, { status: 201 });
   } catch (e: unknown) {
     console.error("Error creating product:", e);
     return NextResponse.json(

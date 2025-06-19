@@ -1,10 +1,8 @@
 "use client";
 
 import { useAuth } from "@/features/auth/AuthContext";
-import { supabaseClient } from "@/shared/api/supabaseBrowserClient";
 import { Heart, Menu, UserCircle2 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 
 import { useCart } from "@/features/cart/CartContext";
 import { useFavourites } from "@/features/manage-favourites/useFavourites";
@@ -23,14 +21,12 @@ import { ThemeToggle } from "@/shared/ui/ThemeToggle";
 import CartPanel from "@/widgets/CartPanel";
 
 const Header = () => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { totalItems: cartItemCount } = useCart();
   const { favoriteItemCount } = useFavourites();
-  const router = useRouter();
 
   const handleSignOut = async () => {
-    await supabaseClient.auth.signOut();
-    router.refresh();
+    await logout();
   };
 
   return (
@@ -66,7 +62,7 @@ const Header = () => {
                     <Link href="/orders" className="flex items-center gap-2">
                       <UserCircle2 className="h-5 w-5" /> Заказы
                     </Link>
-                    {user.user_metadata?.isAdmin && (
+                    {user.isAdmin && (
                       <Link href="/admin" className="flex items-center gap-2">
                         Админ-панель
                       </Link>

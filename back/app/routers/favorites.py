@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload
 from app.db.database import get_db
 from app.db import models
 from app.schemas import FavouriteInDB, FavouriteCreate, FavouriteDelete, CustomUser
@@ -12,7 +13,7 @@ router = APIRouter()
 
 @router.get("/favorites", response_model=List[FavouriteInDB])
 async def get_favorites(
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     current_user: CustomUser = Depends(get_current_user)
 ):
     """Получить список избранных товаров пользователя"""
@@ -27,7 +28,7 @@ async def get_favorites(
 @router.post("/favorites/{product_id}", response_model=FavouriteInDB, status_code=status.HTTP_201_CREATED)
 async def add_to_favorites(
     product_id: uuid.UUID,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     current_user: CustomUser = Depends(get_current_user)
 ):
     """Добавить товар в избранное"""
@@ -70,7 +71,7 @@ async def add_to_favorites(
 @router.delete("/favorites/{product_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def remove_from_favorites(
     product_id: uuid.UUID,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     current_user: CustomUser = Depends(get_current_user)
 ):
     """Удалить товар из избранного"""
@@ -84,6 +85,6 @@ async def remove_from_favorites(
     if not favorite:
         raise HTTPException(status_code=404, detail="Product not found in favorites")
     
-    await db.delete(favorite)
+    db.delete(favorite)
     await db.commit()
     return 

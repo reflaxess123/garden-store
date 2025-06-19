@@ -1,27 +1,40 @@
-import { createSupabaseServerClient } from "@/shared/api/supabaseClient";
 import { NextResponse } from "next/server";
+
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 
 export async function GET(
   request: Request,
   { params }: { params: { id: string } }
 ) {
-  const { id } = params;
-  const supabase = await createSupabaseServerClient();
+  try {
+    const { id } = params;
 
-  const { data, error } = await supabase
-    .from("products")
-    .select("*, categories(name)")
-    .eq("id", id)
-    .single();
+    const response = await fetch(`${API_BASE_URL}/api/products/${id}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
 
-  if (error) {
-    console.error(`Error fetching product with id ${id}:`, error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Error fetching product:", errorText);
+      return NextResponse.json(
+        { error: `HTTP error! status: ${response.status}` },
+        { status: response.status }
+      );
+    }
+
+    const product = await response.json();
+    return NextResponse.json(product);
+  } catch (error) {
+    console.error("Error fetching product:", error);
+    return NextResponse.json(
+      {
+        error: error instanceof Error ? error.message : "Internal Server Error",
+      },
+      { status: 500 }
+    );
   }
-
-  if (!data) {
-    return NextResponse.json({ error: "Product not found" }, { status: 404 });
-  }
-
-  return NextResponse.json(data);
 }

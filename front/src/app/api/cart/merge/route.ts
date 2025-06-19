@@ -1,6 +1,7 @@
-import { createSupabaseServerClient } from "@/shared/api/supabaseClient";
-import { prisma } from "@/shared/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
+
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 
 interface LocalCartItem {
   productId: string;
@@ -9,55 +10,35 @@ interface LocalCartItem {
 }
 
 export async function POST(req: NextRequest) {
-  const { localCart } = (await req.json()) as { localCart: LocalCartItem[] };
-
-  const supabase = await createSupabaseServerClient();
-  const { data: userData, error: userError } = await supabase.auth.getUser();
-
-  if (userError || !userData?.user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const userId = userData.user.id;
-
   try {
-    for (const item of localCart) {
-      const existingCartItem = await prisma.cartItem.findFirst({
-        where: {
-          userId: userId,
-          productId: item.productId,
-        },
-      });
+    const body = await req.json();
 
-      if (existingCartItem) {
-        await prisma.cartItem.update({
-          where: {
-            id: existingCartItem.id,
-          },
-          data: {
-            quantity: existingCartItem.quantity + item.quantity,
-          },
-        });
-      } else {
-        await prisma.cartItem.create({
-          data: {
-            userId: userId,
-            productId: item.productId,
-            quantity: item.quantity,
-            priceSnapshot: item.priceSnapshot,
-          },
-        });
-      }
+    const response = await fetch(`${API_BASE_URL}/api/cart/merge`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: req.headers.get("cookie") || "",
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Error merging cart:", errorText);
+      return NextResponse.json(
+        { error: `HTTP error! status: ${response.status}` },
+        { status: response.status }
+      );
     }
 
-    return NextResponse.json(
-      { message: "Cart merged successfully" },
-      { status: 200 }
-    );
+    const result = await response.json();
+    return NextResponse.json(result);
   } catch (error) {
     console.error("Error merging cart:", error);
     return NextResponse.json(
-      { error: "Failed to merge cart" },
+      {
+        error: error instanceof Error ? error.message : "Internal Server Error",
+      },
       { status: 500 }
     );
   }

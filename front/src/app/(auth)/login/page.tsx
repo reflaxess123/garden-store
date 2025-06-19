@@ -7,6 +7,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
+import { useAuth } from "@/features/auth/AuthContext";
 import { signInSchema } from "@/features/auth/model";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
 import { Button } from "@/shared/ui/button";
@@ -24,6 +25,7 @@ type SignInFormValues = z.infer<typeof signInSchema>;
 
 export default function LoginPage() {
   const router = useRouter();
+  const { login } = useAuth();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
@@ -39,23 +41,15 @@ export default function LoginPage() {
     setErrorMessage(null);
     setSuccessMessage(null);
 
-    const response = await fetch("/api/auth/signin", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(values),
-    });
-
-    const result = await response.json();
-
-    if (result.success) {
+    try {
+      await login(values.email, values.password);
       setSuccessMessage("Вы успешно вошли!");
       router.push("/");
-      router.refresh();
-    } else {
+    } catch (error) {
       setErrorMessage(
-        result.error || "Произошла неизвестная ошибка при входе."
+        error instanceof Error
+          ? error.message
+          : "Произошла неизвестная ошибка при входе."
       );
     }
   }

@@ -1,9 +1,6 @@
-import {
-  createSupabaseAdminClient,
-  createSupabaseServerClient,
-} from "@/shared/api/supabaseClient";
-import { prisma } from "@/shared/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 interface ProductRouteContext {
   params: {
@@ -15,57 +12,27 @@ export async function GET(req: NextRequest, context: ProductRouteContext) {
   try {
     const { id } = context.params;
 
-    const supabase = await createSupabaseServerClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Проверяем, является ли пользователь администратором
-    const supabaseAdmin = createSupabaseAdminClient();
-    const { data: userData, error: adminError } = await supabaseAdmin
-      .from("profiles")
-      .select("isAdmin")
-      .eq("id", user.id)
-      .single();
-
-    if (adminError || !userData?.isAdmin) {
-      return NextResponse.json(
-        { error: "Forbidden: Not an admin" },
-        { status: 403 }
-      );
-    }
-
-    const product = await prisma.product.findUnique({
-      where: {
-        id: id,
-      },
-      include: {
-        category: {
-          select: {
-            name: true,
-          },
-        },
+    const response = await fetch(`${API_BASE_URL}/api/admin/products/${id}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: req.headers.get("cookie") || "",
       },
     });
 
-    if (!product) {
-      return NextResponse.json({ error: "Product not found" }, { status: 404 });
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Error fetching admin product:", errorText);
+      return NextResponse.json(
+        { error: `HTTP error! status: ${response.status}` },
+        { status: response.status }
+      );
     }
 
-    const productSerialized = {
-      ...product,
-      price: product.price.toString(),
-      discount: product.discount?.toString() || null,
-    };
-
-    return NextResponse.json(productSerialized);
+    const product = await response.json();
+    return NextResponse.json(product);
   } catch (e: unknown) {
-    console.error("Error fetching product:", e);
+    console.error("Error fetching admin product:", e);
     return NextResponse.json(
       {
         error: "Server error",
@@ -80,41 +47,24 @@ export async function DELETE(req: NextRequest, context: ProductRouteContext) {
   try {
     const { id } = context.params;
 
-    const supabase = await createSupabaseServerClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Проверяем, является ли пользователь администратором
-    const supabaseAdmin = createSupabaseAdminClient();
-    const { data: userData, error: adminError } = await supabaseAdmin
-      .from("profiles")
-      .select("isAdmin")
-      .eq("id", user.id)
-      .single();
-
-    if (adminError || !userData?.isAdmin) {
-      return NextResponse.json(
-        { error: "Forbidden: Not an admin" },
-        { status: 403 }
-      );
-    }
-
-    await prisma.product.delete({
-      where: {
-        id: id,
+    const response = await fetch(`${API_BASE_URL}/api/admin/products/${id}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: req.headers.get("cookie") || "",
       },
     });
 
-    return NextResponse.json(
-      { message: "Product deleted successfully" },
-      { status: 200 }
-    );
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Error deleting product:", errorText);
+      return NextResponse.json(
+        { error: `HTTP error! status: ${response.status}` },
+        { status: response.status }
+      );
+    }
+
+    return NextResponse.json({}, { status: 204 });
   } catch (e: unknown) {
     console.error("Error deleting product:", e);
     return NextResponse.json(
@@ -132,55 +82,26 @@ export async function PATCH(req: NextRequest, context: ProductRouteContext) {
     const { id } = context.params;
     const body = await req.json();
 
-    const supabase = await createSupabaseServerClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
+    const response = await fetch(`${API_BASE_URL}/api/admin/products/${id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: req.headers.get("cookie") || "",
+      },
+      body: JSON.stringify(body),
+    });
 
-    if (userError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Проверяем, является ли пользователь администратором
-    const supabaseAdmin = createSupabaseAdminClient();
-    const { data: userData, error: adminError } = await supabaseAdmin
-      .from("profiles")
-      .select("isAdmin")
-      .eq("id", user.id)
-      .single();
-
-    if (adminError || !userData?.isAdmin) {
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Error updating product:", errorText);
       return NextResponse.json(
-        { error: "Forbidden: Not an admin" },
-        { status: 403 }
+        { error: `HTTP error! status: ${response.status}` },
+        { status: response.status }
       );
     }
 
-    const updateData: Record<string, any> = { ...body };
-
-    if (updateData.price !== undefined && updateData.price !== null) {
-      updateData.price = parseFloat(updateData.price);
-    }
-    if (updateData.discount !== undefined && updateData.discount !== null) {
-      updateData.discount = parseFloat(updateData.discount);
-    }
-
-    const updatedProduct = await prisma.product.update({
-      where: {
-        id: id,
-      },
-      data: updateData,
-    });
-
-    return NextResponse.json(
-      {
-        ...updatedProduct,
-        price: updatedProduct.price.toString(),
-        discount: updatedProduct.discount?.toString() || null,
-      },
-      { status: 200 }
-    );
+    const updatedProduct = await response.json();
+    return NextResponse.json(updatedProduct);
   } catch (e: unknown) {
     console.error("Error updating product:", e);
     return NextResponse.json(

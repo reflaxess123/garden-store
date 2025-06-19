@@ -26,6 +26,7 @@ class Token(BaseModel):
 
 class ProfileBase(BaseModel):
     id: uuid.UUID
+    email: str
     fullName: Optional[str] = None
     isAdmin: bool
 

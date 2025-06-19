@@ -44,6 +44,8 @@ class Profile(Base):
     __table_args__ = {"schema": "public"}
 
     id = Column(UUID(as_uuid=True), primary_key=True) # Matches auth.users id
+    email = Column(String, unique=True, nullable=False)
+    hashed_password = Column(String, nullable=False)
     full_name = Column(String)
     is_admin = Column(Boolean, default=False)
 

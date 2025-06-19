@@ -15,8 +15,13 @@ from app.schemas import Token, ProfileBase
 import os
 import uuid
 
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+
 # region Configuration
-SECRET_KEY = os.getenv("SECRET_KEY")
+def get_secret_key():
+    return os.getenv("SECRET_KEY", "test_secret")
+
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 REFRESH_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7 # 7 days
@@ -46,7 +51,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     else:
         expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    encoded_jwt = jwt.encode(to_encode, get_secret_key(), algorithm=ALGORITHM)
     return encoded_jwt
 
 def create_refresh_token(data: dict, expires_delta: Optional[timedelta] = None):
@@ -56,12 +61,12 @@ def create_refresh_token(data: dict, expires_delta: Optional[timedelta] = None):
     else:
         expire = datetime.utcnow() + timedelta(minutes=REFRESH_TOKEN_EXPIRE_MINUTES)
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    encoded_jwt = jwt.encode(to_encode, get_secret_key(), algorithm=ALGORITHM)
     return encoded_jwt
 
 def decode_token(token: str):
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(token, get_secret_key(), algorithms=[ALGORITHM])
         return payload
     except JWTError:
         raise HTTPException(
@@ -79,7 +84,7 @@ def get_token_from_request(request: Request) -> Optional[str]:
             token = auth_header[7:]
     return token
 
-def get_current_user(request: Request, db: Session = Depends(get_db)):
+async def get_current_user(request: Request, db: AsyncSession = Depends(get_db)):
     token = get_token_from_request(request)
     if not token:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
@@ -98,7 +103,8 @@ def get_current_user(request: Request, db: Session = Depends(get_db)):
             detail="Token has been revoked",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    user = db.query(models.Profile).filter(models.Profile.id == uuid.UUID(user_id)).first()
+    result = await db.execute(select(models.Profile).where(models.Profile.id == uuid.UUID(user_id)))
+    user = result.scalars().first()
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
     return ProfileBase.from_orm(user)
@@ -110,7 +116,7 @@ def get_current_admin_user(current_user: ProfileBase = Depends(get_current_user)
 
 def revoke_token(token: str):
     # Blacklist the token in Redis until its expiration
-    payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+    payload = jwt.decode(token, get_secret_key(), algorithms=[ALGORITHM])
     expiration = payload.get("exp")
     if expiration:
         ttl = expiration - datetime.utcnow().timestamp()

@@ -7,17 +7,19 @@ from app.auth import get_password_hash, verify_password, create_access_token, ge
 from datetime import timedelta
 from app.auth import ACCESS_TOKEN_EXPIRE_MINUTES # Import the constant
 import uuid
+from sqlalchemy import select
 
 router = APIRouter()
 
-@router.post("/auth/signup", response_model=CustomUser)
+@router.post("/auth/signup", response_model=CustomUser, status_code=201, response_model_by_alias=True)
 async def signup(
     user_in: SignUpSchema, db: Session = Depends(get_db)
 ):
     if user_in.password != user_in.confirmPassword:
         raise HTTPException(status_code=400, detail="Passwords do not match")
 
-    db_user = db.query(models.Profile).filter(models.Profile.email == user_in.email).first()
+    result = await db.execute(select(models.Profile).where(models.Profile.email == user_in.email))
+    db_user = result.scalars().first()
     if db_user:
         raise HTTPException(status_code=400, detail="Email already registered")
 
@@ -33,17 +35,18 @@ async def signup(
         is_admin=False,
     )
     db.add(db_profile)
-    db.commit()
-    db.refresh(db_profile)
+    await db.commit()
+    await db.refresh(db_profile)
 
-    return CustomUser.from_orm(db_profile)
+    return CustomUser.model_validate(db_profile)
 
 @router.post("/auth/signin", response_model=Token)
 async def signin(
     response: Response,
     user_in: SignInSchema, db: Session = Depends(get_db)
 ):
-    user = db.query(models.Profile).filter(models.Profile.email == user_in.email).first()
+    result = await db.execute(select(models.Profile).where(models.Profile.email == user_in.email))
+    user = result.scalars().first()
     if not user or not verify_password(user_in.password, user.hashed_password):
          raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -71,7 +74,8 @@ async def logout(response: Response, request: Request, db: Session = Depends(get
 
 @router.post("/auth/reset-password")
 async def reset_password(data: ResetPasswordSchema, db: Session = Depends(get_db)):
-    user = db.query(models.Profile).filter(models.Profile.email == data.email).first()
+    result = await db.execute(select(models.Profile).where(models.Profile.email == data.email))
+    user = result.scalars().first()
     if not user:
         raise HTTPException(status_code=404, detail="User with this email not found")
     
@@ -85,12 +89,18 @@ async def reset_password(data: ResetPasswordSchema, db: Session = Depends(get_db
 
 @router.post("/auth/update-password")
 async def update_password(data: UpdatePasswordSchema, current_user: CustomUser = Depends(get_current_user), db: Session = Depends(get_db)):
-    user_to_update = db.query(models.Profile).filter(models.Profile.id == current_user.id).first()
+    result = await db.execute(select(models.Profile).where(models.Profile.id == current_user.id))
+    user_to_update = result.scalars().first()
     if not user_to_update:
         raise HTTPException(status_code=404, detail="User not found")
 
     user_to_update.hashed_password = get_password_hash(data.password)
-    db.commit()
-    db.refresh(user_to_update)
+    await db.commit()
+    await db.refresh(user_to_update)
 
-    return {"message": "Password updated successfully."} 
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": str(user_to_update.id), "is_admin": user_to_update.is_admin},
+        expires_delta=access_token_expires,
+    )
+    return {"message": "Password updated successfully.", "access_token": access_token, "token_type": "bearer"} 

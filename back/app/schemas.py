@@ -28,10 +28,9 @@ class ProfileBase(BaseModel):
     id: uuid.UUID
     email: str
     fullName: Optional[str] = None
-    isAdmin: bool
+    isAdmin: bool = Field(..., alias="is_admin", serialization_alias="isAdmin")
 
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}
 
 class CustomUser(ProfileBase):
     pass

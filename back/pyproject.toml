@@ -8,6 +8,17 @@ package-mode = false
 
 [tool.poetry.dependencies]
 python = ">=3.9"
+fastapi = "^0.115.0"
+uvicorn = "^0.31.0"
+python-dotenv = "^1.0.0"
+psycopg2-binary = "^2.9.0"
+redis = "^5.1.0"
+sqlalchemy = "^2.0.0"
+pydantic = "^2.10.0"
+python-jose = {extras = ["cryptography"], version = "^3.3.0"}
+passlib = {extras = ["bcrypt"], version = "^1.7.0"}
+python-multipart = "^0.0.20"
+alembic = "^1.14.0"
 
 [tool.black]
 line-length = 120

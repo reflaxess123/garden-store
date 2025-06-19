@@ -1,0 +1,66 @@
+[tool.black]
+line-length = 120
+target-version = ['py310']
+
+[tool.ruff]
+line-length = 120
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "C",  # flake8-comprehensions
+    "B",  # flake8-bugbear
+    "UP", # pyupgrade
+    "A",  # flake8-builtins
+    "B",  # flake8-bugbear
+    "ERA",# eradicate
+    "N",  # pep8-naming
+    "ANN",# flake8-annotations
+    "ASYNC", # flake8-async
+    "PLE", # pylint
+]
+ignore = [
+    "E501", # Line too long (handled by Black)
+    "ANN101", # Missing type annotation for self in method
+    "ANN102", # Missing type annotation for cls in classmethod
+    "ANN002", # Missing type annotation for args
+    "ANN003", # Missing type annotation for kwargs
+]
+exclude = [
+    ".git",
+    "__pycache__",
+    "venv",
+    "env",
+    ".ruff_cache",
+    "migrations", # Alembic migrations
+] 
+[project]
+name = "back"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "reflaxess123",email = "reflaxess@yandex.ru"}
+]
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "sqlalchemy",
+    "alembic",
+    "asyncpg",
+    "python-jose[cryptography]==3.3.0",
+    "passlib[bcrypt]==1.7.4",
+    "redis==5.0.3",
+    "python-dotenv==1.0.1",
+    "ruff==0.4.5",
+    "black==24.4.2",
+    "psycopg2-binary",
+]
+package-mode = false
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

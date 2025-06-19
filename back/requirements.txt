@@ -1,5 +1,0 @@
-psycopg2-binary
-redis
-python-dotenv
-fastapi
-uvicorn 

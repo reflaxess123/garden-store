@@ -17,6 +17,8 @@ services:
       - PORT=4000
       - HOST=0.0.0.0
       - DEBUG=${DEBUG:-false}
+      # CORS origins для продакшена
+      - EXTERNAL_ORIGINS=http://185.21.13.91:3003,https://185.21.13.91:3003
     ports:
       - "4001:4000"
     volumes:

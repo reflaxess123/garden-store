@@ -122,7 +122,7 @@ async def test_create_order(authenticated_user_and_client, create_test_product_a
             "imageUrl": test_product.image_url
         }
     ]
-    total_amount = test_product.price * 1
+    total_amount = float(test_product.price) * 1
 
     order_data = {
         "fullName": user.full_name or "Test User",
@@ -136,6 +136,7 @@ async def test_create_order(authenticated_user_and_client, create_test_product_a
     }
 
     response = await client.post("/api/orders", json=order_data)
+    print(response.json())
     assert response.status_code == 201
     assert "id" in response.json()
     assert response.json()["fullName"] == (user.full_name or "Test User")
@@ -155,7 +156,7 @@ async def test_delete_order(authenticated_user_and_client, create_test_product_a
             "imageUrl": test_product.image_url
         }
     ]
-    total_amount = test_product.price * 1
+    total_amount = float(test_product.price) * 1
 
     order_data = {
         "fullName": user.full_name or "Test User",
@@ -169,10 +170,11 @@ async def test_delete_order(authenticated_user_and_client, create_test_product_a
     }
 
     create_response = await client.post("/api/orders", json=order_data)
+    print(create_response.json())
     assert create_response.status_code == 201
     order_id = create_response.json()["id"]
 
-    delete_response = await client.delete("/api/orders", json={"orderId": order_id})
+    delete_response = await client.request("DELETE", "/api/orders", json={"orderId": order_id})
     assert delete_response.status_code == 204
 
     # TODO: Проверить, что заказ действительно удален. Нужен эндпоинт для получения заказов пользователя.

@@ -76,6 +76,14 @@ async def delete_admin_category(
     await db.delete(db_category)
     await db.commit()
     return
+
+@router.get("/admin/categories/{category_id}", response_model=CategoryInDB)
+async def get_admin_category(category_id: uuid.UUID, db: Session = Depends(get_db), current_user: CustomUser = Depends(get_current_admin_user)):
+    result = await db.execute(select(models.Category).filter(models.Category.id == category_id))
+    category = result.scalars().first()
+    if not category:
+        raise HTTPException(status_code=404, detail="Category not found")
+    return CategoryInDB.model_validate(category, from_attributes=True)
 # endregion
 
 # region Admin Products
@@ -111,7 +119,15 @@ async def create_admin_product(
     db.add(db_product)
     await db.commit()
     await db.refresh(db_product)
-    return ProductInDB.model_validate(db_product, from_attributes=True)
+    
+    # Загружаем продукт заново с категорией для корректной сериализации
+    result = await db.execute(
+        select(models.Product)
+        .options(joinedload(models.Product.category))
+        .filter(models.Product.id == db_product.id)
+    )
+    db_product_with_category = result.scalars().first()
+    return ProductInDB.model_validate(db_product_with_category, from_attributes=True)
 
 @router.get("/admin/products/{product_id}", response_model=ProductInDB)
 async def get_admin_product(
@@ -160,7 +176,15 @@ async def update_admin_product(
     db.add(db_product)
     await db.commit()
     await db.refresh(db_product)
-    return ProductInDB.model_validate(db_product, from_attributes=True)
+    
+    # Загружаем продукт заново с категорией для корректной сериализации
+    result = await db.execute(
+        select(models.Product)
+        .options(joinedload(models.Product.category))
+        .filter(models.Product.id == product_id)
+    )
+    db_product_with_category = result.scalars().first()
+    return ProductInDB.model_validate(db_product_with_category, from_attributes=True)
 # endregion
 
 # region Admin Orders

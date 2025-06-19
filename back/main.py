@@ -5,9 +5,20 @@ import psycopg2
 import redis
 from dotenv import load_dotenv
 from fastapi.middleware.cors import CORSMiddleware # Import CORS middleware
+from decimal import Decimal
+import json
+
+class CustomJsonEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, Decimal):
+            return float(obj)
+        return json.JSONEncoder.default(self, obj)
+
+# Применяем пользовательский кодировщик для json
+json._default_encoder = CustomJsonEncoder()
 
 # Импорт роутеров
-from app.routers import auth, admin, cart, categories, products
+from app.routers import auth, admin, cart, categories, products, orders
 
 # Загружаем переменные окружения из .env, который лежит рядом с main.py
 load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
@@ -37,6 +48,7 @@ app.include_router(admin.router, prefix="/api")
 app.include_router(cart.router, prefix="/api")
 app.include_router(categories.router, prefix="/api")
 app.include_router(products.router, prefix="/api")
+app.include_router(orders.router, prefix="/api")
 
 @app.get("/health")
 async def health_check():

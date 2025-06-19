@@ -6,6 +6,7 @@ from app.schemas import CartMergeRequest, CartItemInDB, CustomUser
 from app.auth import get_current_user
 from typing import List
 import uuid
+from sqlalchemy import select
 
 router = APIRouter()
 
@@ -20,14 +21,13 @@ async def merge_cart(
 
     for item_data in cart_merge_request.localCart:
         # Check if item already exists in user's cart
-        db_cart_item = (
-            db.query(models.CartItem)
-            .filter(
+        result = await db.execute(
+            select(models.CartItem).filter(
                 models.CartItem.user_id == user_id,
                 models.CartItem.product_id == item_data.productId,
             )
-            .first()
         )
+        db_cart_item = result.scalars().first()
 
         if db_cart_item:
             # Update quantity if item exists
@@ -43,12 +43,11 @@ async def merge_cart(
             )
             db.add(db_cart_item)
         
-        db.commit()
-        db.refresh(db_cart_item)
+        await db.commit()
+        await db.refresh(db_cart_item)
         merged_cart_items.append(db_cart_item)
 
-    # Optionally, you might want to fetch all cart items for the user after merge
-    # to return the complete merged cart, including items that were already in DB
-    # but not part of the localCart merge request.
-    final_cart_in_db = db.query(models.CartItem).filter(models.CartItem.user_id == user_id).all()
-    return final_cart_in_db 
+    # Fetch all cart items for the user after merge
+    result = await db.execute(select(models.CartItem).filter(models.CartItem.user_id == user_id))
+    final_cart_in_db = result.scalars().all()
+    return [CartItemInDB.model_validate(item, from_attributes=True) for item in final_cart_in_db] 

@@ -10,6 +10,7 @@ from app.auth import get_password_hash # Добавлено для хеширо�
 import os
 import asyncio
 import uuid
+from sqlalchemy import select
 
 os.environ.setdefault("SECRET_KEY", "test_secret")
 
@@ -146,12 +147,89 @@ async def create_test_cart_item(async_session_maker, authenticated_client):
 
 # Тесты для эндпоинтов корзины
 @pytest.mark.asyncio
-async def test_cart_merge(authenticated_client: AsyncClient):
+async def test_cart_merge(authenticated_client: AsyncClient, async_session_maker):
+    # --- Создаём администратора ---
+    admin_email = f"admin_{uuid.uuid4()}@example.com"
+    admin_password = "adminpassword"
+    async with async_session_maker() as session:
+        admin_user = Profile(
+            id=uuid.uuid4(),
+            email=admin_email,
+            hashed_password=get_password_hash(admin_password),
+            full_name="Admin User",
+            is_admin=True
+        )
+        session.add(admin_user)
+        await session.commit()
+        await session.refresh(admin_user)
+
+    # --- Авторизация как админ ---
+    admin_signin = await authenticated_client.post(
+        "/api/auth/signin",
+        json={"email": admin_email, "password": admin_password}
+    )
+    assert admin_signin.status_code == 200
+    admin_token = admin_signin.json()["access_token"]
+    authenticated_client.headers["Authorization"] = f"Bearer {admin_token}"
+
+    # --- Создаём категорию ---
+    category_data = {
+        "name": "Cart Test Category",
+        "slug": f"cart-test-category-{uuid.uuid4()}",
+        "imageUrl": "http://example.com/cart_category.jpg"
+    }
+    category_response = await authenticated_client.post("/api/admin/categories", json=category_data)
+    assert category_response.status_code == 201
+    category_id = category_response.json()["id"]
+
+    # --- Создаём два продукта ---
+    product1_data = {
+        "name": "Cart Product 1",
+        "slug": f"cart-product-1-{uuid.uuid4()}",
+        "description": "Product 1 for cart testing",
+        "price": 10.00,
+        "discount": 0.0,
+        "categoryId": category_id,
+        "imageUrl": "http://example.com/cart_product1.jpg"
+    }
+    product2_data = {
+        "name": "Cart Product 2",
+        "slug": f"cart-product-2-{uuid.uuid4()}",
+        "description": "Product 2 for cart testing",
+        "price": 25.50,
+        "discount": 0.0,
+        "categoryId": category_id,
+        "imageUrl": "http://example.com/cart_product2.jpg"
+    }
+    product1_response = await authenticated_client.post("/api/admin/products", json=product1_data)
+    product2_response = await authenticated_client.post("/api/admin/products", json=product2_data)
+    assert product1_response.status_code == 201
+    assert product2_response.status_code == 201
+    product1_id = product1_response.json()["id"]
+    product2_id = product2_response.json()["id"]
+
+    # --- Снова авторизуемся как обычный пользователь ---
+    # Получаем email и пароль обычного пользователя из фикстуры
+    user_email = None
+    user_password = "testpassword"
+    async with async_session_maker() as session:
+        user = await session.execute(select(Profile).where(Profile.is_admin == False))
+        user = user.scalars().first()
+        user_email = user.email
+    user_signin = await authenticated_client.post(
+        "/api/auth/signin",
+        json={"email": user_email, "password": user_password}
+    )
+    assert user_signin.status_code == 200
+    user_token = user_signin.json()["access_token"]
+    authenticated_client.headers["Authorization"] = f"Bearer {user_token}"
+
+    # --- Тестируем корзину ---
     local_cart = [
-        {"productId": str(uuid.uuid4()), "quantity": 1, "priceSnapshot": 10.00},
-        {"productId": str(uuid.uuid4()), "quantity": 2, "priceSnapshot": 25.50},
+        {"productId": product1_id, "quantity": 1, "priceSnapshot": 10.00},
+        {"productId": product2_id, "quantity": 2, "priceSnapshot": 25.50},
     ]
     response = await authenticated_client.post("/api/cart/merge", json={"localCart": local_cart})
     assert response.status_code == 200
-    assert "message" in response.json()
-    assert response.json()["message"] == "Cart merged successfully." 
+    assert isinstance(response.json(), list)
+    assert len(response.json()) >= 2 

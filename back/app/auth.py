@@ -18,6 +18,9 @@ import uuid
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
+from app.db.models import Profile
+CustomUser = Profile
+
 # region Configuration
 def get_secret_key():
     return os.getenv("SECRET_KEY", "test_secret")

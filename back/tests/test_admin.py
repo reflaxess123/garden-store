@@ -200,13 +200,24 @@ async def test_admin_get_products(admin_client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_admin_create_product(admin_client: AsyncClient):
+    # Сначала создаём категорию
+    category_data = {
+        "name": "Test Product Category",
+        "slug": f"test-product-category-{uuid.uuid4()}",
+        "imageUrl": "http://example.com/category_for_product.jpg"
+    }
+    category_response = await admin_client.post("/api/admin/categories", json=category_data)
+    assert category_response.status_code == 201
+    category_id = category_response.json()["id"]
+
     new_product_data = {
         "name": "Test Product",
+        "slug": f"test-product-{uuid.uuid4()}",
         "description": "This is a test product.",
         "price": 99.99,
         "discount": 0.0,
-        "categorySlug": "some-category", # Placeholder, ideally use an existing category or create one
-        "image_url": "http://example.com/image.jpg"
+        "categoryId": category_id,
+        "imageUrl": "http://example.com/image.jpg"
     }
     response = await admin_client.post("/api/admin/products", json=new_product_data)
     assert response.status_code == 201
@@ -214,14 +225,24 @@ async def test_admin_create_product(admin_client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_admin_get_product_by_id(admin_client: AsyncClient):
-    # Сначала создаем продукт
+    # Сначала создаём категорию
+    category_data = {
+        "name": "ID Test Category",
+        "slug": f"id-test-category-{uuid.uuid4()}",
+        "imageUrl": "http://example.com/category_for_product.jpg"
+    }
+    category_response = await admin_client.post("/api/admin/categories", json=category_data)
+    assert category_response.status_code == 201
+    category_id = category_response.json()["id"]
+
     new_product_data = {
         "name": "Product for ID Test",
+        "slug": f"id-test-product-{uuid.uuid4()}",
         "description": "...",
         "price": 10.00,
         "discount": 0.0,
-        "categorySlug": "some-category",
-        "image_url": "http://example.com/image.jpg"
+        "categoryId": category_id,
+        "imageUrl": "http://example.com/image.jpg"
     }
     create_response = await admin_client.post("/api/admin/products", json=new_product_data)
     product_id = create_response.json()["id"]
@@ -232,14 +253,24 @@ async def test_admin_get_product_by_id(admin_client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_admin_delete_product(admin_client: AsyncClient):
-    # Сначала создаем продукт для удаления
+    # Сначала создаём категорию
+    category_data = {
+        "name": "Delete Product Category",
+        "slug": f"delete-product-category-{uuid.uuid4()}",
+        "imageUrl": "http://example.com/category_for_product.jpg"
+    }
+    category_response = await admin_client.post("/api/admin/categories", json=category_data)
+    assert category_response.status_code == 201
+    category_id = category_response.json()["id"]
+
     new_product_data = {
         "name": "Product to Delete",
+        "slug": f"delete-product-{uuid.uuid4()}",
         "description": "...",
         "price": 1.00,
         "discount": 0.0,
-        "categorySlug": "some-category",
-        "image_url": "http://example.com/image.jpg"
+        "categoryId": category_id,
+        "imageUrl": "http://example.com/image.jpg"
     }
     create_response = await admin_client.post("/api/admin/products", json=new_product_data)
     product_id = create_response.json()["id"]
@@ -253,14 +284,24 @@ async def test_admin_delete_product(admin_client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_admin_patch_product(admin_client: AsyncClient):
-    # Сначала создаем продукт для обновления
+    # Сначала создаём категорию
+    category_data = {
+        "name": "Patch Product Category",
+        "slug": f"patch-product-category-{uuid.uuid4()}",
+        "imageUrl": "http://example.com/category_for_product.jpg"
+    }
+    category_response = await admin_client.post("/api/admin/categories", json=category_data)
+    assert category_response.status_code == 201
+    category_id = category_response.json()["id"]
+
     new_product_data = {
         "name": "Product to Patch",
+        "slug": f"patch-product-{uuid.uuid4()}",
         "description": "Original description.",
         "price": 50.00,
         "discount": 0.0,
-        "categorySlug": "some-category",
-        "image_url": "http://example.com/original.jpg"
+        "categoryId": category_id,
+        "imageUrl": "http://example.com/original.jpg"
     }
     create_response = await admin_client.post("/api/admin/products", json=new_product_data)
     product_id = create_response.json()["id"]
@@ -274,7 +315,7 @@ async def test_admin_patch_product(admin_client: AsyncClient):
     assert patch_response.status_code == 200
     assert patch_response.json()["name"] == "Patched Product Name"
     assert patch_response.json()["description"] == "Updated description."
-    assert patch_response.json()["price"] == 55.55
+    assert float(patch_response.json()["price"]) == 55.55
 
     # Проверяем, что изменения применились
     get_response = await admin_client.get(f"/api/admin/products/{product_id}")
@@ -313,7 +354,7 @@ async def test_admin_create_category(admin_client: AsyncClient):
     new_category_data = {
         "name": unique_category_name,
         "slug": unique_category_name.lower().replace(" ", "-"),
-        "image_url": "http://example.com/category_image.jpg"
+        "imageUrl": "http://example.com/category_image.jpg"
     }
     response = await admin_client.post("/api/admin/categories", json=new_category_data)
     assert response.status_code == 201
@@ -321,33 +362,33 @@ async def test_admin_create_category(admin_client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_admin_patch_category(admin_client: AsyncClient):
-    # Сначала создаем категорию для обновления
+    # Сначала создаём категорию для обновления
     unique_category_name = f"Category to Patch {uuid.uuid4()}"
     create_category_data = {
         "name": unique_category_name,
         "slug": unique_category_name.lower().replace(" ", "-"),
-        "image_url": "http://example.com/category_original.jpg"
+        "imageUrl": "http://example.com/category_original.jpg"
     }
     create_response = await admin_client.post("/api/admin/categories", json=create_category_data)
     category_id = create_response.json()["id"]
 
     updated_data = {
         "name": "Patched Category Name",
-        "slug": "patched-category-slug"
+        "slug": f"patched-category-slug-{uuid.uuid4()}"
     }
     patch_response = await admin_client.patch(f"/api/admin/categories/{category_id}", json=updated_data)
     assert patch_response.status_code == 200
     assert patch_response.json()["name"] == "Patched Category Name"
-    assert patch_response.json()["slug"] == "patched-category-slug"
+    assert patch_response.json()["slug"].startswith("patched-category-slug-")
 
 @pytest.mark.asyncio
 async def test_admin_delete_category(admin_client: AsyncClient):
-    # Сначала создаем категорию для удаления
+    # Сначала создаём категорию для удаления
     unique_category_name = f"Category to Delete {uuid.uuid4()}"
     create_category_data = {
         "name": unique_category_name,
         "slug": unique_category_name.lower().replace(" ", "-"),
-        "image_url": "http://example.com/category_delete.jpg"
+        "imageUrl": "http://example.com/category_delete.jpg"
     }
     create_response = await admin_client.post("/api/admin/categories", json=create_category_data)
     category_id = create_response.json()["id"]

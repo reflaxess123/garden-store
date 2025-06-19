@@ -82,11 +82,11 @@ class ProductUpdate(ProductBase):
 
 class ProductInDB(ProductBase):
     id: uuid.UUID
+    categoryId: uuid.UUID = Field(..., alias="category_id", serialization_alias="categoryId")
+    category: Optional[CategoryInDB] = None
     createdAt: datetime = Field(..., alias="created_at", serialization_alias="createdAt")
     updatedAt: Optional[datetime] = Field(None, alias="updated_at", serialization_alias="updatedAt")
     timesOrdered: int = Field(..., alias="times_ordered", serialization_alias="timesOrdered")
-    categoryId: uuid.UUID = Field(..., alias="category_id", serialization_alias="categoryId")
-    category: Optional[CategoryInDB] = None # For embedding category info
 
     model_config = {"from_attributes": True, "populate_by_name": True}
 
@@ -101,12 +101,14 @@ class CartItemBase(BaseModel):
 class CartItemCreate(CartItemBase):
     pass
 
-class CartItemInDB(CartItemBase):
+class CartItemInDB(BaseModel):
     id: uuid.UUID
-    userId: uuid.UUID
+    productId: uuid.UUID = Field(..., alias="product_id", serialization_alias="productId")
+    userId: uuid.UUID = Field(..., alias="user_id", serialization_alias="userId")
+    quantity: int
+    priceSnapshot: float = Field(..., alias="price_snapshot", serialization_alias="priceSnapshot")
 
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True, "populate_by_name": True}
 
 class LocalCartItem(BaseModel):
     productId: uuid.UUID
@@ -162,6 +164,9 @@ class OrderInDB(OrderBase):
     orderItems: List[OrderItemInDB] = Field(default_factory=list, alias="order_items", serialization_alias="orderItems")
 
     model_config = {"from_attributes": True, "populate_by_name": True}
+
+class OrderDelete(BaseModel):
+    orderId: uuid.UUID
 # endregion
 
 # region Favourite Schemas

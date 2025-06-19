@@ -1,83 +1,139 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.database import get_db
 from app.db import models
-from app.schemas import OrderCreate, OrderInDB
+from app.schemas import OrderCreate, OrderInDB, OrderDelete, OrderItemInDB
 from app.auth import get_current_user, CustomUser
 from typing import List
 import uuid
-from sqlalchemy import text
+from sqlalchemy import select
+import json
 
 router = APIRouter()
 
 @router.post("/orders", response_model=OrderInDB, status_code=status.HTTP_201_CREATED)
 async def create_order(
     order_in: OrderCreate, 
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     current_user: CustomUser = Depends(get_current_user)
 ):
     user_id = current_user.id
 
-    # Convert Pydantic model to dictionary, adjusting field names for PostgreSQL function
-    order_items_jsonb = [
-        {
-            "productId": str(item.productId),
-            "quantity": item.quantity,
-            "priceSnapshot": float(item.priceSnapshot),
-            "name": item.name,
-            "imageUrl": item.imageUrl,
-        }
-        for item in order_in.orderItems
-    ]
-
     try:
-        # Call the PostgreSQL function create_order
-        # The p_user_id in create_order expects UUID, so cast user_id
-        result = db.execute(
-            text("SELECT public.create_order(:p_address, :p_city, :p_email, :p_full_name, :p_order_items::jsonb, :p_phone, :p_postal_code, :p_total_amount, :p_user_id::uuid)"),
-            {
-                "p_address": order_in.address,
-                "p_city": order_in.city,
-                "p_email": order_in.email,
-                "p_full_name": order_in.fullName,
-                "p_order_items": order_items_jsonb,
-                "p_phone": order_in.phone,
-                "p_postal_code": order_in.postalCode,
-                "p_total_amount": float(order_in.totalAmount),
-                "p_user_id": str(user_id) # Ensure it's passed as string to UUID cast
-            }
-        ).scalar_one_or_none()
-
-        if not result:
-            raise HTTPException(status_code=500, detail="Failed to create order via RPC")
+        # Создаем новый заказ
+        new_order = models.Order(
+            user_id=user_id,
+            total_amount=order_in.totalAmount,
+            status="pending",
+            full_name=order_in.fullName,
+            email=order_in.email,
+            address=order_in.address,
+            city=order_in.city,
+            postal_code=order_in.postalCode,
+            phone=order_in.phone
+        )
         
-        new_order_id = result # The function returns the new order's UUID
-
-        # Fetch the newly created order from the database to return
-        db_order = db.query(models.Order).filter(models.Order.id == new_order_id).options(models.Order.order_items).first()
-        if not db_order:
-            raise HTTPException(status_code=500, detail="Failed to retrieve created order")
+        db.add(new_order)
+        await db.flush()  # Получаем ID заказа
         
-        return db_order
+        # Создаем элементы заказа
+        order_items = []
+        for item in order_in.orderItems:
+            # Получаем продукт
+            product = await db.get(models.Product, item.productId)
+            if not product:
+                raise HTTPException(status_code=404, detail=f"Product {item.productId} not found")
+            
+            # Создаем элемент заказа
+            order_item = models.OrderItem(
+                order_id=new_order.id,
+                product_id=item.productId,
+                quantity=item.quantity,
+                price_snapshot=item.priceSnapshot,
+                name=item.name,
+                image_url=item.imageUrl
+            )
+            
+            db.add(order_item)
+            order_items.append(order_item)
+            
+            # Обновляем счетчик заказов для продукта
+            product.times_ordered += item.quantity
+            
+        await db.commit()
+        
+        # Создаем список OrderItemInDB для ответа
+        order_items_response = [
+            OrderItemInDB(
+                id=item.id,
+                orderId=item.order_id,
+                productId=item.product_id,
+                quantity=item.quantity,
+                priceSnapshot=item.price_snapshot,
+                name=item.name,
+                imageUrl=item.image_url
+            )
+            for item in order_items
+        ]
+        
+        # Создаем и возвращаем OrderInDB
+        return OrderInDB(
+            id=new_order.id,
+            userId=new_order.user_id,
+            totalAmount=new_order.total_amount,
+            status=new_order.status,
+            createdAt=new_order.created_at,
+            fullName=new_order.full_name,
+            email=new_order.email,
+            address=new_order.address,
+            city=new_order.city,
+            postalCode=new_order.postal_code,
+            phone=new_order.phone,
+            orderItems=order_items_response
+        )
 
     except Exception as e:
-        db.rollback()
-        raise HTTPException(status_code=500, detail=f"Error creating order: {e}")
+        await db.rollback()
+        if isinstance(e, HTTPException):
+            raise
+        raise HTTPException(status_code=500, detail=f"Error creating order: {str(e)}")
 
 @router.delete("/orders", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_order(
-    order_id: uuid.UUID,
-    db: Session = Depends(get_db),
+    payload: OrderDelete,
+    db: AsyncSession = Depends(get_db),
     current_user: CustomUser = Depends(get_current_user)
 ):
-    db_order = db.query(models.Order).filter(models.Order.id == order_id).first()
+    order_id = payload.orderId
     
-    if not db_order:
-        raise HTTPException(status_code=404, detail="Order not found")
-    
-    if db_order.user_id != current_user.id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to delete this order")
+    try:
+        # Получаем заказ
+        order_result = await db.execute(select(models.Order).filter(models.Order.id == order_id))
+        db_order = order_result.scalars().first()
+        
+        if not db_order:
+            raise HTTPException(status_code=404, detail="Order not found")
+        
+        if db_order.user_id != current_user.id:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to delete this order")
 
-    db.delete(db_order)
-    db.commit()
+        # Сначала удаляем все элементы заказа
+        order_items_result = await db.execute(
+            select(models.OrderItem).filter(models.OrderItem.order_id == order_id)
+        )
+        order_items = order_items_result.scalars().all()
+        
+        for item in order_items:
+            await db.delete(item)
+        
+        # Затем удаляем сам заказ  
+        await db.delete(db_order)
+        await db.commit()
+        
+    except Exception as e:
+        await db.rollback()
+        if isinstance(e, HTTPException):
+            raise
+        raise HTTPException(status_code=500, detail=f"Error deleting order: {str(e)}")
+    
     return 

@@ -3,13 +3,13 @@
 import { Input } from "@/shared/ui/input";
 import { Loader2, Search } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useDebounce } from "use-debounce";
 
-export function SearchInput() {
+function SearchInputInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const initialQuery = searchParams.get("q") || "";
+  const initialQuery = searchParams?.get("q") || "";
 
   const [text, setText] = useState(initialQuery);
   const [query] = useDebounce(text, 400);
@@ -40,5 +40,26 @@ export function SearchInput() {
         )}
       </div>
     </div>
+  );
+}
+
+export function SearchInput() {
+  return (
+    <Suspense
+      fallback={
+        <div className="relative w-full max-w-xs">
+          <Input
+            placeholder="Поиск товаров..."
+            className="pl-10 pr-4"
+            disabled
+          />
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+            <Search className="h-4 w-4" />
+          </div>
+        </div>
+      }
+    >
+      <SearchInputInner />
+    </Suspense>
   );
 }

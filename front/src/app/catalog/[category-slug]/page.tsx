@@ -5,12 +5,12 @@ import { InfiniteProductList } from "@/widgets/CatalogGrid/InfiniteProductList";
 import { notFound } from "next/navigation";
 
 interface CategoryPageProps {
-  params: {
+  params: Promise<{
     "category-slug": string;
-  };
-  searchParams: {
+  }>;
+  searchParams: Promise<{
     q?: string;
-  };
+  }>;
 }
 
 export default async function CategoryPage({

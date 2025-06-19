@@ -7,7 +7,7 @@ import { ProductActions } from "./ProductActions";
 export default async function ProductPage({
   params,
 }: {
-  params: { "product-slug": string };
+  params: Promise<{ "product-slug": string }>;
 }) {
   const { "product-slug": productSlug } = await params;
   const product = await getProductBySlug(productSlug);

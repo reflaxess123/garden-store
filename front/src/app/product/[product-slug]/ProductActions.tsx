@@ -11,7 +11,7 @@ interface ProductActionsProps {
     id: string;
     slug: string;
     name: string;
-    price: number;
+    price: string;
     imageUrl: string | null;
   };
 }
@@ -21,7 +21,13 @@ export function ProductActions({ product }: ProductActionsProps) {
   const { isProductFavourite, isLoading } = useFavourites();
 
   const handleAddToCart = () => {
-    addItem(product, 1);
+    addItem(
+      {
+        ...product,
+        price: parseFloat(product.price),
+      },
+      1
+    );
   };
 
   const initialIsFavourite = isProductFavourite(product.id);

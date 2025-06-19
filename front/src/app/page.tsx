@@ -4,6 +4,9 @@ import { getBestsellers } from "@/entities/product/api";
 import { ProductCard } from "@/entities/product/ui/ProductCard";
 import { CatalogGrid } from "@/widgets/CatalogGrid";
 
+// Отключаем статическую генерацию, т.к. нужны API вызовы
+export const dynamic = "force-dynamic";
+
 export default async function Home() {
   const categories = await getAllCategories();
   const bestsellers = await getBestsellers(4);

@@ -87,7 +87,20 @@ def generate_api_client(schema: Dict[str, Any]) -> str:
     client_content.append("// НЕ РЕДАКТИРОВАТЬ ВРУЧНУЮ")
     client_content.append("")
     client_content.append("import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';")
-    client_content.append("import type * as Types from './types';")
+    
+    # Генерируем список типов для импорта
+    schemas = schema.get('components', {}).get('schemas', {})
+    type_names = list(schemas.keys())
+    if type_names:
+        # Разбиваем на строки по 5 типов для читаемости
+        chunks = [type_names[i:i+5] for i in range(0, len(type_names), 5)]
+        client_content.append("import {")
+        for i, chunk in enumerate(chunks):
+            line = "  " + ", ".join(chunk)
+            if i < len(chunks) - 1:
+                line += ","
+            client_content.append(line)
+        client_content.append("} from './types';")
     client_content.append("")
     
     # Базовый конфиг для API
@@ -192,10 +205,19 @@ def generate_api_function(content: List[str], path: str, method: str, details: D
     content.append(f"): Promise<{return_type}> {{")
     
     # Формируем URL
-    content.append(f"  let url = `{path}`;")
+    content.append(f"  const url = `{path}`;")
+    
+    # Формируем опции запроса (СНАЧАЛА опции!)
+    content.append("  const options: RequestInit = {")
+    content.append(f"    method: '{method.upper()}',")
+    if request_body:
+        content.append("    body: JSON.stringify(data),")
+    content.append("  };")
+    content.append("")
     
     # Добавляем query параметры
     if query_params:
+        content.append("  let finalUrl = url;")
         content.append("  if (params) {")
         content.append("    const searchParams = new URLSearchParams();")
         for param in query_params:
@@ -203,17 +225,12 @@ def generate_api_function(content: List[str], path: str, method: str, details: D
             content.append(f"    if (params.{param_name} !== undefined) {{")
             content.append(f"      searchParams.append('{param_name}', String(params.{param_name}));")
             content.append("    }")
-        content.append("    url += `?${searchParams.toString()}`;")
+        content.append("    finalUrl += `?${searchParams.toString()}`;")
         content.append("  }")
+        content.append(f"  return fetchApi<{return_type}>(finalUrl, options);")
+    else:
+        content.append(f"  return fetchApi<{return_type}>(url, options);")
     
-    # Формируем опции запроса
-    content.append("  const options: RequestInit = {")
-    content.append(f"    method: '{method.upper()}',")
-    if request_body:
-        content.append("    body: JSON.stringify(data),")
-    content.append("  };")
-    
-    content.append(f"  return fetchApi<{return_type}>(url, options);")
     content.append("}")
     content.append("")
 
@@ -277,12 +294,40 @@ def generate_mutation_hook(content: List[str], operation_id: str, details: Dict[
     func_name = snake_to_camel(operation_id)
     hook_name = f"use{func_name.capitalize()}"
     
+    # Определяем параметры мутации
+    parameters = details.get('parameters', [])
+    request_body = details.get('requestBody', {})
+    path_params = [p for p in parameters if p.get('in') == 'path']
+    
     content.append(f"// React Query мутация для {func_name}")
     content.append(f"export function {hook_name}() {{")
     content.append("  const queryClient = useQueryClient();")
     content.append("  ")
     content.append("  return useMutation({")
-    content.append(f"    mutationFn: {func_name},")
+    
+    # Генерируем правильную mutationFn в зависимости от параметров
+    if path_params and request_body:
+        # Есть и path параметры и body
+        param_names = [p['name'] for p in path_params]
+        mutation_variables = "{" + ", ".join(param_names) + ", data}"
+        function_call = f"{func_name}({', '.join(param_names)}, data)"
+        content.append(f"    mutationFn: ({mutation_variables}: {{ {', '.join([f'{name}: string' for name in param_names])}, data: any }}) => {function_call},")
+    elif path_params:
+        # Только path параметры
+        param_names = [p['name'] for p in path_params]
+        if len(param_names) == 1:
+            content.append(f"    mutationFn: {func_name},")
+        else:
+            mutation_variables = "{" + ", ".join(param_names) + "}"
+            function_call = f"{func_name}({', '.join(param_names)})"
+            content.append(f"    mutationFn: ({mutation_variables}: {{ {', '.join([f'{name}: string' for name in param_names])} }}) => {function_call},")
+    elif request_body:
+        # Только body
+        content.append(f"    mutationFn: {func_name},")
+    else:
+        # Без параметров
+        content.append(f"    mutationFn: {func_name},")
+    
     content.append("    onSuccess: () => {")
     content.append("      // Инвалидируем связанные запросы")
     content.append("      queryClient.invalidateQueries();")

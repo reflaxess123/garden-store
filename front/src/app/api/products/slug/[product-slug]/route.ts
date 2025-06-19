@@ -3,9 +3,9 @@ import { NextResponse } from "next/server";
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
 interface ProductBySlugProps {
-  params: {
+  params: Promise<{
     "product-slug": string;
-  };
+  }>;
 }
 
 export async function GET(request: Request, { params }: ProductBySlugProps) {

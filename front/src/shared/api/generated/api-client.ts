@@ -2,7 +2,14 @@
 // НЕ РЕДАКТИРОВАТЬ ВРУЧНУЮ
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import type * as Types from './types';
+import {
+  CartItemAdd, CartItemInDB, CartItemUpdate, CartMergeRequest, CategoryCreate,
+  CategoryInDB, CategoryUpdate, CustomUser, FavouriteInDB, HTTPValidationError,
+  LocalCartItem, OrderCreate, OrderDelete, OrderInDB, OrderItemCreate,
+  OrderItemInDB, OrderUpdateStatus, ProductCreate, ProductInDB, ProductUpdate,
+  ResetPasswordSchema, SignInSchema, SignUpSchema, Token, UpdatePasswordSchema,
+  ValidationError
+} from './types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
@@ -41,11 +48,12 @@ async function fetchApi<T>(
 export async function signupApiAuthSignupPost(
   data: SignUpSchema
 ): Promise<CustomUser> {
-  let url = `/api/auth/signup`;
+  const url = `/api/auth/signup`;
   const options: RequestInit = {
     method: 'POST',
     body: JSON.stringify(data),
   };
+
   return fetchApi<CustomUser>(url, options);
 }
 
@@ -66,11 +74,12 @@ export function useSignupapiauthsignuppost() {
 export async function signinApiAuthSigninPost(
   data: SignInSchema
 ): Promise<Token> {
-  let url = `/api/auth/signin`;
+  const url = `/api/auth/signin`;
   const options: RequestInit = {
     method: 'POST',
     body: JSON.stringify(data),
   };
+
   return fetchApi<Token>(url, options);
 }
 
@@ -90,10 +99,11 @@ export function useSigninapiauthsigninpost() {
 // Logout
 export async function logoutApiAuthLogoutPost(
 ): Promise<void> {
-  let url = `/api/auth/logout`;
+  const url = `/api/auth/logout`;
   const options: RequestInit = {
     method: 'POST',
   };
+
   return fetchApi<void>(url, options);
 }
 
@@ -114,11 +124,12 @@ export function useLogoutapiauthlogoutpost() {
 export async function resetPasswordApiAuthResetPasswordPost(
   data: ResetPasswordSchema
 ): Promise<void> {
-  let url = `/api/auth/reset-password`;
+  const url = `/api/auth/reset-password`;
   const options: RequestInit = {
     method: 'POST',
     body: JSON.stringify(data),
   };
+
   return fetchApi<void>(url, options);
 }
 
@@ -139,11 +150,12 @@ export function useResetpasswordapiauthresetpasswordpost() {
 export async function updatePasswordApiAuthUpdatePasswordPost(
   data: UpdatePasswordSchema
 ): Promise<void> {
-  let url = `/api/auth/update-password`;
+  const url = `/api/auth/update-password`;
   const options: RequestInit = {
     method: 'POST',
     body: JSON.stringify(data),
   };
+
   return fetchApi<void>(url, options);
 }
 
@@ -163,10 +175,11 @@ export function useUpdatepasswordapiauthupdatepasswordpost() {
 // Get Current User Info
 export async function getCurrentUserInfoApiAuthMeGet(
 ): Promise<CustomUser> {
-  let url = `/api/auth/me`;
+  const url = `/api/auth/me`;
   const options: RequestInit = {
     method: 'GET',
   };
+
   return fetchApi<CustomUser>(url, options);
 }
 
@@ -184,10 +197,11 @@ export function useGetcurrentuserinfoapiauthmeget(
 // Get Admin Categories
 export async function getAdminCategoriesApiAdminCategoriesGet(
 ): Promise<CategoryInDB[]> {
-  let url = `/api/admin/categories`;
+  const url = `/api/admin/categories`;
   const options: RequestInit = {
     method: 'GET',
   };
+
   return fetchApi<CategoryInDB[]>(url, options);
 }
 
@@ -206,11 +220,12 @@ export function useGetadmincategoriesapiadmincategoriesget(
 export async function createAdminCategoryApiAdminCategoriesPost(
   data: CategoryCreate
 ): Promise<CategoryInDB> {
-  let url = `/api/admin/categories`;
+  const url = `/api/admin/categories`;
   const options: RequestInit = {
     method: 'POST',
     body: JSON.stringify(data),
   };
+
   return fetchApi<CategoryInDB>(url, options);
 }
 
@@ -232,11 +247,12 @@ export async function updateAdminCategoryApiAdminCategoriesCategoryIdPatch(
   category_id: string,
   data: CategoryUpdate
 ): Promise<CategoryInDB> {
-  let url = `/api/admin/categories/${category_id}`;
+  const url = `/api/admin/categories/${category_id}`;
   const options: RequestInit = {
     method: 'PATCH',
     body: JSON.stringify(data),
   };
+
   return fetchApi<CategoryInDB>(url, options);
 }
 
@@ -245,7 +261,7 @@ export function useUpdateadmincategoryapiadmincategoriescategoryidpatch() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: updateAdminCategoryApiAdminCategoriesCategoryIdPatch,
+    mutationFn: ({category_id, data}: { category_id: string, data: any }) => updateAdminCategoryApiAdminCategoriesCategoryIdPatch(category_id, data),
     onSuccess: () => {
       // Инвалидируем связанные запросы
       queryClient.invalidateQueries();
@@ -257,10 +273,11 @@ export function useUpdateadmincategoryapiadmincategoriescategoryidpatch() {
 export async function deleteAdminCategoryApiAdminCategoriesCategoryIdDelete(
   category_id: string
 ): Promise<void> {
-  let url = `/api/admin/categories/${category_id}`;
+  const url = `/api/admin/categories/${category_id}`;
   const options: RequestInit = {
     method: 'DELETE',
   };
+
   return fetchApi<void>(url, options);
 }
 
@@ -281,10 +298,11 @@ export function useDeleteadmincategoryapiadmincategoriescategoryiddelete() {
 export async function getAdminCategoryApiAdminCategoriesCategoryIdGet(
   category_id: string
 ): Promise<CategoryInDB> {
-  let url = `/api/admin/categories/${category_id}`;
+  const url = `/api/admin/categories/${category_id}`;
   const options: RequestInit = {
     method: 'GET',
   };
+
   return fetchApi<CategoryInDB>(url, options);
 }
 
@@ -303,10 +321,11 @@ export function useGetadmincategoryapiadmincategoriescategoryidget(
 // Get Admin Products
 export async function getAdminProductsApiAdminProductsGet(
 ): Promise<ProductInDB[]> {
-  let url = `/api/admin/products`;
+  const url = `/api/admin/products`;
   const options: RequestInit = {
     method: 'GET',
   };
+
   return fetchApi<ProductInDB[]>(url, options);
 }
 
@@ -325,11 +344,12 @@ export function useGetadminproductsapiadminproductsget(
 export async function createAdminProductApiAdminProductsPost(
   data: ProductCreate
 ): Promise<ProductInDB> {
-  let url = `/api/admin/products`;
+  const url = `/api/admin/products`;
   const options: RequestInit = {
     method: 'POST',
     body: JSON.stringify(data),
   };
+
   return fetchApi<ProductInDB>(url, options);
 }
 
@@ -350,10 +370,11 @@ export function useCreateadminproductapiadminproductspost() {
 export async function getAdminProductApiAdminProductsProductIdGet(
   product_id: string
 ): Promise<ProductInDB> {
-  let url = `/api/admin/products/${product_id}`;
+  const url = `/api/admin/products/${product_id}`;
   const options: RequestInit = {
     method: 'GET',
   };
+
   return fetchApi<ProductInDB>(url, options);
 }
 
@@ -373,10 +394,11 @@ export function useGetadminproductapiadminproductsproductidget(
 export async function deleteAdminProductApiAdminProductsProductIdDelete(
   product_id: string
 ): Promise<void> {
-  let url = `/api/admin/products/${product_id}`;
+  const url = `/api/admin/products/${product_id}`;
   const options: RequestInit = {
     method: 'DELETE',
   };
+
   return fetchApi<void>(url, options);
 }
 
@@ -398,11 +420,12 @@ export async function updateAdminProductApiAdminProductsProductIdPatch(
   product_id: string,
   data: ProductUpdate
 ): Promise<ProductInDB> {
-  let url = `/api/admin/products/${product_id}`;
+  const url = `/api/admin/products/${product_id}`;
   const options: RequestInit = {
     method: 'PATCH',
     body: JSON.stringify(data),
   };
+
   return fetchApi<ProductInDB>(url, options);
 }
 
@@ -411,7 +434,7 @@ export function useUpdateadminproductapiadminproductsproductidpatch() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: updateAdminProductApiAdminProductsProductIdPatch,
+    mutationFn: ({product_id, data}: { product_id: string, data: any }) => updateAdminProductApiAdminProductsProductIdPatch(product_id, data),
     onSuccess: () => {
       // Инвалидируем связанные запросы
       queryClient.invalidateQueries();
@@ -422,10 +445,11 @@ export function useUpdateadminproductapiadminproductsproductidpatch() {
 // Get Admin Orders
 export async function getAdminOrdersApiAdminOrdersGet(
 ): Promise<OrderInDB[]> {
-  let url = `/api/admin/orders`;
+  const url = `/api/admin/orders`;
   const options: RequestInit = {
     method: 'GET',
   };
+
   return fetchApi<OrderInDB[]>(url, options);
 }
 
@@ -445,11 +469,12 @@ export async function updateAdminOrderStatusApiAdminOrdersOrderIdPatch(
   order_id: string,
   data: OrderUpdateStatus
 ): Promise<OrderInDB> {
-  let url = `/api/admin/orders/${order_id}`;
+  const url = `/api/admin/orders/${order_id}`;
   const options: RequestInit = {
     method: 'PATCH',
     body: JSON.stringify(data),
   };
+
   return fetchApi<OrderInDB>(url, options);
 }
 
@@ -458,7 +483,7 @@ export function useUpdateadminorderstatusapiadminordersorderidpatch() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: updateAdminOrderStatusApiAdminOrdersOrderIdPatch,
+    mutationFn: ({order_id, data}: { order_id: string, data: any }) => updateAdminOrderStatusApiAdminOrdersOrderIdPatch(order_id, data),
     onSuccess: () => {
       // Инвалидируем связанные запросы
       queryClient.invalidateQueries();
@@ -470,10 +495,11 @@ export function useUpdateadminorderstatusapiadminordersorderidpatch() {
 export async function deleteAdminOrderApiAdminOrdersOrderIdDelete(
   order_id: string
 ): Promise<void> {
-  let url = `/api/admin/orders/${order_id}`;
+  const url = `/api/admin/orders/${order_id}`;
   const options: RequestInit = {
     method: 'DELETE',
   };
+
   return fetchApi<void>(url, options);
 }
 
@@ -493,10 +519,11 @@ export function useDeleteadminorderapiadminordersorderiddelete() {
 // Get Cart
 export async function getCartApiCartGet(
 ): Promise<CartItemInDB[]> {
-  let url = `/api/cart`;
+  const url = `/api/cart`;
   const options: RequestInit = {
     method: 'GET',
   };
+
   return fetchApi<CartItemInDB[]>(url, options);
 }
 
@@ -514,10 +541,11 @@ export function useGetcartapicartget(
 // Clear Cart
 export async function clearCartApiCartDelete(
 ): Promise<void> {
-  let url = `/api/cart`;
+  const url = `/api/cart`;
   const options: RequestInit = {
     method: 'DELETE',
   };
+
   return fetchApi<void>(url, options);
 }
 
@@ -538,11 +566,12 @@ export function useClearcartapicartdelete() {
 export async function addToCartApiCartAddPost(
   data: CartItemAdd
 ): Promise<CartItemInDB> {
-  let url = `/api/cart/add`;
+  const url = `/api/cart/add`;
   const options: RequestInit = {
     method: 'POST',
     body: JSON.stringify(data),
   };
+
   return fetchApi<CartItemInDB>(url, options);
 }
 
@@ -564,11 +593,12 @@ export async function updateCartItemApiCartItemIdPatch(
   item_id: string,
   data: CartItemUpdate
 ): Promise<CartItemInDB> {
-  let url = `/api/cart/${item_id}`;
+  const url = `/api/cart/${item_id}`;
   const options: RequestInit = {
     method: 'PATCH',
     body: JSON.stringify(data),
   };
+
   return fetchApi<CartItemInDB>(url, options);
 }
 
@@ -577,7 +607,7 @@ export function useUpdatecartitemapicartitemidpatch() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: updateCartItemApiCartItemIdPatch,
+    mutationFn: ({item_id, data}: { item_id: string, data: any }) => updateCartItemApiCartItemIdPatch(item_id, data),
     onSuccess: () => {
       // Инвалидируем связанные запросы
       queryClient.invalidateQueries();
@@ -589,10 +619,11 @@ export function useUpdatecartitemapicartitemidpatch() {
 export async function removeFromCartApiCartItemIdDelete(
   item_id: string
 ): Promise<void> {
-  let url = `/api/cart/${item_id}`;
+  const url = `/api/cart/${item_id}`;
   const options: RequestInit = {
     method: 'DELETE',
   };
+
   return fetchApi<void>(url, options);
 }
 
@@ -613,11 +644,12 @@ export function useRemovefromcartapicartitemiddelete() {
 export async function mergeCartApiCartMergePost(
   data: CartMergeRequest
 ): Promise<CartItemInDB[]> {
-  let url = `/api/cart/merge`;
+  const url = `/api/cart/merge`;
   const options: RequestInit = {
     method: 'POST',
     body: JSON.stringify(data),
   };
+
   return fetchApi<CartItemInDB[]>(url, options);
 }
 
@@ -638,18 +670,20 @@ export function useMergecartapicartmergepost() {
 export async function getCategoriesApiCategoriesGet(
   params?: { slug?: any }
 ): Promise<CategoryInDB[]> {
-  let url = `/api/categories`;
+  const url = `/api/categories`;
+  const options: RequestInit = {
+    method: 'GET',
+  };
+
+  let finalUrl = url;
   if (params) {
     const searchParams = new URLSearchParams();
     if (params.slug !== undefined) {
       searchParams.append('slug', String(params.slug));
     }
-    url += `?${searchParams.toString()}`;
+    finalUrl += `?${searchParams.toString()}`;
   }
-  const options: RequestInit = {
-    method: 'GET',
-  };
-  return fetchApi<CategoryInDB[]>(url, options);
+  return fetchApi<CategoryInDB[]>(finalUrl, options);
 }
 
 // React Query хук для getCategoriesApiCategoriesGet
@@ -668,18 +702,20 @@ export function useGetcategoriesapicategoriesget(
 export async function getBestsellersApiProductsBestsellersGet(
   params?: { limit?: number }
 ): Promise<ProductInDB[]> {
-  let url = `/api/products/bestsellers`;
+  const url = `/api/products/bestsellers`;
+  const options: RequestInit = {
+    method: 'GET',
+  };
+
+  let finalUrl = url;
   if (params) {
     const searchParams = new URLSearchParams();
     if (params.limit !== undefined) {
       searchParams.append('limit', String(params.limit));
     }
-    url += `?${searchParams.toString()}`;
+    finalUrl += `?${searchParams.toString()}`;
   }
-  const options: RequestInit = {
-    method: 'GET',
-  };
-  return fetchApi<ProductInDB[]>(url, options);
+  return fetchApi<ProductInDB[]>(finalUrl, options);
 }
 
 // React Query хук для getBestsellersApiProductsBestsellersGet
@@ -698,10 +734,11 @@ export function useGetbestsellersapiproductsbestsellersget(
 export async function getProductBySlugApiProductsSlugProductSlugGet(
   product_slug: string
 ): Promise<ProductInDB> {
-  let url = `/api/products/slug/${product_slug}`;
+  const url = `/api/products/slug/${product_slug}`;
   const options: RequestInit = {
     method: 'GET',
   };
+
   return fetchApi<ProductInDB>(url, options);
 }
 
@@ -721,10 +758,11 @@ export function useGetproductbyslugapiproductsslugproductslugget(
 export async function getProductsByCategorySlugApiProductsCategoryCategorySlugGet(
   category_slug: string
 ): Promise<ProductInDB[]> {
-  let url = `/api/products/category/${category_slug}`;
+  const url = `/api/products/category/${category_slug}`;
   const options: RequestInit = {
     method: 'GET',
   };
+
   return fetchApi<ProductInDB[]>(url, options);
 }
 
@@ -744,10 +782,11 @@ export function useGetproductsbycategoryslugapiproductscategorycategoryslugget(
 export async function getProductByIdApiProductsProductIdGet(
   product_id: string
 ): Promise<ProductInDB> {
-  let url = `/api/products/${product_id}`;
+  const url = `/api/products/${product_id}`;
   const options: RequestInit = {
     method: 'GET',
   };
+
   return fetchApi<ProductInDB>(url, options);
 }
 
@@ -766,10 +805,11 @@ export function useGetproductbyidapiproductsproductidget(
 // Get User Orders
 export async function getUserOrdersApiOrdersGet(
 ): Promise<OrderInDB[]> {
-  let url = `/api/orders`;
+  const url = `/api/orders`;
   const options: RequestInit = {
     method: 'GET',
   };
+
   return fetchApi<OrderInDB[]>(url, options);
 }
 
@@ -788,11 +828,12 @@ export function useGetuserordersapiordersget(
 export async function createOrderApiOrdersPost(
   data: OrderCreate
 ): Promise<OrderInDB> {
-  let url = `/api/orders`;
+  const url = `/api/orders`;
   const options: RequestInit = {
     method: 'POST',
     body: JSON.stringify(data),
   };
+
   return fetchApi<OrderInDB>(url, options);
 }
 
@@ -813,11 +854,12 @@ export function useCreateorderapiorderspost() {
 export async function deleteOrderApiOrdersDelete(
   data: OrderDelete
 ): Promise<void> {
-  let url = `/api/orders`;
+  const url = `/api/orders`;
   const options: RequestInit = {
     method: 'DELETE',
     body: JSON.stringify(data),
   };
+
   return fetchApi<void>(url, options);
 }
 
@@ -838,10 +880,11 @@ export function useDeleteorderapiordersdelete() {
 export async function getUserOrderApiOrdersOrderIdGet(
   order_id: string
 ): Promise<OrderInDB> {
-  let url = `/api/orders/${order_id}`;
+  const url = `/api/orders/${order_id}`;
   const options: RequestInit = {
     method: 'GET',
   };
+
   return fetchApi<OrderInDB>(url, options);
 }
 
@@ -860,10 +903,11 @@ export function useGetuserorderapiordersorderidget(
 // Get Favorites
 export async function getFavoritesApiFavoritesGet(
 ): Promise<FavouriteInDB[]> {
-  let url = `/api/favorites`;
+  const url = `/api/favorites`;
   const options: RequestInit = {
     method: 'GET',
   };
+
   return fetchApi<FavouriteInDB[]>(url, options);
 }
 
@@ -882,10 +926,11 @@ export function useGetfavoritesapifavoritesget(
 export async function addToFavoritesApiFavoritesProductIdPost(
   product_id: string
 ): Promise<FavouriteInDB> {
-  let url = `/api/favorites/${product_id}`;
+  const url = `/api/favorites/${product_id}`;
   const options: RequestInit = {
     method: 'POST',
   };
+
   return fetchApi<FavouriteInDB>(url, options);
 }
 
@@ -906,10 +951,11 @@ export function useAddtofavoritesapifavoritesproductidpost() {
 export async function removeFromFavoritesApiFavoritesProductIdDelete(
   product_id: string
 ): Promise<void> {
-  let url = `/api/favorites/${product_id}`;
+  const url = `/api/favorites/${product_id}`;
   const options: RequestInit = {
     method: 'DELETE',
   };
+
   return fetchApi<void>(url, options);
 }
 
@@ -929,10 +975,11 @@ export function useRemovefromfavoritesapifavoritesproductiddelete() {
 // Health Check
 export async function healthCheckHealthGet(
 ): Promise<void> {
-  let url = `/health`;
+  const url = `/health`;
   const options: RequestInit = {
     method: 'GET',
   };
+
   return fetchApi<void>(url, options);
 }
 

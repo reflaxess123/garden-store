@@ -1,0 +1,50 @@
+# Файлы окружения (будут добавлены через Dokploy)
+.env
+.env.local
+.env.*.local
+
+# Python кеш
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Poetry virtual environment
+.venv/
+venv/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pytest
+.pytest_cache/
+.coverage
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Logs
+*.log
+logs/
+
+# Test files
+tests/
+
+# Development tools
+alembic.ini 

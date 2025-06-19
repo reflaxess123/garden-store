@@ -1,0 +1,66 @@
+services:
+  # Бэкенд сервис
+  backend:
+    build:
+      context: ./back
+      dockerfile: Dockerfile
+    container_name: garden-store-backend
+    restart: unless-stopped
+    environment:
+      # База данных
+      - DATABASE_URL=${DATABASE_URL}
+      # Redis
+      - REDIS_URL=${REDIS_URL}
+      # JWT и сессии
+      - SECRET_KEY=${SECRET_KEY}
+      # Сервер
+      - PORT=4000
+      - HOST=0.0.0.0
+      - DEBUG=${DEBUG:-false}
+    ports:
+      - "4000:4000"
+    volumes:
+      # Используем ../files для персистентности данных как рекомендует Dokploy
+      - "../files/backend-logs:/app/logs"
+      - "../files/backend-uploads:/app/uploads"
+    networks:
+      - garden-store-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:4000/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Фронтенд сервис
+  frontend:
+    build:
+      context: ./front
+      dockerfile: Dockerfile
+    container_name: garden-store-frontend
+    restart: unless-stopped
+    environment:
+      - NEXT_PUBLIC_API_URL=http://backend:4000
+    ports:
+      - "3003:3000"
+    depends_on:
+      - backend
+    networks:
+      - garden-store-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  garden-store-network:
+    driver: bridge
+
+volumes:
+  # Используем именованные volumes для данных
+  backend-logs:
+    driver: local
+  backend-uploads:
+    driver: local

@@ -20,19 +20,33 @@ json._default_encoder = CustomJsonEncoder()
 # Импорт роутеров
 from app.routers import auth, admin, cart, categories, products, orders, favorites
 
-# Загружаем переменные окружения из .env, который лежит рядом с main.py
-load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
-print("DATABASE_URL:", os.getenv("DATABASE_URL"))
-print("REDIS_URL:", os.getenv("REDIS_URL"))
+# Загружаем переменные окружения из .env если файл существует (для разработки)
+env_file = os.path.join(os.path.dirname(__file__), '.env')
+if os.path.exists(env_file):
+    load_dotenv(env_file)
+    print("Загружены переменные окружения из .env файла")
+else:
+    print("Используются переменные окружения из системы")
+
+print("DATABASE_URL:", "***" if os.getenv("DATABASE_URL") else "НЕ ЗАДАН")
+print("REDIS_URL:", "***" if os.getenv("REDIS_URL") else "НЕ ЗАДАН")
 
 app = FastAPI()
 
 # CORS configuration
 origins = [
-    "http://localhost:3000", # Next.js frontend
+    "http://localhost:3000",  # Next.js frontend для разработки
     "http://127.0.0.1:3000",
-    # Add other origins as needed
+    "http://frontend:3000",   # Docker контейнер фронтенда
 ]
+
+# Добавляем внешние домены из переменных окружения для продакшена
+external_origins = os.getenv("EXTERNAL_ORIGINS", "").split(",")
+for origin in external_origins:
+    if origin.strip():
+        origins.append(origin.strip())
+
+print("Разрешенные CORS origins:", origins)
 
 app.add_middleware(
     CORSMiddleware,

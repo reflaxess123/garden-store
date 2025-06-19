@@ -1,0 +1,22 @@
+# Используем Node.js 20 Alpine
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Копируем package.json и package-lock.json
+COPY package*.json ./
+
+# Устанавливаем зависимости
+RUN npm ci --only=production
+
+# Копируем исходный код (исключая .env через .dockerignore)
+COPY . .
+
+# Собираем Next.js приложение
+RUN npm run build
+
+# Открываем порт 3000 (стандартный для Next.js)
+EXPOSE 3000
+
+# Запускаем Next.js в продакшн режиме
+CMD ["npm", "start"] 

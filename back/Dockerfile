@@ -21,7 +21,7 @@ COPY pyproject.toml poetry.lock ./
 
 # Конфигурируем Poetry
 RUN poetry config virtualenvs.create false \
-    && poetry install --without dev --no-interaction --no-ansi
+    && poetry install --without dev --no-interaction --no-ansi --no-root
 
 # Копируем исходный код приложения (исключая .env через .dockerignore)
 COPY . .

@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y \
     libpq-dev \
     procps \
     passwd \
-    su-exec \
+    gosu \
     && rm -rf /var/lib/apt/lists/*
 
 # Устанавливаем Poetry

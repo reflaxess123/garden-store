@@ -212,4 +212,29 @@ async def update_admin_order_status(
     await db.commit()
     await db.refresh(db_order)
     return OrderInDB.model_validate(db_order, from_attributes=True)
+
+@router.delete("/admin/orders/{order_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_admin_order(
+    order_id: uuid.UUID, db: Session = Depends(get_db),
+    current_user: CustomUser = Depends(get_current_admin_user)
+):
+    """Удалить заказ (только для админа)"""
+    result = await db.execute(select(models.Order).filter(models.Order.id == order_id))
+    db_order = result.scalars().first()
+    if not db_order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    
+    # Сначала удаляем все элементы заказа
+    order_items_result = await db.execute(
+        select(models.OrderItem).filter(models.OrderItem.order_id == order_id)
+    )
+    order_items = order_items_result.scalars().all()
+    
+    for item in order_items:
+        await db.delete(item)
+    
+    # Затем удаляем сам заказ
+    await db.delete(db_order)
+    await db.commit()
+    return
 # endregion 

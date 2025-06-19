@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload
 from app.db.database import get_db
 from app.db import models
 from app.schemas import OrderCreate, OrderInDB, OrderDelete, OrderItemInDB
@@ -137,3 +138,39 @@ async def delete_order(
         raise HTTPException(status_code=500, detail=f"Error deleting order: {str(e)}")
     
     return 
+
+@router.get("/orders", response_model=List[OrderInDB])
+async def get_user_orders(
+    db: AsyncSession = Depends(get_db),
+    current_user: CustomUser = Depends(get_current_user)
+):
+    """Получить заказы текущего пользователя"""
+    result = await db.execute(
+        select(models.Order)
+        .options(joinedload(models.Order.order_items))
+        .filter(models.Order.user_id == current_user.id)
+        .order_by(models.Order.created_at.desc())
+    )
+    orders = result.scalars().unique().all()
+    return [OrderInDB.model_validate(order, from_attributes=True) for order in orders]
+
+@router.get("/orders/{order_id}", response_model=OrderInDB)
+async def get_user_order(
+    order_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: CustomUser = Depends(get_current_user)
+):
+    """Получить конкретный заказ пользователя"""
+    result = await db.execute(
+        select(models.Order)
+        .options(joinedload(models.Order.order_items))
+        .filter(
+            models.Order.id == order_id,
+            models.Order.user_id == current_user.id
+        )
+    )
+    order = result.scalars().first()
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    
+    return OrderInDB.model_validate(order, from_attributes=True) 

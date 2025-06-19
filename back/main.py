@@ -18,7 +18,7 @@ class CustomJsonEncoder(json.JSONEncoder):
 json._default_encoder = CustomJsonEncoder()
 
 # Импорт роутеров
-from app.routers import auth, admin, cart, categories, products, orders
+from app.routers import auth, admin, cart, categories, products, orders, favorites
 
 # Загружаем переменные окружения из .env, который лежит рядом с main.py
 load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
@@ -49,6 +49,7 @@ app.include_router(cart.router, prefix="/api")
 app.include_router(categories.router, prefix="/api")
 app.include_router(products.router, prefix="/api")
 app.include_router(orders.router, prefix="/api")
+app.include_router(favorites.router, prefix="/api")
 
 @app.get("/health")
 async def health_check():

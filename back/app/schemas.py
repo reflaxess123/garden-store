@@ -171,15 +171,32 @@ class OrderDelete(BaseModel):
 
 # region Favourite Schemas
 class FavouriteBase(BaseModel):
-    productId: uuid.UUID
+    productId: uuid.UUID = Field(..., alias="product_id", serialization_alias="productId")
+
+    model_config = {"from_attributes": True, "populate_by_name": True}
 
 class FavouriteCreate(FavouriteBase):
     pass
 
 class FavouriteInDB(FavouriteBase):
     id: uuid.UUID
-    userId: uuid.UUID
+    userId: uuid.UUID = Field(..., alias="user_id", serialization_alias="userId")
+    product: Optional[ProductInDB] = None
 
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True, "populate_by_name": True}
+
+class FavouriteDelete(BaseModel):
+    productId: uuid.UUID
+# endregion
+
+# region Extended Cart Schemas
+class CartItemUpdate(BaseModel):
+    quantity: int = Field(..., ge=1)
+
+class CartItemAdd(BaseModel):
+    productId: uuid.UUID
+    quantity: int = Field(default=1, ge=1)
+
+class CartItemDelete(BaseModel):
+    productId: uuid.UUID
 # endregion 

@@ -17,8 +17,8 @@ services:
       - PORT=4000
       - HOST=0.0.0.0
       - DEBUG=${DEBUG:-false}
-      # CORS origins для продакшена
-      - EXTERNAL_ORIGINS=http://185.21.13.91:3003,https://185.21.13.91:3003,http://103.74.93.55:3003,https://103.74.93.55:3003,http://sadovnick.store,https://sadovnick.store
+      # CORS origins для продакшена (задается через Dokploy GUI)
+      - EXTERNAL_ORIGINS=${EXTERNAL_ORIGINS}
     ports:
       - "4001:4000"
     volumes:
@@ -45,10 +45,10 @@ services:
     container_name: garden-store-frontend
     restart: unless-stopped
     environment:
-      # Для браузера (client-side) - внешний URL
-      - NEXT_PUBLIC_API_URL=http://185.21.13.91:4001
-      # Для сервера Next.js (server-side) - внутренний URL
-      - BACKEND_URL=http://backend:4000
+      # Переменные задаются через Dokploy GUI
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+      - BACKEND_URL=${BACKEND_URL}
+      - NEXT_PUBLIC_WS_URL=${NEXT_PUBLIC_WS_URL}
     ports:
       - "3003:80"
     depends_on:

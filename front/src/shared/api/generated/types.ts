@@ -18,6 +18,19 @@ export interface CartItemUpdate {
   quantity: number;
 }
 
+export interface CartItemWithProduct {
+  id: string;
+  productId: string;
+  userId: string;
+  quantity: number;
+  priceSnapshot: number;
+  name: string;
+  slug: string;
+  description?: any;
+  imageUrl?: any;
+  categoryId: string;
+}
+
 export interface CartMergeRequest {
   localCart: LocalCartItem[];
 }

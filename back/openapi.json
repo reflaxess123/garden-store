@@ -658,7 +658,7 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "$ref": "#/components/schemas/CartItemInDB"
+                    "$ref": "#/components/schemas/CartItemWithProduct"
                   },
                   "type": "array",
                   "title": "Response Get Cart Api Cart Get"
@@ -988,6 +988,182 @@
             "schema": {
               "type": "string",
               "title": "Category Slug"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Количество товаров для загрузки",
+              "title": "Limit"
+            },
+            "description": "Количество товаров для загрузки"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Смещение для пагинации",
+              "default": 0,
+              "title": "Offset"
+            },
+            "description": "Смещение для пагинации"
+          },
+          {
+            "name": "searchQuery",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Поисковый запрос",
+              "title": "Searchquery"
+            },
+            "description": "Поисковый запрос"
+          },
+          {
+            "name": "sortBy",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Поле для сортировки",
+              "title": "Sortby"
+            },
+            "description": "Поле для сортировки"
+          },
+          {
+            "name": "sortOrder",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Порядок сортировки",
+              "default": "asc",
+              "title": "Sortorder"
+            },
+            "description": "Порядок сортировки"
+          },
+          {
+            "name": "minPrice",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Минимальная цена",
+              "title": "Minprice"
+            },
+            "description": "Минимальная цена"
+          },
+          {
+            "name": "maxPrice",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Максимальная цена",
+              "title": "Maxprice"
+            },
+            "description": "Максимальная цена"
+          },
+          {
+            "name": "categoryFilter",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Categoryfilter"
+            }
+          },
+          {
+            "name": "inStock",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Instock"
+            }
+          },
+          {
+            "name": "hasDiscount",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Hasdiscount"
             }
           }
         ],
@@ -1372,6 +1548,80 @@
           "quantity"
         ],
         "title": "CartItemUpdate"
+      },
+      "CartItemWithProduct": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "productId": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Productid"
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Userid"
+          },
+          "quantity": {
+            "type": "integer",
+            "title": "Quantity"
+          },
+          "priceSnapshot": {
+            "type": "number",
+            "title": "Pricesnapshot"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "slug": {
+            "type": "string",
+            "title": "Slug"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "imageUrl": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Imageurl"
+          },
+          "categoryId": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Categoryid"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "productId",
+          "userId",
+          "quantity",
+          "priceSnapshot",
+          "name",
+          "slug",
+          "categoryId"
+        ],
+        "title": "CartItemWithProduct"
       },
       "CartMergeRequest": {
         "properties": {

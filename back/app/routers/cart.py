@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 from app.db.database import get_db
 from app.db import models
-from app.schemas import CartMergeRequest, CartItemInDB, CustomUser, CartItemAdd, CartItemUpdate, CartItemDelete
+from app.schemas import CartMergeRequest, CartItemInDB, CustomUser, CartItemAdd, CartItemUpdate, CartItemDelete, CartItemWithProduct
 from app.auth import get_current_user
 from typing import List
 import uuid
@@ -11,7 +11,7 @@ from sqlalchemy import select
 
 router = APIRouter()
 
-@router.get("/cart", response_model=List[CartItemInDB])
+@router.get("/cart", response_model=List[CartItemWithProduct])
 async def get_cart(
     db: AsyncSession = Depends(get_db),
     current_user: CustomUser = Depends(get_current_user)
@@ -23,7 +23,26 @@ async def get_cart(
         .filter(models.CartItem.user_id == current_user.id)
     )
     cart_items = result.scalars().unique().all()
-    return [CartItemInDB.model_validate(item, from_attributes=True) for item in cart_items]
+    
+    # Преобразуем в CartItemWithProduct, объединяя данные корзины и товара
+    cart_with_products = []
+    for item in cart_items:
+        cart_item_data = {
+            "id": item.id,
+            "product_id": item.product_id,
+            "user_id": item.user_id,
+            "quantity": item.quantity,
+            "price_snapshot": float(item.price_snapshot),
+            # Данные товара
+            "name": item.product.name,
+            "slug": item.product.slug,
+            "description": item.product.description,
+            "imageUrl": item.product.image_url,
+            "categoryId": item.product.category_id,
+        }
+        cart_with_products.append(CartItemWithProduct.model_validate(cart_item_data, from_attributes=True))
+    
+    return cart_with_products
 
 @router.post("/cart/add", response_model=CartItemInDB, status_code=status.HTTP_201_CREATED)
 async def add_to_cart(

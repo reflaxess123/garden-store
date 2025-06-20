@@ -2,39 +2,48 @@
 
 import { Input } from "@/shared/ui/input";
 import { Loader2, Search } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useDebounce } from "use-debounce";
 
 function SearchInputInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
   const initialQuery = searchParams?.get("q") || "";
+  const isInitialMount = useRef(true);
 
   const [text, setText] = useState(initialQuery);
   const [query] = useDebounce(text, 400);
 
   useEffect(() => {
-    // Получаем текущий путь
-    const currentPath = window.location.pathname;
-
-    if (query) {
-      // Если есть поисковый запрос, переходим на главную с параметром поиска
-      router.push(`/?q=${query}`);
-    } else if (initialQuery && !query) {
-      // Только если изначально был поисковый запрос, а теперь его убрали
-      // И мы находимся на главной странице
-      if (currentPath === "/") {
-        router.push("/");
-      }
-      // Иначе не делаем редирект - остаемся на текущей странице
+    // Пропускаем первый рендер, чтобы избежать редиректов при инициализации
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
     }
-  }, [query, router, initialQuery]);
+
+    // Выполняем поиск только если пользователь что-то ввел
+    if (query && query !== initialQuery) {
+      router.push(`/catalog?q=${encodeURIComponent(query)}`);
+    } else if (!query && initialQuery && pathname === "/catalog") {
+      // Очищаем поиск только если мы на странице каталога и убрали поисковый запрос
+      router.push("/catalog");
+    }
+  }, [query, router, initialQuery, pathname]);
+
+  // Обработчик отправки формы по Enter
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (text.trim()) {
+      router.push(`/catalog?q=${encodeURIComponent(text.trim())}`);
+    }
+  };
 
   const isSearching = text !== query && text.length > 0;
 
   return (
-    <div className="relative w-full max-w-xs">
+    <form onSubmit={handleSubmit} className="relative w-full max-w-xs">
       <Input
         placeholder="Поиск товаров..."
         value={text}
@@ -48,7 +57,7 @@ function SearchInputInner() {
           <Search className="h-4 w-4" />
         )}
       </div>
-    </div>
+    </form>
   );
 }
 

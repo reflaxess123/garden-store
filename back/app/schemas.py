@@ -199,4 +199,19 @@ class CartItemAdd(BaseModel):
 
 class CartItemDelete(BaseModel):
     productId: uuid.UUID
+
+class CartItemWithProduct(BaseModel):
+    id: uuid.UUID
+    productId: uuid.UUID = Field(..., alias="product_id", serialization_alias="productId")
+    userId: uuid.UUID = Field(..., alias="user_id", serialization_alias="userId")
+    quantity: int
+    priceSnapshot: float = Field(..., alias="price_snapshot", serialization_alias="priceSnapshot")
+    # Информация о товаре
+    name: str
+    slug: str
+    description: Optional[str] = None
+    imageUrl: Optional[str] = Field(None, serialization_alias="imageUrl")
+    categoryId: uuid.UUID = Field(..., serialization_alias="categoryId")
+
+    model_config = {"from_attributes": True, "populate_by_name": True}
 # endregion 

@@ -2,8 +2,19 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2, Pencil, Plus, Trash } from "lucide-react";
-import { useState } from "react";
+import {
+  BarChart3,
+  ChevronLeft,
+  ChevronRight,
+  Filter,
+  Loader2,
+  Pencil,
+  Plus,
+  Trash,
+  TrendingUp,
+  X,
+} from "lucide-react";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -58,6 +69,7 @@ import {
 } from "@/entities/product/admin-api";
 import { getBestsellers, Product } from "@/entities/product/api";
 import { formatPrice, generateSlug } from "@/shared/lib/utils";
+import { Badge } from "@/shared/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Textarea } from "@/shared/ui/textarea";
 import Image from "next/image";
@@ -475,22 +487,556 @@ function DeleteProductDialog({
   );
 }
 
+// Компонент фильтров для админки
+interface AdminFiltersProps {
+  searchQuery: string;
+  categoryFilter: string;
+  sortBy: string;
+  sortOrder: string;
+  onSearchChange: (value: string) => void;
+  onCategoryChange: (value: string) => void;
+  onSortByChange: (value: string) => void;
+  onSortOrderChange: (value: string) => void;
+  onClearFilters: () => void;
+  categories: AdminCategory[];
+}
+
+function AdminFilters({
+  searchQuery,
+  categoryFilter,
+  sortBy,
+  sortOrder,
+  onSearchChange,
+  onCategoryChange,
+  onSortByChange,
+  onSortOrderChange,
+  onClearFilters,
+  categories,
+}: AdminFiltersProps) {
+  const hasActiveFilters =
+    searchQuery || categoryFilter !== "all" || sortBy !== "default";
+
+  return (
+    <Card className="mb-6">
+      <CardHeader>
+        <CardTitle className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Filter className="h-5 w-5" />
+            Фильтры
+          </div>
+          {hasActiveFilters && (
+            <Button variant="ghost" size="sm" onClick={onClearFilters}>
+              <X className="h-4 w-4 mr-1" />
+              Сбросить
+            </Button>
+          )}
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {/* Поиск */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Поиск</label>
+            <Input
+              placeholder="Найти продукт..."
+              value={searchQuery}
+              onChange={(e) => onSearchChange(e.target.value)}
+            />
+          </div>
+
+          {/* Категория */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Категория</label>
+            <Select value={categoryFilter} onValueChange={onCategoryChange}>
+              <SelectTrigger>
+                <SelectValue placeholder="Все категории" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Все категории</SelectItem>
+                {categories.map((category) => (
+                  <SelectItem key={category.id} value={category.id}>
+                    {category.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Сортировка */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Сортировка</label>
+            <Select value={sortBy} onValueChange={onSortByChange}>
+              <SelectTrigger>
+                <SelectValue placeholder="По умолчанию" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="default">По умолчанию</SelectItem>
+                <SelectItem value="name">По названию</SelectItem>
+                <SelectItem value="price">По цене</SelectItem>
+                <SelectItem value="timesOrdered">По популярности</SelectItem>
+                <SelectItem value="createdAt">По дате создания</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Порядок сортировки */}
+          {sortBy !== "default" && (
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Порядок</label>
+              <Select value={sortOrder} onValueChange={onSortOrderChange}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="asc">По возрастанию</SelectItem>
+                  <SelectItem value="desc">По убыванию</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+        </div>
+
+        {/* Активные фильтры */}
+        {hasActiveFilters && (
+          <div className="mt-4 pt-4 border-t">
+            <div className="flex flex-wrap gap-2">
+              <span className="text-sm font-medium text-muted-foreground">
+                Активные фильтры:
+              </span>
+              {searchQuery && (
+                <Badge variant="secondary" className="flex items-center gap-1">
+                  Поиск: &quot;{searchQuery}&quot;
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-4 w-4 p-0"
+                    onClick={() => onSearchChange("")}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </Badge>
+              )}
+              {categoryFilter !== "all" && (
+                <Badge variant="secondary" className="flex items-center gap-1">
+                  Категория:{" "}
+                  {categories.find((c) => c.id === categoryFilter)?.name}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-4 w-4 p-0"
+                    onClick={() => onCategoryChange("all")}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </Badge>
+              )}
+              {sortBy !== "default" && (
+                <Badge variant="secondary" className="flex items-center gap-1">
+                  Сортировка:{" "}
+                  {sortBy === "name"
+                    ? "название"
+                    : sortBy === "price"
+                    ? "цена"
+                    : sortBy === "timesOrdered"
+                    ? "популярность"
+                    : "дата"}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-4 w-4 p-0"
+                    onClick={() => onSortByChange("default")}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </Badge>
+              )}
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+// Компонент модалки с популярными товарами и графиком
+interface PopularProductsModalProps {
+  products: Product[];
+  isLoading: boolean;
+}
+
+function PopularProductsModal({
+  products,
+  isLoading,
+}: PopularProductsModalProps) {
+  const [open, setOpen] = useState(false);
+
+  // Данные для простого графика
+  const chartData = useMemo(() => {
+    return products.slice(0, 10).map((product, index) => ({
+      name:
+        product.name.length > 20
+          ? product.name.substring(0, 20) + "..."
+          : product.name,
+      orders: product.timesOrdered || 0,
+      price: parseFloat(product.price),
+    }));
+  }, [products]);
+
+  const maxOrders = Math.max(...chartData.map((item) => item.orders), 1);
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" className="flex items-center gap-2">
+          <TrendingUp className="h-4 w-4" />
+          Популярные товары
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-7xl sm:max-w-7xl max-h-[90vh] overflow-y-auto overflow-x-hidden">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <BarChart3 className="h-5 w-5" />
+            Аналитика популярных товаров
+          </DialogTitle>
+          <DialogDescription>
+            Статистика самых заказываемых товаров с графиком продаж
+          </DialogDescription>
+        </DialogHeader>
+
+        {isLoading ? (
+          <div className="flex justify-center items-center py-8">
+            <Loader2 className="h-8 w-8 animate-spin" />
+            <span className="ml-2">Загрузка данных...</span>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {/* Сводная статистика */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+                <CardContent className="pt-6">
+                  <div className="text-3xl font-bold text-blue-700">
+                    {products.reduce(
+                      (sum, p) => sum + (p.timesOrdered || 0),
+                      0
+                    )}
+                  </div>
+                  <p className="text-sm text-blue-600 font-medium">
+                    Всего заказов
+                  </p>
+                </CardContent>
+              </Card>
+              <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+                <CardContent className="pt-6">
+                  <div className="text-3xl font-bold text-green-700">
+                    {formatPrice(
+                      products.reduce(
+                        (sum, p) =>
+                          sum + parseFloat(p.price) * (p.timesOrdered || 0),
+                        0
+                      )
+                    )}
+                  </div>
+                  <p className="text-sm text-green-600 font-medium">
+                    Общая выручка
+                  </p>
+                </CardContent>
+              </Card>
+              <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+                <CardContent className="pt-6">
+                  <div className="text-3xl font-bold text-purple-700">
+                    {formatPrice(
+                      products.reduce(
+                        (sum, p) =>
+                          sum + parseFloat(p.price) * (p.timesOrdered || 0),
+                        0
+                      ) /
+                        Math.max(
+                          products.reduce(
+                            (sum, p) => sum + (p.timesOrdered || 0),
+                            0
+                          ),
+                          1
+                        )
+                    )}
+                  </div>
+                  <p className="text-sm text-purple-600 font-medium">
+                    Средний чек
+                  </p>
+                </CardContent>
+              </Card>
+              <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
+                <CardContent className="pt-6">
+                  <div className="text-3xl font-bold text-orange-700">
+                    {products.length}
+                  </div>
+                  <p className="text-sm text-orange-600 font-medium">
+                    Товаров в топе
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Простой график */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">График заказов</h3>
+              <div className="space-y-2">
+                {chartData.map((item, index) => (
+                  <div key={index} className="flex items-center gap-4">
+                    <div className="w-48 text-sm font-medium" title={item.name}>
+                      {item.name}
+                    </div>
+                    <div className="flex-1 flex items-center gap-3">
+                      <div
+                        className="bg-primary h-8 rounded-lg transition-all duration-500 ease-out flex items-center justify-end pr-3 shadow-sm"
+                        style={{
+                          width: `${Math.max(
+                            (item.orders / maxOrders) * 100,
+                            8
+                          )}%`,
+                          minWidth: "40px",
+                        }}
+                      >
+                        <span className="text-sm text-primary-foreground font-semibold">
+                          {item.orders}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 min-w-[120px]">
+                        <span className="text-sm text-muted-foreground">
+                          {formatPrice(item.price)}
+                        </span>
+                        <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
+                          {formatPrice(item.price * item.orders)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Детальная таблица */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Детальная статистика</h3>
+              <div className="border rounded-lg overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Изображение</TableHead>
+                      <TableHead>Название</TableHead>
+                      <TableHead>Категория</TableHead>
+                      <TableHead className="text-right">Цена</TableHead>
+                      <TableHead className="text-right">Заказов</TableHead>
+                      <TableHead className="text-right">Выручка</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {products.map((product, index) => (
+                      <TableRow key={product.id}>
+                        <TableCell>
+                          {product.imageUrl && (
+                            <Image
+                              src={product.imageUrl}
+                              alt={product.name}
+                              width={40}
+                              height={40}
+                              className="rounded-md object-cover"
+                            />
+                          )}
+                        </TableCell>
+                        <TableCell className="font-medium">
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline" className="text-xs">
+                              #{index + 1}
+                            </Badge>
+                            {product.name}
+                          </div>
+                        </TableCell>
+                        <TableCell>{product.category?.name}</TableCell>
+                        <TableCell className="text-right">
+                          {formatPrice(parseFloat(product.price))}
+                        </TableCell>
+                        <TableCell className="text-right font-medium">
+                          {product.timesOrdered || 0}
+                        </TableCell>
+                        <TableCell className="text-right font-medium text-green-600">
+                          {formatPrice(
+                            parseFloat(product.price) *
+                              (product.timesOrdered || 0)
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// Компонент пагинации
+interface PaginationProps {
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+  itemsPerPage: number;
+  onItemsPerPageChange: (itemsPerPage: number) => void;
+  totalItems: number;
+}
+
+function Pagination({
+  currentPage,
+  totalPages,
+  onPageChange,
+  itemsPerPage,
+  onItemsPerPageChange,
+  totalItems,
+}: PaginationProps) {
+  const startItem = (currentPage - 1) * itemsPerPage + 1;
+  const endItem = Math.min(currentPage * itemsPerPage, totalItems);
+
+  // Генерируем номера страниц для отображения
+  const getPageNumbers = () => {
+    const pages: (number | string)[] = [];
+    const maxVisiblePages = 5;
+
+    if (totalPages <= maxVisiblePages) {
+      // Если страниц мало, показываем все
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      // Если страниц много, показываем с многоточиями
+      if (currentPage <= 3) {
+        // Начало списка
+        for (let i = 1; i <= 4; i++) {
+          pages.push(i);
+        }
+        pages.push("...");
+        pages.push(totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        // Конец списка
+        pages.push(1);
+        pages.push("...");
+        for (let i = totalPages - 3; i <= totalPages; i++) {
+          pages.push(i);
+        }
+      } else {
+        // Середина
+        pages.push(1);
+        pages.push("...");
+        for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+          pages.push(i);
+        }
+        pages.push("...");
+        pages.push(totalPages);
+      }
+    }
+
+    return pages;
+  };
+
+  return (
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-2">
+      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <span>
+          Показано {startItem}-{endItem} из {totalItems}
+        </span>
+        <Select
+          value={itemsPerPage.toString()}
+          onValueChange={(value) => onItemsPerPageChange(parseInt(value))}
+        >
+          <SelectTrigger className="w-[70px] h-8">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="10">10</SelectItem>
+            <SelectItem value="20">20</SelectItem>
+            <SelectItem value="50">50</SelectItem>
+            <SelectItem value="100">100</SelectItem>
+          </SelectContent>
+        </Select>
+        <span>на странице</span>
+      </div>
+
+      <div className="flex items-center gap-1">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => onPageChange(currentPage - 1)}
+          disabled={currentPage <= 1}
+          className="h-8 w-8 p-0"
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+
+        {getPageNumbers().map((page, index) => (
+          <div key={index}>
+            {page === "..." ? (
+              <span className="px-2 text-muted-foreground">...</span>
+            ) : (
+              <Button
+                variant={currentPage === page ? "default" : "outline"}
+                size="sm"
+                onClick={() => onPageChange(page as number)}
+                className="h-8 w-8 p-0"
+              >
+                {page}
+              </Button>
+            )}
+          </div>
+        ))}
+
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => onPageChange(currentPage + 1)}
+          disabled={currentPage >= totalPages}
+          className="h-8 w-8 p-0"
+        >
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 export default function AdminProductsPage() {
   const queryClient = useQueryClient();
   const [isNewProductDialogOpen, setIsNewProductDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] =
     useState<AdminProductClient | null>(null);
 
+  // Состояние фильтров
+  const [searchQuery, setSearchQuery] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("default");
+  const [sortOrder, setSortOrder] = useState("asc");
+
+  // Состояние пагинации
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(20);
+
   const { data: products, isLoading } = useQuery<AdminProductClient[]>({
     queryKey: ["adminProducts"],
     queryFn: getAdminProducts,
+  });
+
+  const { data: categories = [], isLoading: isLoadingCategories } = useQuery<
+    AdminCategory[]
+  >({
+    queryKey: ["adminCategories"],
+    queryFn: getAdminCategories,
   });
 
   const { data: bestsellers, isLoading: isLoadingBestsellers } = useQuery<
     Product[]
   >({
     queryKey: ["bestsellers"],
-    queryFn: () => getBestsellers(5),
+    queryFn: () => getBestsellers(20), // Увеличиваем количество для аналитики
   });
 
   const { mutate: deleteMutate, isPending: isDeleting } = useMutation({
@@ -505,9 +1051,132 @@ export default function AdminProductsPage() {
     },
   });
 
+  // Фильтрация, сортировка и пагинация продуктов
+  const { filteredAndSortedProducts, paginatedProducts, totalPages } =
+    useMemo(() => {
+      if (!products)
+        return {
+          filteredAndSortedProducts: [],
+          paginatedProducts: [],
+          totalPages: 0,
+        };
+
+      let filtered = products;
+
+      // Фильтрация по поиску
+      if (searchQuery) {
+        filtered = filtered.filter(
+          (product) =>
+            product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            product.description
+              ?.toLowerCase()
+              .includes(searchQuery.toLowerCase())
+        );
+      }
+
+      // Фильтрация по категории
+      if (categoryFilter !== "all") {
+        filtered = filtered.filter(
+          (product) => product.categoryId === categoryFilter
+        );
+      }
+
+      // Сортировка
+      if (sortBy !== "default") {
+        filtered = [...filtered].sort((a, b) => {
+          let aValue: any, bValue: any;
+
+          switch (sortBy) {
+            case "name":
+              aValue = a.name.toLowerCase();
+              bValue = b.name.toLowerCase();
+              break;
+            case "price":
+              aValue = parseFloat(a.price);
+              bValue = parseFloat(b.price);
+              break;
+            case "timesOrdered":
+              aValue = a.timesOrdered || 0;
+              bValue = b.timesOrdered || 0;
+              break;
+            case "createdAt":
+              aValue = new Date(a.createdAt);
+              bValue = new Date(b.createdAt);
+              break;
+            default:
+              return 0;
+          }
+
+          if (sortOrder === "desc") {
+            return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
+          } else {
+            return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+          }
+        });
+      }
+
+      // Пагинация
+      const totalPages = Math.ceil(filtered.length / itemsPerPage);
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      const paginatedProducts = filtered.slice(startIndex, endIndex);
+
+      return {
+        filteredAndSortedProducts: filtered,
+        paginatedProducts,
+        totalPages,
+      };
+    }, [
+      products,
+      searchQuery,
+      categoryFilter,
+      sortBy,
+      sortOrder,
+      currentPage,
+      itemsPerPage,
+    ]);
+
   const handleSuccess = () => {
     setEditingProduct(null);
     setIsNewProductDialogOpen(false);
+  };
+
+  const clearFilters = () => {
+    setSearchQuery("");
+    setCategoryFilter("all");
+    setSortBy("default");
+    setSortOrder("asc");
+    setCurrentPage(1);
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handleItemsPerPageChange = (newItemsPerPage: number) => {
+    setItemsPerPage(newItemsPerPage);
+    setCurrentPage(1); // Сбрасываем на первую страницу при изменении количества элементов
+  };
+
+  // Сбрасываем страницу на первую при изменении фильтров
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    setCurrentPage(1);
+  };
+
+  const handleCategoryChange = (value: string) => {
+    setCategoryFilter(value);
+    setCurrentPage(1);
+  };
+
+  const handleSortByChange = (value: string) => {
+    setSortBy(value);
+    setCurrentPage(1);
+  };
+
+  const handleSortOrderChange = (value: string) => {
+    setSortOrder(value);
+    setCurrentPage(1);
   };
 
   if (isLoading) {
@@ -521,125 +1190,203 @@ export default function AdminProductsPage() {
 
   return (
     <main className="container mx-auto p-4 md:p-8">
-      <h1 className="text-3xl font-bold mb-6">Управление продуктами</h1>
-
-      {/* Панель популярных продуктов */}
-      <section className="mb-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Самые популярные продукты</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {isLoadingBestsellers ? (
-              <p>Загрузка популярных продуктов...</p>
-            ) : bestsellers && bestsellers.length > 0 ? (
-              <ul className="space-y-2">
-                {bestsellers.map((product) => (
-                  <li
-                    key={product.id}
-                    className="flex items-center space-x-4 p-2 border rounded-md"
-                  >
-                    {product.imageUrl && (
-                      <Image
-                        src={product.imageUrl}
-                        alt={product.name}
-                        width={40}
-                        height={40}
-                        className="rounded-md object-cover"
-                      />
-                    )}
-                    <div>
-                      <p className="font-semibold">{product.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        Заказано раз: {product.timesOrdered || 0}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        Цена: {formatPrice(parseFloat(product.price))}
-                      </p>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-muted-foreground">
-                Нет данных о популярных продуктах.
-              </p>
-            )}
-          </CardContent>
-        </Card>
-      </section>
-
-      <div className="flex justify-end mb-4">
-        <ProductFormDialog
-          onSuccess={handleSuccess}
-          product={editingProduct}
-          key={editingProduct?.id || "new"}
-        >
-          <Button onClick={() => setEditingProduct(null)}>
-            <Plus className="mr-2 h-4 w-4" /> Добавить продукт
-          </Button>
-        </ProductFormDialog>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">Управление продуктами</h1>
+        <div className="flex gap-3">
+          <PopularProductsModal
+            products={bestsellers || []}
+            isLoading={isLoadingBestsellers}
+          />
+          <ProductFormDialog
+            onSuccess={handleSuccess}
+            product={editingProduct}
+            key={editingProduct?.id || "new"}
+          >
+            <Button onClick={() => setEditingProduct(null)}>
+              <Plus className="mr-2 h-4 w-4" /> Добавить продукт
+            </Button>
+          </ProductFormDialog>
+        </div>
       </div>
 
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Изображение</TableHead>
-            <TableHead>Имя</TableHead>
-            <TableHead>Категория</TableHead>
-            <TableHead>Цена</TableHead>
-            <TableHead>Скидка</TableHead>
-            <TableHead>Заказано раз</TableHead>
-            <TableHead className="text-right">Действия</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {products?.map((product) => (
-            <TableRow key={product.id}>
-              <TableCell>
-                {product.imageUrl && (
-                  <Image
-                    src={product.imageUrl}
-                    alt={product.name}
-                    width={40}
-                    height={40}
-                    className="rounded-md object-cover"
-                  />
-                )}
-              </TableCell>
-              <TableCell className="font-medium">{product.name}</TableCell>
-              <TableCell>{product.category?.name}</TableCell>
-              <TableCell>{formatPrice(parseFloat(product.price))}</TableCell>
-              <TableCell>
-                {product.discount
-                  ? formatPrice(parseFloat(product.discount))
-                  : "-"}
-              </TableCell>
-              <TableCell>{product.timesOrdered}</TableCell>
-              <TableCell className="text-right">
-                <div className="flex justify-end space-x-2">
-                  <ProductFormDialog
-                    onSuccess={handleSuccess}
-                    product={product}
+      {/* Фильтры */}
+      <AdminFilters
+        searchQuery={searchQuery}
+        categoryFilter={categoryFilter}
+        sortBy={sortBy}
+        sortOrder={sortOrder}
+        onSearchChange={handleSearchChange}
+        onCategoryChange={handleCategoryChange}
+        onSortByChange={handleSortByChange}
+        onSortOrderChange={handleSortOrderChange}
+        onClearFilters={clearFilters}
+        categories={categories}
+      />
+
+      {/* Статистика */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-2xl font-bold">{products?.length || 0}</div>
+            <p className="text-xs text-muted-foreground">Всего продуктов</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-2xl font-bold">
+              {filteredAndSortedProducts.length}
+            </div>
+            <p className="text-xs text-muted-foreground">Отфильтровано</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-2xl font-bold">
+              {formatPrice(
+                filteredAndSortedProducts.reduce(
+                  (sum, p) => sum + parseFloat(p.price),
+                  0
+                ) / Math.max(filteredAndSortedProducts.length, 1)
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground">Средняя цена</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-2xl font-bold">
+              {filteredAndSortedProducts.reduce(
+                (sum, p) => sum + (p.timesOrdered || 0),
+                0
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground">Всего заказов</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Пагинация сверху */}
+      {totalPages > 1 && (
+        <Card className="mb-4">
+          <CardContent className="py-4">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+              itemsPerPage={itemsPerPage}
+              onItemsPerPageChange={handleItemsPerPageChange}
+              totalItems={filteredAndSortedProducts.length}
+            />
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Таблица продуктов */}
+      <Card>
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Изображение</TableHead>
+                <TableHead>Имя</TableHead>
+                <TableHead>Категория</TableHead>
+                <TableHead>Цена</TableHead>
+                <TableHead>Скидка</TableHead>
+                <TableHead>Заказано раз</TableHead>
+                <TableHead className="text-right">Действия</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {paginatedProducts.length === 0 ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={7}
+                    className="text-center py-8 text-muted-foreground"
                   >
-                    <Button variant="outline" size="icon">
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                  </ProductFormDialog>
-                  <DeleteProductDialog
-                    productId={product.id}
-                    onSuccess={handleSuccess}
-                  >
-                    <Button variant="destructive" size="icon">
-                      <Trash className="h-4 w-4" />
-                    </Button>
-                  </DeleteProductDialog>
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+                    {searchQuery || categoryFilter !== "all"
+                      ? "Нет продуктов, соответствующих фильтрам"
+                      : "Нет продуктов"}
+                  </TableCell>
+                </TableRow>
+              ) : (
+                paginatedProducts.map((product) => (
+                  <TableRow key={product.id}>
+                    <TableCell>
+                      {product.imageUrl && (
+                        <Image
+                          src={product.imageUrl}
+                          alt={product.name}
+                          width={40}
+                          height={40}
+                          className="rounded-md object-cover"
+                        />
+                      )}
+                    </TableCell>
+                    <TableCell className="font-medium">
+                      {product.name}
+                    </TableCell>
+                    <TableCell>{product.category?.name}</TableCell>
+                    <TableCell>
+                      {formatPrice(parseFloat(product.price))}
+                    </TableCell>
+                    <TableCell>
+                      {product.discount
+                        ? formatPrice(parseFloat(product.discount))
+                        : "-"}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        {product.timesOrdered || 0}
+                        {(product.timesOrdered || 0) > 0 && (
+                          <Badge variant="secondary" className="text-xs">
+                            Популярный
+                          </Badge>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end space-x-2">
+                        <ProductFormDialog
+                          onSuccess={handleSuccess}
+                          product={product}
+                        >
+                          <Button variant="outline" size="icon">
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                        </ProductFormDialog>
+                        <DeleteProductDialog
+                          productId={product.id}
+                          onSuccess={handleSuccess}
+                        >
+                          <Button variant="destructive" size="icon">
+                            <Trash className="h-4 w-4" />
+                          </Button>
+                        </DeleteProductDialog>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
+      {/* Пагинация снизу */}
+      {totalPages > 1 && (
+        <Card className="mt-4">
+          <CardContent className="py-4">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+              itemsPerPage={itemsPerPage}
+              onItemsPerPageChange={handleItemsPerPageChange}
+              totalItems={filteredAndSortedProducts.length}
+            />
+          </CardContent>
+        </Card>
+      )}
     </main>
   );
 }

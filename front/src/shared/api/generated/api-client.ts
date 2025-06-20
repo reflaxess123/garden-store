@@ -3,12 +3,12 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  CartItemAdd, CartItemInDB, CartItemUpdate, CartMergeRequest, CategoryCreate,
-  CategoryInDB, CategoryUpdate, CustomUser, FavouriteInDB, HTTPValidationError,
-  LocalCartItem, OrderCreate, OrderDelete, OrderInDB, OrderItemCreate,
-  OrderItemInDB, OrderUpdateStatus, ProductCreate, ProductInDB, ProductUpdate,
-  ResetPasswordSchema, SignInSchema, SignUpSchema, Token, UpdatePasswordSchema,
-  ValidationError
+  CartItemAdd, CartItemInDB, CartItemUpdate, CartItemWithProduct, CartMergeRequest,
+  CategoryCreate, CategoryInDB, CategoryUpdate, CustomUser, FavouriteInDB,
+  HTTPValidationError, LocalCartItem, OrderCreate, OrderDelete, OrderInDB,
+  OrderItemCreate, OrderItemInDB, OrderUpdateStatus, ProductCreate, ProductInDB,
+  ProductUpdate, ResetPasswordSchema, SignInSchema, SignUpSchema, Token,
+  UpdatePasswordSchema, ValidationError
 } from './types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
@@ -518,13 +518,13 @@ export function useDeleteadminorderapiadminordersorderiddelete() {
 
 // Get Cart
 export async function getCartApiCartGet(
-): Promise<CartItemInDB[]> {
+): Promise<CartItemWithProduct[]> {
   const url = `/api/cart`;
   const options: RequestInit = {
     method: 'GET',
   };
 
-  return fetchApi<CartItemInDB[]>(url, options);
+  return fetchApi<CartItemWithProduct[]>(url, options);
 }
 
 // React Query хук для getCartApiCartGet
@@ -756,24 +756,61 @@ export function useGetproductbyslugapiproductsslugproductslugget(
 
 // Get Products By Category Slug
 export async function getProductsByCategorySlugApiProductsCategoryCategorySlugGet(
-  category_slug: string
+  category_slug: string,
+  params?: { limit?: any, offset?: any, searchQuery?: any, sortBy?: any, sortOrder?: any, minPrice?: any, maxPrice?: any, categoryFilter?: any, inStock?: any, hasDiscount?: any }
 ): Promise<ProductInDB[]> {
   const url = `/api/products/category/${category_slug}`;
   const options: RequestInit = {
     method: 'GET',
   };
 
-  return fetchApi<ProductInDB[]>(url, options);
+  let finalUrl = url;
+  if (params) {
+    const searchParams = new URLSearchParams();
+    if (params.limit !== undefined) {
+      searchParams.append('limit', String(params.limit));
+    }
+    if (params.offset !== undefined) {
+      searchParams.append('offset', String(params.offset));
+    }
+    if (params.searchQuery !== undefined) {
+      searchParams.append('searchQuery', String(params.searchQuery));
+    }
+    if (params.sortBy !== undefined) {
+      searchParams.append('sortBy', String(params.sortBy));
+    }
+    if (params.sortOrder !== undefined) {
+      searchParams.append('sortOrder', String(params.sortOrder));
+    }
+    if (params.minPrice !== undefined) {
+      searchParams.append('minPrice', String(params.minPrice));
+    }
+    if (params.maxPrice !== undefined) {
+      searchParams.append('maxPrice', String(params.maxPrice));
+    }
+    if (params.categoryFilter !== undefined) {
+      searchParams.append('categoryFilter', String(params.categoryFilter));
+    }
+    if (params.inStock !== undefined) {
+      searchParams.append('inStock', String(params.inStock));
+    }
+    if (params.hasDiscount !== undefined) {
+      searchParams.append('hasDiscount', String(params.hasDiscount));
+    }
+    finalUrl += `?${searchParams.toString()}`;
+  }
+  return fetchApi<ProductInDB[]>(finalUrl, options);
 }
 
 // React Query хук для getProductsByCategorySlugApiProductsCategoryCategorySlugGet
 export function useGetproductsbycategoryslugapiproductscategorycategoryslugget(
   category_slug: string,
+  params?: { limit?: any, offset?: any, searchQuery?: any, sortBy?: any, sortOrder?: any, minPrice?: any, maxPrice?: any, categoryFilter?: any, inStock?: any, hasDiscount?: any },
   options?: { enabled?: boolean }
 ) {
   return useQuery({
-    queryKey: ['getProductsByCategorySlugApiProductsCategoryCategorySlugGet', category_slug],
-    queryFn: () => getProductsByCategorySlugApiProductsCategoryCategorySlugGet(category_slug),
+    queryKey: ['getProductsByCategorySlugApiProductsCategoryCategorySlugGet', category_slug, params],
+    queryFn: () => getProductsByCategorySlugApiProductsCategoryCategorySlugGet(category_slug, params),
     ...options,
   });
 }

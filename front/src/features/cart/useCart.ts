@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/features/auth/AuthContext";
 import {
-  CartItemInDB,
+  CartItemWithProduct,
   clearCartApiCartDelete,
   useGetcartapicartget,
 } from "@/shared/api/generated";
@@ -63,11 +63,11 @@ export function useCartData() {
 
   const cartItems: CartItem[] = useMemo(() => {
     if (isAuthenticated && serverCartData) {
-      return serverCartData.map((item: CartItemInDB) => ({
+      return serverCartData.map((item: CartItemWithProduct) => ({
         cartId: item.id,
         productId: item.productId,
-        name: `Product ${item.productId}`, // TODO: получать имя продукта
-        imageUrl: null, // TODO: получать изображение продукта
+        name: item.name,
+        imageUrl: item.imageUrl,
         priceSnapshot: item.priceSnapshot,
         quantity: item.quantity,
       }));
@@ -141,23 +141,30 @@ export function useAddToCart() {
 
       if (previousCart && Array.isArray(previousCart)) {
         const existingItemIndex = previousCart.findIndex(
-          (item: CartItemInDB) => item.productId === productId
+          (item: CartItemWithProduct) => item.productId === productId
         );
 
         let updatedCart;
         if (existingItemIndex >= 0) {
-          updatedCart = previousCart.map((item: CartItemInDB, index) =>
+          updatedCart = previousCart.map((item: CartItemWithProduct, index) =>
             index === existingItemIndex
               ? { ...item, quantity: item.quantity + quantity }
               : item
           );
         } else {
-          const newItem: CartItemInDB = {
+          // Для нового товара создаем временный элемент с минимальными данными
+          // Реальные данные будут загружены после успешного ответа сервера
+          const newItem: CartItemWithProduct = {
             id: `temp-${productId}-${Date.now()}`,
             productId: productId,
+            userId: "temp",
             quantity: quantity,
             priceSnapshot: 0,
-            userId: "temp",
+            name: "Загрузка...",
+            slug: "",
+            description: null,
+            imageUrl: null,
+            categoryId: "",
           };
           updatedCart = [...previousCart, newItem];
         }
@@ -215,7 +222,7 @@ export function useUpdateCartQuantity() {
       const previousCart = queryClient.getQueryData(["getCartApiCartGet"]);
 
       if (previousCart && Array.isArray(previousCart)) {
-        const updatedCart = previousCart.map((item: CartItemInDB) =>
+        const updatedCart = previousCart.map((item: CartItemWithProduct) =>
           item.id === cartId ? { ...item, quantity } : item
         );
         queryClient.setQueryData(["getCartApiCartGet"], updatedCart);
@@ -262,7 +269,7 @@ export function useRemoveFromCart() {
 
       if (previousCart && Array.isArray(previousCart)) {
         const updatedCart = previousCart.filter(
-          (item: CartItemInDB) => item.id !== cartId
+          (item: CartItemWithProduct) => item.id !== cartId
         );
         queryClient.setQueryData(["getCartApiCartGet"], updatedCart);
       }

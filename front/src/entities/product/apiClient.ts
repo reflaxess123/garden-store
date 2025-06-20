@@ -1,16 +1,20 @@
 import {
-  createOrderApiOrdersPost,
-  getProductsByCategorySlugApiProductsCategoryCategorySlugGet,
   OrderCreate,
   ProductInDB,
+  createOrderApiOrdersPost,
 } from "@/shared/api/generated";
 
 interface GetProductsOptions {
   limit?: number;
   offset?: number;
-  sortBy?: "createdAt" | "price" | "name";
-  sortOrder?: "asc" | "desc";
   searchQuery?: string;
+  sortBy?: string;
+  sortOrder?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  categoryFilter?: string;
+  inStock?: boolean;
+  hasDiscount?: boolean;
 }
 
 interface OrderItem {
@@ -23,55 +27,35 @@ interface OrderItem {
 
 export async function getProductsClient(
   categorySlug: string,
-  options?: GetProductsOptions
+  options: GetProductsOptions = {}
 ): Promise<ProductInDB[]> {
-  try {
-    // Используем сгенерированный API клиент
-    const products =
-      await getProductsByCategorySlugApiProductsCategoryCategorySlugGet(
-        categorySlug
-      );
+  const params = new URLSearchParams();
 
-    // Сортировка и фильтрация на клиенте (можно улучшить, добавив параметры в API)
-    let filteredProducts = [...products];
+  if (options.limit) params.append("limit", options.limit.toString());
+  if (options.offset) params.append("offset", options.offset.toString());
+  if (options.searchQuery) params.append("searchQuery", options.searchQuery);
+  if (options.sortBy) params.append("sortBy", options.sortBy);
+  if (options.sortOrder) params.append("sortOrder", options.sortOrder);
+  if (options.minPrice !== undefined)
+    params.append("minPrice", options.minPrice.toString());
+  if (options.maxPrice !== undefined)
+    params.append("maxPrice", options.maxPrice.toString());
+  if (options.categoryFilter)
+    params.append("categoryFilter", options.categoryFilter);
+  if (options.inStock !== undefined)
+    params.append("inStock", options.inStock.toString());
+  if (options.hasDiscount !== undefined)
+    params.append("hasDiscount", options.hasDiscount.toString());
 
-    if (options?.searchQuery) {
-      const query = options.searchQuery.toLowerCase();
-      filteredProducts = filteredProducts.filter(
-        (product) =>
-          product.name.toLowerCase().includes(query) ||
-          product.description?.toLowerCase().includes(query)
-      );
-    }
-
-    // Сортировка
-    if (options?.sortBy) {
-      filteredProducts.sort((a, b) => {
-        let aValue: any = a[options.sortBy!];
-        let bValue: any = b[options.sortBy!];
-
-        if (options.sortBy === "price") {
-          aValue = parseFloat(a.price);
-          bValue = parseFloat(b.price);
-        }
-
-        if (options.sortOrder === "desc") {
-          return bValue < aValue ? -1 : bValue > aValue ? 1 : 0;
-        } else {
-          return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
-        }
-      });
-    }
-
-    // Пагинация
-    const start = options?.offset || 0;
-    const limit = options?.limit || 20;
-
-    return filteredProducts.slice(start, start + limit);
-  } catch (error) {
-    console.error("Error fetching products:", error);
-    return [];
+  const response = await fetch(
+    `/api/products/category/${categorySlug}?${params.toString()}`
+  );
+  if (!response.ok) {
+    throw new Error("Failed to fetch products");
   }
+
+  const productsInDB = await response.json();
+  return productsInDB as ProductInDB[];
 }
 
 export async function createOrder(

@@ -1,7 +1,7 @@
-import { getCategoryBySlug } from "@/entities/category/api";
+import { getAllCategories, getCategoryBySlug } from "@/entities/category/api";
 import { getProductsByCategorySlug } from "@/entities/product/api";
 import { Breadcrumbs } from "@/widgets/Breadcrumbs";
-import { InfiniteProductList } from "@/widgets/CatalogGrid/InfiniteProductList";
+import { CatalogWithFilters } from "@/widgets/CatalogWithFilters";
 import { notFound } from "next/navigation";
 
 interface CategoryPageProps {
@@ -10,6 +10,11 @@ interface CategoryPageProps {
   }>;
   searchParams: Promise<{
     q?: string;
+    sortBy?: "createdAt" | "price" | "name";
+    sortOrder?: "asc" | "desc";
+    minPrice?: string;
+    maxPrice?: string;
+    categoryFilter?: string;
   }>;
 }
 
@@ -19,15 +24,22 @@ export default async function CategoryPage({
 }: CategoryPageProps) {
   const categorySlug = (await params)["category-slug"];
   const searchQuery = (await searchParams).q;
+  const sortBy = (await searchParams).sortBy;
+  const sortOrder = (await searchParams).sortOrder;
+  const minPrice = (await searchParams).minPrice;
+  const maxPrice = (await searchParams).maxPrice;
+  const categoryFilter = (await searchParams).categoryFilter;
 
   const category = await getCategoryBySlug(categorySlug);
+  const allCategories = categorySlug === "all" ? await getAllCategories() : [];
 
   if (!category && categorySlug !== "all") {
     notFound();
   }
 
+  // Оптимизированное получение товаров - один запрос для всех товаров
   const initialProducts = await getProductsByCategorySlug(categorySlug, {
-    limit: 20,
+    limit: categorySlug === "all" ? 100 : 20, // Больше товаров только для страницы "all"
     searchQuery: searchQuery || undefined,
   });
 
@@ -42,13 +54,20 @@ export default async function CategoryPage({
           },
         ]}
       />
-      <h1 className="text-3xl font-bold mt-4 mb-6 text-center">
-        {category?.name || "Все товары"}
-      </h1>
-      <InfiniteProductList
+
+      <CatalogWithFilters
         initialProducts={initialProducts}
         categorySlug={categorySlug}
         searchQuery={searchQuery}
+        currentCategory={category}
+        allCategories={allCategories}
+        initialFilters={{
+          sortBy,
+          sortOrder,
+          minPrice: minPrice ? parseFloat(minPrice) : undefined,
+          maxPrice: maxPrice ? parseFloat(maxPrice) : undefined,
+          categoryFilter,
+        }}
       />
     </main>
   );

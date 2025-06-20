@@ -14,7 +14,7 @@ export default function AuthLayout({
           <CardTitle className="text-center">
             <Link href="/">
               {/* Placeholder for Logo */}
-              <span className="text-2xl font-bold">Garden Store</span>
+              <span className="text-2xl font-bold">Магаз Мамаши</span>
             </Link>
           </CardTitle>
         </CardHeader>

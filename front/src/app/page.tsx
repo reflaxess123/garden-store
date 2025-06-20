@@ -23,19 +23,22 @@ import Link from "next/link";
 // Компонент героической секции
 function HeroSection() {
   return (
-    <section className="relative bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 py-20 lg:py-32">
+    <section className="relative bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 dark:from-green-950 dark:via-emerald-950 dark:to-teal-950 py-20 lg:py-32">
       <div className="absolute inset-0 bg-[url('/images/garden-pattern.svg')] opacity-5"></div>
       <div className="container mx-auto px-4 relative">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-8">
             <div className="space-y-4">
-              <Badge className="bg-green-100 text-green-800 hover:bg-green-200">
+              <Badge className="bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900 dark:text-green-200 dark:hover:bg-green-800">
                 🌱 Новая коллекция весна 2024
               </Badge>
-              <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 leading-tight">
-                Ваш сад — <span className="text-green-600">наша страсть</span>
+              <h1 className="text-4xl lg:text-6xl font-bold text-foreground leading-tight">
+                Ваш сад —{" "}
+                <span className="text-green-600 dark:text-green-400">
+                  наша страсть
+                </span>
               </h1>
-              <p className="text-xl text-gray-600 leading-relaxed">
+              <p className="text-xl text-muted-foreground leading-relaxed">
                 Откройте мир садоводства с нашими качественными инструментами,
                 семенами и горшками. Создайте сад своей мечты уже сегодня!
               </p>
@@ -45,7 +48,7 @@ function HeroSection() {
               <Button
                 asChild
                 size="lg"
-                className="bg-green-600 hover:bg-green-700"
+                className="bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600"
               >
                 <Link href="/catalog" className="flex items-center gap-2">
                   Начать покупки
@@ -61,24 +64,28 @@ function HeroSection() {
             </div>
 
             {/* Статистика */}
-            <div className="grid grid-cols-3 gap-8 pt-8 border-t">
+            <div className="grid grid-cols-3 gap-8 pt-8 border-t border-border">
               <div className="text-center">
-                <div className="text-2xl lg:text-3xl font-bold text-green-600">
+                <div className="text-2xl lg:text-3xl font-bold text-green-600 dark:text-green-400">
                   1000+
                 </div>
-                <div className="text-sm text-gray-600">Довольных клиентов</div>
+                <div className="text-sm text-muted-foreground">
+                  Довольных клиентов
+                </div>
               </div>
               <div className="text-center">
-                <div className="text-2xl lg:text-3xl font-bold text-green-600">
+                <div className="text-2xl lg:text-3xl font-bold text-green-600 dark:text-green-400">
                   500+
                 </div>
-                <div className="text-sm text-gray-600">Товаров в каталоге</div>
+                <div className="text-sm text-muted-foreground">
+                  Товаров в каталоге
+                </div>
               </div>
               <div className="text-center">
-                <div className="text-2xl lg:text-3xl font-bold text-green-600">
+                <div className="text-2xl lg:text-3xl font-bold text-green-600 dark:text-green-400">
                   99%
                 </div>
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-muted-foreground">
                   Положительных отзывов
                 </div>
               </div>
@@ -97,8 +104,8 @@ function HeroSection() {
               />
             </div>
             {/* Декоративные элементы */}
-            <div className="absolute -top-4 -right-4 w-24 h-24 bg-green-200 rounded-full opacity-60"></div>
-            <div className="absolute -bottom-6 -left-6 w-32 h-32 bg-emerald-200 rounded-full opacity-40"></div>
+            <div className="absolute -top-4 -right-4 w-24 h-24 bg-green-200 dark:bg-green-800 rounded-full opacity-60"></div>
+            <div className="absolute -bottom-6 -left-6 w-32 h-32 bg-emerald-200 dark:bg-emerald-800 rounded-full opacity-40"></div>
           </div>
         </div>
       </div>
@@ -142,13 +149,13 @@ function FeaturesSection() {
   ];
 
   return (
-    <section className="py-20 bg-white">
+    <section className="py-20 bg-background">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
-          <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+          <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
             Почему выбирают нас?
           </h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Мы создаем лучший опыт покупок для садоводов всех уровней
           </p>
         </div>
@@ -165,8 +172,10 @@ function FeaturesSection() {
                 >
                   <feature.icon className={`h-8 w-8 ${feature.color}`} />
                 </div>
-                <h3 className="text-xl font-semibold mb-3">{feature.title}</h3>
-                <p className="text-gray-600">{feature.description}</p>
+                <h3 className="text-xl font-semibold mb-3 text-foreground">
+                  {feature.title}
+                </h3>
+                <p className="text-muted-foreground">{feature.description}</p>
               </CardContent>
             </Card>
           ))}
@@ -206,13 +215,13 @@ function TestimonialsSection() {
   ];
 
   return (
-    <section className="py-20 bg-gray-50">
+    <section className="py-20 bg-muted/30">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
-          <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+          <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
             Что говорят наши клиенты
           </h2>
-          <p className="text-xl text-gray-600">
+          <p className="text-xl text-muted-foreground">
             Более 1000 довольных садоводов доверяют нам
           </p>
         </div>
@@ -232,14 +241,16 @@ function TestimonialsSection() {
                     ))}
                   </div>
                 </div>
-                <p className="text-gray-700 mb-6 italic">
+                <p className="text-foreground mb-6 italic">
                   &quot;{testimonial.content}&quot;
                 </p>
                 <div className="flex items-center">
                   <div className="text-2xl mr-3">{testimonial.avatar}</div>
                   <div>
-                    <div className="font-semibold">{testimonial.name}</div>
-                    <div className="text-sm text-gray-600">
+                    <div className="font-semibold text-foreground">
+                      {testimonial.name}
+                    </div>
+                    <div className="text-sm text-muted-foreground">
                       {testimonial.role}
                     </div>
                   </div>
@@ -283,7 +294,7 @@ function StatsSection() {
   ];
 
   return (
-    <section className="py-20 bg-green-600">
+    <section className="py-20 bg-green-600 dark:bg-green-700">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
           {stats.map((stat, index) => (
@@ -304,13 +315,13 @@ function StatsSection() {
 // Компонент CTA
 function CTASection() {
   return (
-    <section className="py-20 bg-gradient-to-r from-green-600 to-emerald-600">
+    <section className="py-20 bg-gradient-to-r from-green-600 to-emerald-600 dark:from-green-700 dark:to-emerald-700">
       <div className="container mx-auto px-4 text-center">
         <div className="max-w-3xl mx-auto">
           <h2 className="text-3xl lg:text-4xl font-bold text-white mb-6">
             Готовы создать сад своей мечты?
           </h2>
-          <p className="text-xl text-green-100 mb-8">
+          <p className="text-xl text-green-100 dark:text-green-200 mb-8">
             Присоединяйтесь к тысячам довольных садоводов и начните свое садовое
             путешествие уже сегодня!
           </p>
@@ -325,7 +336,7 @@ function CTASection() {
               asChild
               size="lg"
               variant="outline"
-              className="border-white text-white hover:bg-white hover:text-green-600"
+              className="border-white text-white hover:bg-white hover:text-green-600 dark:hover:text-green-700"
             >
               <Link href="/register" className="flex items-center gap-2">
                 Создать аккаунт
@@ -355,13 +366,13 @@ export default async function Home() {
       <FeaturesSection />
 
       {/* Категории */}
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-background">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+            <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
               Наши категории
             </h2>
-            <p className="text-xl text-gray-600">
+            <p className="text-xl text-muted-foreground">
               Все для вашего сада в одном месте
             </p>
           </div>
@@ -384,16 +395,16 @@ export default async function Home() {
       </section>
 
       {/* Хиты продаж */}
-      <section className="py-20 bg-gray-50">
+      <section className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-200 mb-4">
+            <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-200 dark:bg-orange-900 dark:text-orange-200 dark:hover:bg-orange-800 mb-4">
               🔥 Популярные товары
             </Badge>
-            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+            <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
               Хиты продаж
             </h2>
-            <p className="text-xl text-gray-600">
+            <p className="text-xl text-muted-foreground">
               Самые популярные товары среди наших покупателей
             </p>
           </div>
@@ -401,7 +412,7 @@ export default async function Home() {
           {bestsellers.length === 0 ? (
             <div className="text-center py-12">
               <div className="text-6xl mb-4">🌱</div>
-              <p className="text-xl text-gray-600 mb-6">
+              <p className="text-xl text-muted-foreground mb-6">
                 Скоро здесь появятся популярные товары
               </p>
               <Button asChild>

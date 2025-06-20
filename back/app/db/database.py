@@ -61,6 +61,10 @@ async def get_db():
         try:
             yield db
         except Exception as e:
+            # Не перехватываем HTTPException - они должны пройти дальше
+            from fastapi import HTTPException
+            if isinstance(e, HTTPException):
+                raise
             logger.error(f"Ошибка в сессии базы данных: {e}")
             await db.rollback()
             raise

@@ -30,10 +30,30 @@ class ProfileBase(BaseModel):
     fullName: Optional[str] = None
     isAdmin: bool = Field(..., alias="is_admin", serialization_alias="isAdmin")
 
-    model_config = {"from_attributes": True}
+    model_config = {"from_attributes": True, "populate_by_name": True}
 
 class CustomUser(ProfileBase):
     pass
+
+# Схемы для управления пользователями в админке
+class UserCreate(BaseModel):
+    email: str
+    password: str = Field(min_length=6)
+    fullName: Optional[str] = None
+    isAdmin: bool = False
+
+class UserUpdate(BaseModel):
+    email: Optional[str] = None
+    fullName: Optional[str] = None
+    isAdmin: Optional[bool] = None
+
+class UserInDB(ProfileBase):
+    createdAt: Optional[datetime] = None
+    ordersCount: int = 0
+    favoritesCount: int = 0
+    cartItemsCount: int = 0
+
+    model_config = {"from_attributes": True}
 # endregion
 
 # region Category Schemas

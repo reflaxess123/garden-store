@@ -30,7 +30,7 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-background text-foreground p-4 shadow-md border-b">
+    <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 text-foreground p-4 shadow-md border-b">
       <div className="container mx-auto flex items-center justify-between">
         {/* Mobile Header */}
         <div className="md:hidden flex items-center">

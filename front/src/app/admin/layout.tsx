@@ -2,7 +2,7 @@
 
 import { AuthGuard } from "@/features/auth/ui/AuthGuard";
 import { cn } from "@/shared/lib/utils";
-import { Home, Package, ShoppingBag, Tags } from "lucide-react";
+import { Home, Package, ShoppingBag, Tags, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -67,6 +67,10 @@ export default function AdminLayout({
                 <AdminNavLink href="/admin/orders">
                   <ShoppingBag className="h-4 w-4" />
                   Заказы
+                </AdminNavLink>
+                <AdminNavLink href="/admin/users">
+                  <Users className="h-4 w-4" />
+                  Пользователи
                 </AdminNavLink>
               </nav>
             </div>

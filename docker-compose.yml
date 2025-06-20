@@ -50,13 +50,13 @@ services:
       # Для сервера Next.js (server-side) - внутренний URL
       - BACKEND_URL=http://backend:4000
     ports:
-      - "3003:3000"
+      - "3003:80"
     depends_on:
       - backend
     networks:
       - garden-store-network
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:3000 || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:80 || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3

@@ -24,8 +24,8 @@ RUN rm -rf .next
 # Собираем Next.js приложение
 RUN npm run build
 
-# Открываем порт 3000 (стандартный для Next.js)
-EXPOSE 3000
+# Открываем порт 80
+EXPOSE 80
 
-# Запускаем Next.js в продакшн режиме
-CMD ["npm", "start"] 
+# Запускаем Next.js на порту 80
+CMD ["npm", "start", "--", "--port", "80"] 

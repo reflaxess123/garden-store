@@ -50,9 +50,9 @@ services:
       - NEXT_PUBLIC_WS_URL=ws://backend:4000
     ports:
       - "3003:80"
-          depends_on:
-        backend:
-          condition: service_healthy
+    depends_on:
+      backend:
+        condition: service_healthy
     networks:
       - garden-store-network
     healthcheck:

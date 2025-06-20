@@ -17,7 +17,8 @@ export interface Product {
 const getBaseUrl = () => {
   if (typeof window !== "undefined") return ""; // Use relative path on client-side
   if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
-  return "http://localhost:3000";
+  // Используем переменную окружения для внутреннего URL фронтенда при SSR
+  return process.env.FRONTEND_INTERNAL_URL || "http://localhost:3000";
 };
 
 interface GetProductsOptions {

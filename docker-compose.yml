@@ -34,7 +34,7 @@ services:
       retries: 3
       start_period: 40s
 
-  # Фронтенд сервис
+  # Фронтенд сервисsasdasd
   frontend:
     build:
       context: ./front

@@ -45,14 +45,13 @@ services:
     container_name: garden-store-frontend
     restart: unless-stopped
     environment:
-      # API URL для всех запросов (internal Docker network)
-      - NEXT_PUBLIC_API_URL=http://backend:4000
-      - NEXT_PUBLIC_WS_URL=ws://backend:4000
+      # API URL для всех запросов (используем имя контейнера)
+      - NEXT_PUBLIC_API_URL=http://garden-store-backend:4000
+      - NEXT_PUBLIC_WS_URL=ws://garden-store-backend:4000
     ports:
       - "3003:80"
     depends_on:
-      backend:
-        condition: service_healthy
+      - backend
     networks:
       - garden-store-network
     healthcheck:

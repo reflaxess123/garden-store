@@ -8,7 +8,7 @@ const Footer = () => {
         {/* Logo and Copyright */}
         <div className="flex flex-col items-center md:items-start">
           <Link href="/" className="text-xl font-bold text-foreground">
-            Garden Store
+            Магаз Мамаши
           </Link>
           {/* Удаляем Image компонент */}
           {/* <Image

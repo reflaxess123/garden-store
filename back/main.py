@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from fastapi.middleware.cors import CORSMiddleware # Import CORS middleware
 from decimal import Decimal
 import json
+from contextlib import asynccontextmanager
 
 class CustomJsonEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -19,6 +20,7 @@ json._default_encoder = CustomJsonEncoder()
 
 # Импорт роутеров
 from app.routers import auth, admin, cart, categories, products, orders, favorites
+from app.db.database import check_database_connection
 
 # Загружаем переменные окружения из .env если файл существует (для разработки)
 env_file = os.path.join(os.path.dirname(__file__), '.env')
@@ -31,7 +33,18 @@ else:
 print("DATABASE_URL:", "***" if os.getenv("DATABASE_URL") else "НЕ ЗАДАН")
 print("REDIS_URL:", "***" if os.getenv("REDIS_URL") else "НЕ ЗАДАН")
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Проверяем подключение к базе данных при запуске
+    print("🔄 Проверка подключения к базе данных...")
+    db_connected = await check_database_connection()
+    if not db_connected:
+        print("⚠️  Предупреждение: Не удалось подключиться к базе данных при запуске")
+    yield
+    # Cleanup при завершении приложения
+    print("🔄 Завершение работы приложения...")
+
+app = FastAPI(lifespan=lifespan)
 
 # CORS configuration
 origins = [
@@ -70,17 +83,10 @@ async def health_check():
     db_status = "unknown"
     redis_status = "unknown"
 
-    # Тест подключения к PostgreSQL
+    # Тест подключения к PostgreSQL через новую функцию
     try:
-        # Используем DATABASE_URL напрямую
-        db_url = os.getenv("DATABASE_URL")
-        conn = psycopg2.connect(db_url)
-        cur = conn.cursor()
-        cur.execute("SELECT 1")
-        cur.close()
-        conn.close()
-        print("PostgreSQL: подключение успешно!")
-        db_status = "OK"
+        db_connected = await check_database_connection()
+        db_status = "OK" if db_connected else "Connection failed"
     except Exception as e:
         db_status = f"Error: {e}"
 

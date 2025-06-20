@@ -94,7 +94,7 @@ const Header = () => {
         {/* Desktop Header */}
         <div className="hidden md:flex flex-1 items-center justify-between">
           <Link href="/" className="text-xl font-bold text-foreground">
-            Garden Store
+            Магаз Мамаши
           </Link>
 
           <div className="flex-1 flex justify-center">

@@ -13,10 +13,6 @@ export default async function Home() {
 
   return (
     <main className="container mx-auto p-4 md:p-8">
-      <h1 className="text-3xl font-bold mb-6 text-center">
-        Добро пожаловать в Garden Store!
-      </h1>
-
       <section className="mb-12">
         <h2 className="text-2xl font-semibold mb-4">Категории</h2>
         {categories.length === 0 ? (

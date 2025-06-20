@@ -10,32 +10,50 @@ function SearchInputInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
-  const initialQuery = searchParams?.get("q") || "";
-  const isInitialMount = useRef(true);
+  const currentQuery = searchParams?.get("q") || "";
 
-  const [text, setText] = useState(initialQuery);
+  const [text, setText] = useState(currentQuery);
   const [query] = useDebounce(text, 400);
+  const isInitialMount = useRef(true);
+  const lastNavigatedQuery = useRef(currentQuery);
+
+  // Синхронизируем локальное состояние с URL при изменении страницы
+  useEffect(() => {
+    if (currentQuery !== lastNavigatedQuery.current) {
+      setText(currentQuery);
+      lastNavigatedQuery.current = currentQuery;
+    }
+  }, [currentQuery]);
 
   useEffect(() => {
-    // Пропускаем первый рендер, чтобы избежать редиректов при инициализации
+    // Пропускаем первый рендер
     if (isInitialMount.current) {
       isInitialMount.current = false;
       return;
     }
 
-    // Выполняем поиск только если пользователь что-то ввел
-    if (query && query !== initialQuery) {
-      router.push(`/catalog?q=${encodeURIComponent(query)}`);
-    } else if (!query && initialQuery && pathname === "/catalog") {
-      // Очищаем поиск только если мы на странице каталога и убрали поисковый запрос
+    // Не навигируем если запрос не изменился
+    if (query === lastNavigatedQuery.current) {
+      return;
+    }
+
+    // Навигируем только если есть реальное изменение
+    if (query.trim()) {
+      const newUrl = `/catalog?q=${encodeURIComponent(query.trim())}`;
+      lastNavigatedQuery.current = query.trim();
+      router.push(newUrl);
+    } else if (currentQuery && pathname === "/catalog") {
+      // Очищаем поиск только если убираем существующий запрос
+      lastNavigatedQuery.current = "";
       router.push("/catalog");
     }
-  }, [query, router, initialQuery, pathname]);
+  }, [query, router, currentQuery, pathname]);
 
   // Обработчик отправки формы по Enter
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (text.trim()) {
+    if (text.trim() && text.trim() !== currentQuery) {
+      lastNavigatedQuery.current = text.trim();
       router.push(`/catalog?q=${encodeURIComponent(text.trim())}`);
     }
   };

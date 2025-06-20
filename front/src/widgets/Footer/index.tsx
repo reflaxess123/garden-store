@@ -3,7 +3,7 @@ import Link from "next/link";
 
 const Footer = () => {
   return (
-    <footer className="bg-background text-foreground p-4 mt-8 shadow-md border-t">
+    <footer className="hidden md:block bg-background text-foreground p-4 mt-8 shadow-md border-t">
       <div className="container mx-auto flex flex-col md:flex-row justify-between items-center md:items-start text-center md:text-left space-y-4 md:space-y-0">
         {/* Logo and Copyright */}
         <div className="flex flex-col items-center md:items-start">

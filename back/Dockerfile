@@ -1,17 +1,25 @@
-FROM python:3.11-slim
+# Используем Ubuntu вместо python:3.11-slim для обхода rate limit
+FROM ubuntu:22.04
 
 # Устанавливаем рабочую директорию
 WORKDIR /app
 
-# Устанавливаем системные зависимости
+# Устанавливаем системные зависимости и Python
 RUN apt-get update && apt-get install -y \
+    python3.11 \
+    python3.11-dev \
+    python3.11-venv \
+    python3-pip \
     gcc \
     g++ \
     libpq-dev \
     procps \
     passwd \
     gosu \
-    && rm -rf /var/lib/apt/lists/*
+    curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && ln -s /usr/bin/python3.11 /usr/bin/python \
+    && ln -s /usr/bin/python3.11 /usr/bin/python3
 
 # Устанавливаем Poetry
 RUN pip install poetry

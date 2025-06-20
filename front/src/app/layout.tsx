@@ -4,6 +4,7 @@ import { NotificationProvider } from "@/features/notifications/NotificationProvi
 import { QueryProvider } from "@/shared/lib/QueryProvider";
 import { ThemeProvider } from "@/shared/lib/ThemeProvider";
 import { Toaster } from "@/shared/ui/sonner";
+import BottomNavBar from "@/widgets/BottomNavBar";
 import ChatWidget from "@/widgets/ChatWidget";
 import Footer from "@/widgets/Footer";
 import Header from "@/widgets/Header";
@@ -44,8 +45,9 @@ export default function RootLayout({
               <WebSocketProvider>
                 <NotificationProvider>
                   <Header />
-                  <main className="flex-grow">{children}</main>
+                  <main className="flex-grow pb-20 md:pb-0">{children}</main>
                   <Footer />
+                  <BottomNavBar />
                   <ChatWidget />
                 </NotificationProvider>
               </WebSocketProvider>

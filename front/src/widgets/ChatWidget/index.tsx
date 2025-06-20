@@ -199,7 +199,7 @@ export default function ChatWidget() {
     <>
       {/* Плавающая кнопка */}
       {!isOpen && (
-        <div className="fixed bottom-6 right-6 z-50">
+        <div className="fixed bottom-24 md:bottom-6 right-6 z-50">
           <Button
             onClick={handleOpenChat}
             size="lg"
@@ -220,7 +220,7 @@ export default function ChatWidget() {
 
       {/* Окно чата */}
       {isOpen && (
-        <div className="fixed bottom-6 right-6 z-50 w-80 h-96 md:w-96 md:h-[500px]">
+        <div className="fixed bottom-24 md:bottom-6 right-6 z-50 w-80 h-96 md:w-96 md:h-[500px]">
           <Card className="h-full flex flex-col shadow-2xl">
             <CardHeader className="p-4 border-b bg-green-600 text-white rounded-t-lg">
               <div className="flex items-center justify-between">

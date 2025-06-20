@@ -1,10 +1,10 @@
 "use client";
 
 import { useAuth } from "@/features/auth/AuthContext";
-import { Heart, Menu, UserCircle2 } from "lucide-react";
+import { Heart, UserCircle2 } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
-import { useCart } from "@/features/cart/useCart";
 import { useFavourites } from "@/features/manage-favourites/useFavourites";
 import { Badge } from "@/shared/ui/badge";
 import { BadgeIcon } from "@/shared/ui/BadgeIcon";
@@ -16,7 +16,6 @@ import {
   DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
 import { SearchInput } from "@/shared/ui/SearchInput";
-import { Sheet, SheetContent, SheetTrigger } from "@/shared/ui/sheet";
 import { ThemeToggle } from "@/shared/ui/ThemeToggle";
 import CartPanel from "@/widgets/CartPanel";
 import { ChatButton } from "@/widgets/ChatButton";
@@ -24,87 +23,88 @@ import { NotificationPanel } from "@/widgets/NotificationPanel";
 
 const Header = () => {
   const { user, logout } = useAuth();
-  const { totalItems: cartItemCount } = useCart();
   const { favoriteItemCount } = useFavourites();
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const handleSignOut = async () => {
     await logout();
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 text-foreground p-4 shadow-md border-b">
-      <div className="container mx-auto flex items-center justify-between">
+    <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 text-foreground shadow-md border-b">
+      <div className="container mx-auto">
         {/* Mobile Header */}
-        <div className="md:hidden flex items-center">
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <Menu className="h-6 w-6" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent
-              side="left"
-              className="w-[250px] sm:w-[300px] bg-background text-foreground pt-10"
-            >
-              <nav className="flex flex-col gap-4">
-                <Link href="/" className="text-lg font-semibold">
-                  Garden Store
-                </Link>
-                {/* Здесь будет SearchInput для мобильной версии, пока скрыт */}
-                {/* <SearchInput /> */}
-                {user && (
-                  <div className="flex items-center gap-2">
-                    <NotificationPanel />
-                    <span className="text-sm">Уведомления</span>
-                  </div>
-                )}
-                <div className="flex items-center gap-2">
-                  <ChatButton />
-                  <span className="text-sm">Чат поддержки</span>
-                </div>
-                <Link href="/favourites" className="flex items-center gap-2">
-                  <Heart className="h-5 w-5" /> Избранное ({favoriteItemCount})
-                </Link>
-                <CartPanel />
-                {user ? (
-                  <>
-                    <Link href="/profile" className="flex items-center gap-2">
-                      <UserCircle2 className="h-5 w-5" /> Профиль
-                    </Link>
-                    <Link href="/orders" className="flex items-center gap-2">
-                      <UserCircle2 className="h-5 w-5" /> Заказы
-                    </Link>
-                    {user.isAdmin && (
-                      <Link href="/admin" className="flex items-center gap-2">
-                        Админ-панель
-                      </Link>
+        <div className="md:hidden px-4 py-3">
+          <div className="flex items-center justify-between gap-3">
+            {/* Поиск слева */}
+            <div className="flex-1">
+              <SearchInput />
+            </div>
+
+            {/* Правая часть с переключателем темы и аватаркой */}
+            <div className="flex items-center gap-3">
+              <ThemeToggle />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="relative h-8 w-8 rounded-full p-0"
+                  >
+                    <UserCircle2 className="h-6 w-6" />
+                    {user?.isAdmin && (
+                      <Badge
+                        variant="destructive"
+                        className="absolute -top-1 -right-1 h-3 w-3 rounded-full p-0"
+                      />
                     )}
-                    <Button
-                      variant="ghost"
-                      onClick={handleSignOut}
-                      className="w-full justify-start pl-2"
-                    >
-                      Выйти
-                    </Button>
-                  </>
-                ) : (
-                  <Link href="/login" className="flex items-center gap-2">
-                    Войти
-                  </Link>
-                )}
-                <div className="mt-4">
-                  <ThemeToggle />
-                </div>
-              </nav>
-            </SheetContent>
-          </Sheet>
-          <Link href="/" className="ml-4 text-xl font-bold">
-            Garden Store
-          </Link>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-48" align="end" forceMount>
+                  {user ? (
+                    <>
+                      <div className="px-2 py-1 border-b">
+                        <NotificationPanel />
+                      </div>
+                      <Link href="/profile">
+                        <DropdownMenuItem>Профиль</DropdownMenuItem>
+                      </Link>
+                      <Link href="/orders">
+                        <DropdownMenuItem>Заказы</DropdownMenuItem>
+                      </Link>
+                      <Link href="/favourites">
+                        <DropdownMenuItem>
+                          Избранное ({isMounted ? favoriteItemCount : 0})
+                        </DropdownMenuItem>
+                      </Link>
+                      <Link href="/support/chat">
+                        <DropdownMenuItem>Чат поддержки</DropdownMenuItem>
+                      </Link>
+                      {user.isAdmin && (
+                        <Link href="/admin">
+                          <DropdownMenuItem>Админ-панель</DropdownMenuItem>
+                        </Link>
+                      )}
+                      <DropdownMenuItem onClick={handleSignOut}>
+                        Выйти
+                      </DropdownMenuItem>
+                    </>
+                  ) : (
+                    <Link href="/login">
+                      <DropdownMenuItem>Войти</DropdownMenuItem>
+                    </Link>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
         </div>
 
         {/* Desktop Header */}
-        <div className="hidden md:flex flex-1 items-center justify-between">
+        <div className="hidden md:flex items-center justify-between px-4 py-4">
           <Link href="/" className="text-xl font-bold text-foreground">
             Магаз Мамаши
           </Link>
@@ -118,7 +118,7 @@ const Header = () => {
             {user && <NotificationPanel />}
             <ChatButton />
             <Link href="/favourites">
-              <BadgeIcon count={favoriteItemCount}>
+              <BadgeIcon count={isMounted ? favoriteItemCount : 0}>
                 <Heart className="h-6 w-6" />
               </BadgeIcon>
             </Link>
@@ -129,7 +129,6 @@ const Header = () => {
                   variant="ghost"
                   className="relative h-10 w-10 rounded-full"
                 >
-                  {/* Заглушка аватара */}
                   <UserCircle2 className="h-8 w-8" />
                   {user?.isAdmin && (
                     <Badge

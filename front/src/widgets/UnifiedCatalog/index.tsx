@@ -1,6 +1,5 @@
 "use client";
 
-import { ProductInDB } from "@/shared/api/generated/types";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Input } from "@/shared/ui/input";
@@ -12,10 +11,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/ui/select";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/shared/ui/sheet";
 import { ActiveFilters } from "@/widgets/ActiveFilters";
 import { InfiniteProductListWithFilters } from "@/widgets/CatalogGrid/InfiniteProductListWithFilters";
-import { FilterX } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { Filter, FilterX } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 interface Category {
@@ -25,7 +31,6 @@ interface Category {
 }
 
 interface UnifiedCatalogProps {
-  initialProducts?: ProductInDB[];
   allCategories: Category[];
   initialFilters: {
     searchQuery?: string;
@@ -40,16 +45,12 @@ interface UnifiedCatalogProps {
 }
 
 export function UnifiedCatalog({
-  initialProducts = [],
   allCategories,
   initialFilters,
 }: UnifiedCatalogProps) {
   const router = useRouter();
-  const searchParams = useSearchParams();
 
-  const [searchQuery, setSearchQuery] = useState<string>(
-    initialFilters.searchQuery || ""
-  );
+  // Состояния фильтров (searchQuery убираем из состояния)
   const [sortBy, setSortBy] = useState<string>(initialFilters.sortBy || "");
   const [sortOrder, setSortOrder] = useState<string>(
     initialFilters.sortOrder || "asc"
@@ -84,9 +85,9 @@ export function UnifiedCatalog({
     router.push(newURL);
   };
 
-  // Функция для получения текущих параметров
+  // Функция для получения текущих параметров (без searchQuery)
   const getCurrentParams = () => ({
-    q: searchQuery || undefined,
+    q: initialFilters.searchQuery || undefined, // Используем значение из props, а не состояние
     sortBy: sortBy || undefined,
     sortOrder: sortOrder !== "asc" ? sortOrder : undefined,
     minPrice: minPrice || undefined,
@@ -98,11 +99,6 @@ export function UnifiedCatalog({
   });
 
   // Обработчики изменения фильтров
-  const handleSearchChange = (newSearchQuery: string) => {
-    setSearchQuery(newSearchQuery);
-    updateURL({ ...getCurrentParams(), q: newSearchQuery || undefined });
-  };
-
   const handleSortChange = (newSortBy: string) => {
     const actualSortBy = newSortBy === "default" ? "" : newSortBy;
     setSortBy(actualSortBy);
@@ -152,10 +148,6 @@ export function UnifiedCatalog({
   // Обработчик удаления отдельного фильтра
   const handleRemoveFilter = (filterType: string, value?: string) => {
     switch (filterType) {
-      case "search":
-        setSearchQuery("");
-        updateURL({ ...getCurrentParams(), q: undefined });
-        break;
       case "sort":
         setSortBy("");
         setSortOrder("asc");
@@ -197,7 +189,6 @@ export function UnifiedCatalog({
   };
 
   const clearAllFilters = () => {
-    setSearchQuery("");
     setSortBy("");
     setSortOrder("asc");
     setMinPrice("");
@@ -205,11 +196,20 @@ export function UnifiedCatalog({
     setSelectedCategories([]);
     setInStock(false);
     setHasDiscount(false);
-    router.push("/catalog");
+
+    // Сохраняем поисковый запрос, если он есть
+    const params = new URLSearchParams();
+    if (initialFilters.searchQuery) {
+      params.set("q", initialFilters.searchQuery);
+    }
+
+    const newURL = params.toString()
+      ? `/catalog?${params.toString()}`
+      : "/catalog";
+    router.push(newURL);
   };
 
   const hasActiveFilters =
-    searchQuery ||
     sortBy ||
     minPrice ||
     maxPrice ||
@@ -219,14 +219,187 @@ export function UnifiedCatalog({
 
   return (
     <div>
-      <h1 className="text-3xl font-bold mt-4 mb-6 text-center">
-        Каталог товаров
-      </h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl md:text-3xl font-bold">Каталог товаров</h1>
+
+        {/* Кнопка фильтров для мобильных */}
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button variant="outline" className="lg:hidden">
+              <Filter className="h-4 w-4 mr-2" />
+              Фильтры
+              {hasActiveFilters && (
+                <span className="ml-2 bg-primary text-primary-foreground rounded-full w-5 h-5 text-xs flex items-center justify-center">
+                  !
+                </span>
+              )}
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="w-full sm:w-80 px-4 sm:px-6">
+            <SheetHeader className="px-0">
+              <SheetTitle className="flex items-center justify-between text-left">
+                Фильтры
+                {hasActiveFilters && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearAllFilters}
+                    className="text-xs shrink-0"
+                  >
+                    <FilterX className="h-4 w-4 mr-1" />
+                    Сбросить
+                  </Button>
+                )}
+              </SheetTitle>
+            </SheetHeader>
+
+            <div className="mt-6 space-y-6 pb-6 overflow-y-auto max-h-[calc(100vh-120px)]">
+              {/* Мобильные фильтры - тот же контент что и в sidebar */}
+              {/* Сортировка */}
+              <div className="space-y-3">
+                <Label className="text-sm font-semibold text-foreground">
+                  Сортировка
+                </Label>
+                <Select
+                  value={sortBy || "default"}
+                  onValueChange={handleSortChange}
+                >
+                  <SelectTrigger className="h-11">
+                    <SelectValue placeholder="Выберите сортировку" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="default">По умолчанию</SelectItem>
+                    <SelectItem value="name">По названию</SelectItem>
+                    <SelectItem value="price">По цене</SelectItem>
+                    <SelectItem value="createdAt">
+                      По дате добавления
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+
+                {sortBy && (
+                  <Select
+                    value={sortOrder}
+                    onValueChange={handleSortOrderChange}
+                  >
+                    <SelectTrigger className="h-11">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="asc">По возрастанию</SelectItem>
+                      <SelectItem value="desc">По убыванию</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              </div>
+
+              {/* Фильтр по цене */}
+              <div className="space-y-3">
+                <Label className="text-sm font-semibold text-foreground">
+                  Цена
+                </Label>
+                <div className="flex gap-3">
+                  <Input
+                    type="number"
+                    placeholder="От"
+                    value={minPrice}
+                    onChange={(e) => setMinPrice(e.target.value)}
+                    onBlur={handlePriceFilter}
+                    onKeyDown={(e) => e.key === "Enter" && handlePriceFilter()}
+                    className="h-11"
+                  />
+                  <Input
+                    type="number"
+                    placeholder="До"
+                    value={maxPrice}
+                    onChange={(e) => setMaxPrice(e.target.value)}
+                    onBlur={handlePriceFilter}
+                    onKeyDown={(e) => e.key === "Enter" && handlePriceFilter()}
+                    className="h-11"
+                  />
+                </div>
+              </div>
+
+              {/* Категории */}
+              {allCategories.length > 0 && (
+                <div className="space-y-3">
+                  <Label className="text-sm font-semibold text-foreground">
+                    Категории
+                  </Label>
+                  <div className="space-y-3 max-h-48 overflow-y-auto pr-2">
+                    {allCategories.map((category) => (
+                      <div
+                        key={category.id}
+                        className="flex items-center space-x-3 p-2 rounded-md hover:bg-muted/50 transition-colors"
+                      >
+                        <input
+                          type="checkbox"
+                          id={`mobile-category-${category.id}`}
+                          checked={selectedCategories.includes(category.id)}
+                          onChange={(e) =>
+                            handleCategoryToggle(category.id, e.target.checked)
+                          }
+                          className="w-4 h-4 rounded border-2 border-primary focus:ring-2 focus:ring-primary/20"
+                        />
+                        <label
+                          htmlFor={`mobile-category-${category.id}`}
+                          className="text-sm font-medium leading-none cursor-pointer flex-1"
+                        >
+                          {category.name}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Дополнительные фильтры */}
+              <div className="space-y-3">
+                <Label className="text-sm font-semibold text-foreground">
+                  Дополнительно
+                </Label>
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-3 p-2 rounded-md hover:bg-muted/50 transition-colors">
+                    <input
+                      type="checkbox"
+                      id="mobile-in-stock"
+                      checked={inStock}
+                      onChange={(e) => handleInStockToggle(e.target.checked)}
+                      className="w-4 h-4 rounded border-2 border-primary focus:ring-2 focus:ring-primary/20"
+                    />
+                    <label
+                      htmlFor="mobile-in-stock"
+                      className="text-sm font-medium leading-none cursor-pointer flex-1"
+                    >
+                      В наличии
+                    </label>
+                  </div>
+                  <div className="flex items-center space-x-3 p-2 rounded-md hover:bg-muted/50 transition-colors">
+                    <input
+                      type="checkbox"
+                      id="mobile-has-discount"
+                      checked={hasDiscount}
+                      onChange={(e) => handleDiscountToggle(e.target.checked)}
+                      className="w-4 h-4 rounded border-2 border-primary focus:ring-2 focus:ring-primary/20"
+                    />
+                    <label
+                      htmlFor="mobile-has-discount"
+                      className="text-sm font-medium leading-none cursor-pointer flex-1"
+                    >
+                      Со скидкой
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </SheetContent>
+        </Sheet>
+      </div>
 
       {/* Активные фильтры */}
       <ActiveFilters
         filters={{
-          searchQuery,
+          searchQuery: initialFilters.searchQuery || undefined,
           sortBy,
           sortOrder,
           minPrice: minPrice ? parseFloat(minPrice) : undefined,
@@ -245,7 +418,7 @@ export function UnifiedCatalog({
         <main className="flex-1 lg:order-1">
           <InfiniteProductListWithFilters
             categorySlug="all"
-            searchQuery={searchQuery}
+            searchQuery={initialFilters.searchQuery || ""}
             sortBy={sortBy}
             sortOrder={sortOrder}
             minPrice={minPrice ? parseFloat(minPrice) : undefined}
@@ -280,16 +453,6 @@ export function UnifiedCatalog({
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Поиск */}
-              <div className="space-y-3">
-                <Label className="text-sm font-medium">Поиск</Label>
-                <Input
-                  placeholder="Найти товар..."
-                  value={searchQuery}
-                  onChange={(e) => handleSearchChange(e.target.value)}
-                />
-              </div>
-
               {/* Сортировка */}
               <div className="space-y-3">
                 <Label className="text-sm font-medium">Сортировка</Label>

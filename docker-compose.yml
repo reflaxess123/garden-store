@@ -4,7 +4,7 @@ services:
     build:
       context: ./back
       dockerfile: Dockerfile
-    container_name: garden-store-backend
+    container_name: backend
     restart: unless-stopped
     environment:
       # База данных
@@ -34,20 +34,20 @@ services:
       retries: 3
       start_period: 40s
 
-  # Фронтенд сервисsasdasd
+  # Фронтенд сервис
   frontend:
     build:
       context: ./front
       dockerfile: Dockerfile
-      args:
-        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
-        - BACKEND_URL=${BACKEND_URL}
-    container_name: garden-store-frontend
+              args:
+          - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://backend:4000}
+          - BACKEND_URL=${BACKEND_URL:-http://backend:4000}
+    container_name: frontend
     restart: unless-stopped
     environment:
-      # API URL для всех запросов (используем имя контейнера)
-      - NEXT_PUBLIC_API_URL=http://garden-store-backend:4000
-      - NEXT_PUBLIC_WS_URL=ws://garden-store-backend:4000
+      # API URL для всех запросов (используем имя контейнера для внутреннего соединения)
+      - NEXT_PUBLIC_API_URL=http://backend:4000
+      - NEXT_PUBLIC_WS_URL=ws://backend:4000
     ports:
       - "3003:80"
     depends_on:

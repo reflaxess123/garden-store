@@ -41,10 +41,12 @@ services:
       dockerfile: Dockerfile
       args:
         - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+        - BACKEND_URL=${BACKEND_URL}
     container_name: garden-store-frontend
     restart: unless-stopped
     environment:
       - NEXT_PUBLIC_API_URL=http://185.21.13.91:4001
+      - BACKEND_URL=http://185.21.13.91:4001
     ports:
       - "3003:3000"
     depends_on:

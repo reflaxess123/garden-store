@@ -42,14 +42,14 @@ services:
       context: ./front
       dockerfile: Dockerfile
       args:
-        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://103.74.93.55:4001}
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-https://server.sadovnick.store}
         - BACKEND_URL=${BACKEND_URL:-http://backend:4000}
     container_name: frontend
     restart: unless-stopped
     environment:
       # API URL для браузера (через поддомен)
-      - NEXT_PUBLIC_API_URL=https://server.sadovnick.store
-      - NEXT_PUBLIC_WS_URL=wss://server.sadovnick.store
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-https://server.sadovnick.store}
+      - NEXT_PUBLIC_WS_URL=${NEXT_PUBLIC_WS_URL:-wss://server.sadovnick.store}
       # Внутренний URL фронтенда для SSR запросов
       - FRONTEND_INTERNAL_URL=http://localhost:80
     ports:

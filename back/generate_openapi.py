@@ -22,6 +22,10 @@ def generate_openapi_schema():
         # Обновляем информацию о сервере
         openapi_schema["servers"] = [
             {
+                "url": "https://server.sadovnick.store",
+                "description": "Production server"
+            },
+            {
                 "url": "http://localhost:4000",
                 "description": "Development server"
             }

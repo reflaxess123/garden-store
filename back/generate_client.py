@@ -104,7 +104,7 @@ def generate_api_client(schema: Dict[str, Any]) -> str:
     client_content.append("")
     
     # Базовый конфиг для API
-    client_content.append("const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';")
+    client_content.append("const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://server.sadovnick.store';")
     client_content.append("")
     
     # Функция для выполнения HTTP запросов

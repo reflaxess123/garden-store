@@ -100,7 +100,7 @@ export function useWebSocket({
     }
 
     try {
-      const wsUrl = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:4000";
+      const wsUrl = process.env.NEXT_PUBLIC_WS_URL || "wss://server.sadovnick.store";
       const endpoint = user.isAdmin
         ? `${wsUrl}/ws/admin/${user.id}`
         : `${wsUrl}/ws/chat/${user.id}`;

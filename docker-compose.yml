@@ -18,7 +18,7 @@ services:
       - HOST=0.0.0.0
       - DEBUG=${DEBUG:-false}
       # CORS origins для продакшена
-      - EXTERNAL_ORIGINS=http://185.21.13.91:3003,https://185.21.13.91:3003
+      - EXTERNAL_ORIGINS=http://185.21.13.91:3003,https://185.21.13.91:3003,http://103.74.93.55:3003,https://103.74.93.55:3003,http://sadovnick.store,https://sadovnick.store
     ports:
       - "4001:4000"
     volumes:
@@ -46,7 +46,7 @@ services:
     restart: unless-stopped
     environment:
       - NEXT_PUBLIC_API_URL=http://185.21.13.91:4001
-      - BACKEND_URL=http://185.21.13.91:4001
+      - BACKEND_URL=http://backend:4000
     ports:
       - "3003:3000"
     depends_on:

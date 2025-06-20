@@ -1,13 +1,15 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import select
+from sqlalchemy import select, func
 from app.db.database import get_db
 from app.db import models
 from app.schemas import CategoryInDB, CategoryCreate, CategoryUpdate, ProductInDB, ProductCreate, ProductUpdate, OrderInDB, OrderUpdateStatus, CustomUser, UserInDB, UserCreate, UserUpdate
-from app.auth import get_current_admin_user
+from app.auth import get_current_admin_user, pwd_context
 from typing import List, Optional
 import uuid
 from passlib.context import CryptContext
+from app.routers.notifications import create_notification, create_notification_for_admins
 
 router = APIRouter()
 
@@ -211,10 +213,39 @@ async def update_admin_order_status(
     if not db_order:
         raise HTTPException(status_code=404, detail="Order not found")
     
-    db_order.status = order_update.status
+    old_status = db_order.status
+    new_status = order_update.status
+    
+    db_order.status = new_status
     db.add(db_order)
     await db.commit()
     await db.refresh(db_order)
+    
+    # Создаем уведомление для пользователя о смене статуса
+    if old_status != new_status:
+        status_messages = {
+            "pending": "Ваш заказ принят в обработку",
+            "confirmed": "Ваш заказ подтвержден",
+            "shipped": "Ваш заказ отправлен",
+            "delivered": "Ваш заказ доставлен",
+            "cancelled": "Ваш заказ отменен"
+        }
+        
+        notification_title = "Обновление статуса заказа"
+        notification_message = status_messages.get(new_status, f"Статус заказа изменен на: {new_status}")
+        
+        await create_notification(
+            db=db,
+            user_id=str(db_order.user_id),
+            title=notification_title,
+            message=notification_message,
+            notification_type="order_status",
+            notification_data={
+                "order_id": str(order_id),
+                "old_status": old_status,
+                "new_status": new_status
+            }
+        )
     
     # Загружаем заказ заново с order_items для корректной сериализации
     result = await db.execute(

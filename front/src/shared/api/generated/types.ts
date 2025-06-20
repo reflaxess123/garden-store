@@ -57,6 +57,36 @@ export interface CategoryUpdate {
   image_url?: any;
 }
 
+export interface ChatInDB {
+  isActive?: boolean;
+  id: string;
+  userId: string;
+  unreadCount: number;
+  lastMessageAt?: any;
+  createdAt: string;
+  userName?: any;
+  userEmail?: any;
+  lastMessage?: any;
+  messages?: ChatMessageInDB[];
+}
+
+export interface ChatMessageInDB {
+  message: string;
+  isFromAdmin?: boolean;
+  id: string;
+  chatId: string;
+  senderId: string;
+  isRead: boolean;
+  createdAt: string;
+  senderName?: any;
+  senderEmail?: any;
+}
+
+export interface ChatMessageSend {
+  chatId: string;
+  message: string;
+}
+
 export interface CustomUser {
   id: string;
   email: string;
@@ -79,6 +109,21 @@ export interface LocalCartItem {
   productId: string;
   quantity: number;
   priceSnapshot: any;
+}
+
+export interface NotificationInDB {
+  title: string;
+  message: string;
+  type: string;
+  notificationData?: any;
+  id: string;
+  userId: string;
+  isRead: boolean;
+  createdAt: string;
+}
+
+export interface NotificationUpdate {
+  is_read: boolean;
 }
 
 export interface OrderCreate {
@@ -193,6 +238,30 @@ export interface Token {
 
 export interface UpdatePasswordSchema {
   password: string;
+}
+
+export interface UserCreate {
+  email: string;
+  password: string;
+  fullName?: any;
+  isAdmin?: boolean;
+}
+
+export interface UserInDB {
+  id: string;
+  email: string;
+  fullName?: any;
+  isAdmin: boolean;
+  createdAt?: any;
+  ordersCount?: number;
+  favoritesCount?: number;
+  cartItemsCount?: number;
+}
+
+export interface UserUpdate {
+  email?: any;
+  fullName?: any;
+  isAdmin?: any;
 }
 
 export interface ValidationError {

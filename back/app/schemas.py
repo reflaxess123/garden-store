@@ -234,4 +234,90 @@ class CartItemWithProduct(BaseModel):
     categoryId: uuid.UUID = Field(..., serialization_alias="categoryId")
 
     model_config = {"from_attributes": True, "populate_by_name": True}
+# endregion
+
+# region Chat Schemas
+class ChatMessageBase(BaseModel):
+    message: str
+    isFromAdmin: bool = Field(False, alias="is_from_admin", serialization_alias="isFromAdmin")
+
+    model_config = {"from_attributes": True, "populate_by_name": True}
+
+class ChatMessageCreate(ChatMessageBase):
+    pass
+
+class ChatMessageInDB(ChatMessageBase):
+    id: str  # Используем строку для UUID
+    chatId: str = Field(..., alias="chat_id", serialization_alias="chatId")  # Используем строку для UUID
+    senderId: str = Field(..., alias="sender_id", serialization_alias="senderId")  # Используем строку для UUID
+    isRead: bool = Field(..., alias="is_read", serialization_alias="isRead")
+    createdAt: str = Field(..., alias="created_at", serialization_alias="createdAt")  # Используем строку для datetime
+    # Информация об отправителе
+    senderName: Optional[str] = None
+    senderEmail: Optional[str] = None
+
+    model_config = {"from_attributes": True, "populate_by_name": True}
+
+class ChatBase(BaseModel):
+    isActive: bool = Field(True, alias="is_active", serialization_alias="isActive")
+
+    model_config = {"from_attributes": True, "populate_by_name": True}
+
+class ChatCreate(ChatBase):
+    pass
+
+class ChatInDB(ChatBase):
+    id: str  # Используем строку для UUID
+    userId: str = Field(..., alias="user_id", serialization_alias="userId")  # Используем строку для UUID
+    unreadCount: int = Field(..., alias="unread_count", serialization_alias="unreadCount")
+    lastMessageAt: Optional[str] = Field(None, alias="last_message_at", serialization_alias="lastMessageAt")  # Используем строку для datetime
+    createdAt: str = Field(..., alias="created_at", serialization_alias="createdAt")  # Используем строку для datetime
+    # Информация о пользователе
+    userName: Optional[str] = None
+    userEmail: Optional[str] = None
+    # Последнее сообщение
+    lastMessage: Optional[str] = None
+    # Сообщения (для детального просмотра)
+    messages: List[ChatMessageInDB] = Field(default_factory=list)
+
+    model_config = {"from_attributes": True, "populate_by_name": True}
+
+class ChatMessageSend(BaseModel):
+    chatId: uuid.UUID
+    message: str
+
+class WebSocketMessage(BaseModel):
+    type: str  # "message", "user_typing", "user_joined", "user_left"
+    chatId: Optional[uuid.UUID] = None
+    message: Optional[str] = None
+    senderId: Optional[uuid.UUID] = None
+    senderName: Optional[str] = None
+    timestamp: Optional[datetime] = None
+    data: Optional[Dict[str, Any]] = None
+# endregion
+
+# region Notification Schemas
+class NotificationBase(BaseModel):
+    title: str
+    message: str
+    type: str  # 'order_status', 'chat_message', 'new_order', 'system'
+    notificationData: Optional[Dict[str, Any]] = Field(None, alias="notification_data", serialization_alias="notificationData")
+
+    model_config = {"from_attributes": True, "populate_by_name": True}
+
+class NotificationCreate(NotificationBase):
+    userId: str = Field(..., alias="user_id", serialization_alias="userId")
+
+class NotificationInDB(NotificationBase):
+    id: str  # Используем строку для UUID
+    userId: str = Field(..., alias="user_id", serialization_alias="userId")
+    isRead: bool = Field(..., alias="is_read", serialization_alias="isRead")
+    createdAt: str = Field(..., alias="created_at", serialization_alias="createdAt")
+
+    model_config = {"from_attributes": True, "populate_by_name": True}
+
+class NotificationUpdate(BaseModel):
+    isRead: bool = Field(..., alias="is_read", serialization_alias="isRead")
+
+    model_config = {"from_attributes": True, "populate_by_name": True}
 # endregion 

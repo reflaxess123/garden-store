@@ -108,4 +108,49 @@ class OrderItem(Base):
     name = Column(String, nullable=False)
     image_url = Column(String)
 
-    order = relationship("Order", back_populates="order_items") 
+    order = relationship("Order", back_populates="order_items")
+
+class Chat(Base):
+    __tablename__ = "chats"
+    __table_args__ = {"schema": "public"}
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("public.profiles.id"), nullable=False)
+    is_active = Column(Boolean, default=True)
+    last_message_at = Column(DateTime(timezone=True), server_default=func.now())
+    unread_count = Column(Integer, default=0)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    user = relationship("Profile", foreign_keys=[user_id])
+    messages = relationship("ChatMessage", back_populates="chat", cascade="all, delete-orphan")
+
+class ChatMessage(Base):
+    __tablename__ = "chat_messages"
+    __table_args__ = {"schema": "public"}
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    chat_id = Column(UUID(as_uuid=True), ForeignKey("public.chats.id"), nullable=False)
+    sender_id = Column(UUID(as_uuid=True), ForeignKey("public.profiles.id"), nullable=False)
+    message = Column(String, nullable=False)
+    is_from_admin = Column(Boolean, default=False)
+    is_read = Column(Boolean, default=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    chat = relationship("Chat", back_populates="messages")
+    sender = relationship("Profile", foreign_keys=[sender_id])
+
+class Notification(Base):
+    __tablename__ = "notifications"
+    __table_args__ = {"schema": "public"}
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("public.profiles.id"), nullable=False)
+    title = Column(String, nullable=False)
+    message = Column(String, nullable=False)
+    type = Column(String, nullable=False)  # 'order_status', 'chat_message', 'new_order', 'system'
+    is_read = Column(Boolean, default=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    # Дополнительные данные для уведомления (order_id, chat_id и т.д.)
+    notification_data = Column(JSONB)
+
+    user = relationship("Profile", foreign_keys=[user_id]) 

@@ -19,6 +19,8 @@ import { SearchInput } from "@/shared/ui/SearchInput";
 import { Sheet, SheetContent, SheetTrigger } from "@/shared/ui/sheet";
 import { ThemeToggle } from "@/shared/ui/ThemeToggle";
 import CartPanel from "@/widgets/CartPanel";
+import { ChatButton } from "@/widgets/ChatButton";
+import { NotificationPanel } from "@/widgets/NotificationPanel";
 
 const Header = () => {
   const { user, logout } = useAuth();
@@ -50,6 +52,16 @@ const Header = () => {
                 </Link>
                 {/* Здесь будет SearchInput для мобильной версии, пока скрыт */}
                 {/* <SearchInput /> */}
+                {user && (
+                  <div className="flex items-center gap-2">
+                    <NotificationPanel />
+                    <span className="text-sm">Уведомления</span>
+                  </div>
+                )}
+                <div className="flex items-center gap-2">
+                  <ChatButton />
+                  <span className="text-sm">Чат поддержки</span>
+                </div>
                 <Link href="/favourites" className="flex items-center gap-2">
                   <Heart className="h-5 w-5" /> Избранное ({favoriteItemCount})
                 </Link>
@@ -103,6 +115,8 @@ const Header = () => {
 
           <nav className="flex items-center space-x-6">
             <ThemeToggle />
+            {user && <NotificationPanel />}
+            <ChatButton />
             <Link href="/favourites">
               <BadgeIcon count={favoriteItemCount}>
                 <Heart className="h-6 w-6" />

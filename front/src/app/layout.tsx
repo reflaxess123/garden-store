@@ -1,7 +1,10 @@
 import { AuthProvider } from "@/features/auth/AuthContext";
+import { WebSocketProvider } from "@/features/chat/WebSocketContext";
+import { NotificationProvider } from "@/features/notifications/NotificationProvider";
 import { QueryProvider } from "@/shared/lib/QueryProvider";
 import { ThemeProvider } from "@/shared/lib/ThemeProvider";
 import { Toaster } from "@/shared/ui/sonner";
+import ChatWidget from "@/widgets/ChatWidget";
 import Footer from "@/widgets/Footer";
 import Header from "@/widgets/Header";
 import type { Metadata } from "next";
@@ -38,9 +41,14 @@ export default function RootLayout({
         >
           <QueryProvider>
             <AuthProvider>
-              <Header />
-              <main className="flex-grow">{children}</main>
-              <Footer />
+              <WebSocketProvider>
+                <NotificationProvider>
+                  <Header />
+                  <main className="flex-grow">{children}</main>
+                  <Footer />
+                  <ChatWidget />
+                </NotificationProvider>
+              </WebSocketProvider>
             </AuthProvider>
           </QueryProvider>
           <Toaster />

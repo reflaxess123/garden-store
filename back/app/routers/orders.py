@@ -9,6 +9,7 @@ from typing import List
 import uuid
 from sqlalchemy import select
 import json
+from app.routers.notifications import create_notification_for_admins
 
 router = APIRouter()
 
@@ -66,6 +67,20 @@ async def create_order(
             product.times_ordered += item.quantity
             
         await db.commit()
+        
+        # Создаем уведомление для админов о новом заказе
+        await create_notification_for_admins(
+            db=db,
+            title="Новый заказ",
+            message=f"Получен новый заказ #{new_order.id} от {new_order.full_name}",
+            notification_type="new_order",
+            notification_data={
+                "order_id": str(new_order.id),
+                "customer_name": new_order.full_name,
+                "customer_email": new_order.email,
+                "total_amount": float(new_order.total_amount)
+            }
+        )
         
         # Создаем список OrderItemInDB для ответа
         order_items_response = [

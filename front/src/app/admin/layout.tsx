@@ -2,7 +2,15 @@
 
 import { AuthGuard } from "@/features/auth/ui/AuthGuard";
 import { cn } from "@/shared/lib/utils";
-import { Home, Package, ShoppingBag, Tags, Users } from "lucide-react";
+import { Toaster } from "@/shared/ui/sonner";
+import {
+  Home,
+  MessageCircle,
+  Package,
+  ShoppingBag,
+  Tags,
+  Users,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -72,6 +80,10 @@ export default function AdminLayout({
                   <Users className="h-4 w-4" />
                   Пользователи
                 </AdminNavLink>
+                <AdminNavLink href="/admin/chats">
+                  <MessageCircle className="h-4 w-4" />
+                  Чаты
+                </AdminNavLink>
               </nav>
             </div>
           </div>
@@ -86,6 +98,7 @@ export default function AdminLayout({
           </main>
         </div>
       </div>
+      <Toaster />
     </AuthGuard>
   );
 }

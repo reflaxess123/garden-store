@@ -4,11 +4,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   CartItemAdd, CartItemInDB, CartItemUpdate, CartItemWithProduct, CartMergeRequest,
-  CategoryCreate, CategoryInDB, CategoryUpdate, CustomUser, FavouriteInDB,
-  HTTPValidationError, LocalCartItem, OrderCreate, OrderDelete, OrderInDB,
+  CategoryCreate, CategoryInDB, CategoryUpdate, ChatInDB, ChatMessageInDB,
+  ChatMessageSend, CustomUser, FavouriteInDB, HTTPValidationError, LocalCartItem,
+  NotificationInDB, NotificationUpdate, OrderCreate, OrderDelete, OrderInDB,
   OrderItemCreate, OrderItemInDB, OrderUpdateStatus, ProductCreate, ProductInDB,
   ProductUpdate, ResetPasswordSchema, SignInSchema, SignUpSchema, Token,
-  UpdatePasswordSchema, ValidationError
+  UpdatePasswordSchema, UserCreate, UserInDB, UserUpdate, ValidationError
 } from './types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
@@ -516,6 +517,130 @@ export function useDeleteadminorderapiadminordersorderiddelete() {
   });
 }
 
+// Get Admin Users
+export async function getAdminUsersApiAdminUsersGet(
+): Promise<UserInDB[]> {
+  const url = `/api/admin/users`;
+  const options: RequestInit = {
+    method: 'GET',
+  };
+
+  return fetchApi<UserInDB[]>(url, options);
+}
+
+// React Query хук для getAdminUsersApiAdminUsersGet
+export function useGetadminusersapiadminusersget(
+  options?: { enabled?: boolean }
+) {
+  return useQuery({
+    queryKey: ['getAdminUsersApiAdminUsersGet'],
+    queryFn: getAdminUsersApiAdminUsersGet,
+    ...options,
+  });
+}
+
+// Create Admin User
+export async function createAdminUserApiAdminUsersPost(
+  data: UserCreate
+): Promise<UserInDB> {
+  const url = `/api/admin/users`;
+  const options: RequestInit = {
+    method: 'POST',
+    body: JSON.stringify(data),
+  };
+
+  return fetchApi<UserInDB>(url, options);
+}
+
+// React Query мутация для createAdminUserApiAdminUsersPost
+export function useCreateadminuserapiadminuserspost() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: createAdminUserApiAdminUsersPost,
+    onSuccess: () => {
+      // Инвалидируем связанные запросы
+      queryClient.invalidateQueries();
+    },
+  });
+}
+
+// Get Admin User
+export async function getAdminUserApiAdminUsersUserIdGet(
+  user_id: string
+): Promise<UserInDB> {
+  const url = `/api/admin/users/${user_id}`;
+  const options: RequestInit = {
+    method: 'GET',
+  };
+
+  return fetchApi<UserInDB>(url, options);
+}
+
+// React Query хук для getAdminUserApiAdminUsersUserIdGet
+export function useGetadminuserapiadminusersuseridget(
+  user_id: string,
+  options?: { enabled?: boolean }
+) {
+  return useQuery({
+    queryKey: ['getAdminUserApiAdminUsersUserIdGet', user_id],
+    queryFn: () => getAdminUserApiAdminUsersUserIdGet(user_id),
+    ...options,
+  });
+}
+
+// Update Admin User
+export async function updateAdminUserApiAdminUsersUserIdPatch(
+  user_id: string,
+  data: UserUpdate
+): Promise<UserInDB> {
+  const url = `/api/admin/users/${user_id}`;
+  const options: RequestInit = {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  };
+
+  return fetchApi<UserInDB>(url, options);
+}
+
+// React Query мутация для updateAdminUserApiAdminUsersUserIdPatch
+export function useUpdateadminuserapiadminusersuseridpatch() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({user_id, data}: { user_id: string, data: any }) => updateAdminUserApiAdminUsersUserIdPatch(user_id, data),
+    onSuccess: () => {
+      // Инвалидируем связанные запросы
+      queryClient.invalidateQueries();
+    },
+  });
+}
+
+// Delete Admin User
+export async function deleteAdminUserApiAdminUsersUserIdDelete(
+  user_id: string
+): Promise<void> {
+  const url = `/api/admin/users/${user_id}`;
+  const options: RequestInit = {
+    method: 'DELETE',
+  };
+
+  return fetchApi<void>(url, options);
+}
+
+// React Query мутация для deleteAdminUserApiAdminUsersUserIdDelete
+export function useDeleteadminuserapiadminusersuseriddelete() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: deleteAdminUserApiAdminUsersUserIdDelete,
+    onSuccess: () => {
+      // Инвалидируем связанные запросы
+      queryClient.invalidateQueries();
+    },
+  });
+}
+
 // Get Cart
 export async function getCartApiCartGet(
 ): Promise<CartItemWithProduct[]> {
@@ -1006,6 +1131,233 @@ export function useRemovefromfavoritesapifavoritesproductiddelete() {
       // Инвалидируем связанные запросы
       queryClient.invalidateQueries();
     },
+  });
+}
+
+// Get User Notifications
+export async function getUserNotificationsApiNotificationsGet(
+  params?: { unread_only?: boolean, limit?: number }
+): Promise<NotificationInDB[]> {
+  const url = `/api/notifications`;
+  const options: RequestInit = {
+    method: 'GET',
+  };
+
+  let finalUrl = url;
+  if (params) {
+    const searchParams = new URLSearchParams();
+    if (params.unread_only !== undefined) {
+      searchParams.append('unread_only', String(params.unread_only));
+    }
+    if (params.limit !== undefined) {
+      searchParams.append('limit', String(params.limit));
+    }
+    finalUrl += `?${searchParams.toString()}`;
+  }
+  return fetchApi<NotificationInDB[]>(finalUrl, options);
+}
+
+// React Query хук для getUserNotificationsApiNotificationsGet
+export function useGetusernotificationsapinotificationsget(
+  params?: { unread_only?: boolean, limit?: number },
+  options?: { enabled?: boolean }
+) {
+  return useQuery({
+    queryKey: ['getUserNotificationsApiNotificationsGet', params],
+    queryFn: () => getUserNotificationsApiNotificationsGet(params),
+    ...options,
+  });
+}
+
+// Mark Notification Read
+export async function markNotificationReadApiNotificationsNotificationIdPatch(
+  notification_id: string,
+  data: NotificationUpdate
+): Promise<NotificationInDB> {
+  const url = `/api/notifications/${notification_id}`;
+  const options: RequestInit = {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  };
+
+  return fetchApi<NotificationInDB>(url, options);
+}
+
+// React Query мутация для markNotificationReadApiNotificationsNotificationIdPatch
+export function useMarknotificationreadapinotificationsnotificationidpatch() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({notification_id, data}: { notification_id: string, data: any }) => markNotificationReadApiNotificationsNotificationIdPatch(notification_id, data),
+    onSuccess: () => {
+      // Инвалидируем связанные запросы
+      queryClient.invalidateQueries();
+    },
+  });
+}
+
+// Mark All Notifications Read
+export async function markAllNotificationsReadApiNotificationsMarkAllReadPost(
+): Promise<void> {
+  const url = `/api/notifications/mark-all-read`;
+  const options: RequestInit = {
+    method: 'POST',
+  };
+
+  return fetchApi<void>(url, options);
+}
+
+// React Query мутация для markAllNotificationsReadApiNotificationsMarkAllReadPost
+export function useMarkallnotificationsreadapinotificationsmarkallreadpost() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: markAllNotificationsReadApiNotificationsMarkAllReadPost,
+    onSuccess: () => {
+      // Инвалидируем связанные запросы
+      queryClient.invalidateQueries();
+    },
+  });
+}
+
+// Get Unread Count
+export async function getUnreadCountApiNotificationsUnreadCountGet(
+): Promise<void> {
+  const url = `/api/notifications/unread-count`;
+  const options: RequestInit = {
+    method: 'GET',
+  };
+
+  return fetchApi<void>(url, options);
+}
+
+// React Query хук для getUnreadCountApiNotificationsUnreadCountGet
+export function useGetunreadcountapinotificationsunreadcountget(
+  options?: { enabled?: boolean }
+) {
+  return useQuery({
+    queryKey: ['getUnreadCountApiNotificationsUnreadCountGet'],
+    queryFn: getUnreadCountApiNotificationsUnreadCountGet,
+    ...options,
+  });
+}
+
+// Get User Chats
+export async function getUserChatsApiChatsGet(
+): Promise<ChatInDB[]> {
+  const url = `/api/chats`;
+  const options: RequestInit = {
+    method: 'GET',
+  };
+
+  return fetchApi<ChatInDB[]>(url, options);
+}
+
+// React Query хук для getUserChatsApiChatsGet
+export function useGetuserchatsapichatsget(
+  options?: { enabled?: boolean }
+) {
+  return useQuery({
+    queryKey: ['getUserChatsApiChatsGet'],
+    queryFn: getUserChatsApiChatsGet,
+    ...options,
+  });
+}
+
+// Create Or Get Chat
+export async function createOrGetChatApiChatsPost(
+): Promise<ChatInDB> {
+  const url = `/api/chats`;
+  const options: RequestInit = {
+    method: 'POST',
+  };
+
+  return fetchApi<ChatInDB>(url, options);
+}
+
+// React Query мутация для createOrGetChatApiChatsPost
+export function useCreateorgetchatapichatspost() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: createOrGetChatApiChatsPost,
+    onSuccess: () => {
+      // Инвалидируем связанные запросы
+      queryClient.invalidateQueries();
+    },
+  });
+}
+
+// Get Chat Detail
+export async function getChatDetailApiChatsChatIdGet(
+  chat_id: string
+): Promise<ChatInDB> {
+  const url = `/api/chats/${chat_id}`;
+  const options: RequestInit = {
+    method: 'GET',
+  };
+
+  return fetchApi<ChatInDB>(url, options);
+}
+
+// React Query хук для getChatDetailApiChatsChatIdGet
+export function useGetchatdetailapichatschatidget(
+  chat_id: string,
+  options?: { enabled?: boolean }
+) {
+  return useQuery({
+    queryKey: ['getChatDetailApiChatsChatIdGet', chat_id],
+    queryFn: () => getChatDetailApiChatsChatIdGet(chat_id),
+    ...options,
+  });
+}
+
+// Send Message
+export async function sendMessageApiChatsChatIdMessagesPost(
+  chat_id: string,
+  data: ChatMessageSend
+): Promise<ChatMessageInDB> {
+  const url = `/api/chats/${chat_id}/messages`;
+  const options: RequestInit = {
+    method: 'POST',
+    body: JSON.stringify(data),
+  };
+
+  return fetchApi<ChatMessageInDB>(url, options);
+}
+
+// React Query мутация для sendMessageApiChatsChatIdMessagesPost
+export function useSendmessageapichatschatidmessagespost() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({chat_id, data}: { chat_id: string, data: any }) => sendMessageApiChatsChatIdMessagesPost(chat_id, data),
+    onSuccess: () => {
+      // Инвалидируем связанные запросы
+      queryClient.invalidateQueries();
+    },
+  });
+}
+
+// Get All Chats
+export async function getAllChatsApiAdminChatsGet(
+): Promise<ChatInDB[]> {
+  const url = `/api/admin/chats`;
+  const options: RequestInit = {
+    method: 'GET',
+  };
+
+  return fetchApi<ChatInDB[]>(url, options);
+}
+
+// React Query хук для getAllChatsApiAdminChatsGet
+export function useGetallchatsapiadminchatsget(
+  options?: { enabled?: boolean }
+) {
+  return useQuery({
+    queryKey: ['getAllChatsApiAdminChatsGet'],
+    queryFn: getAllChatsApiAdminChatsGet,
+    ...options,
   });
 }
 

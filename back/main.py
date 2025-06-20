@@ -19,7 +19,7 @@ class CustomJsonEncoder(json.JSONEncoder):
 json._default_encoder = CustomJsonEncoder()
 
 # Импорт роутеров
-from app.routers import auth, admin, cart, categories, products, orders, favorites
+from app.routers import auth, admin, cart, categories, products, orders, favorites, chat, notifications
 from app.db.database import check_database_connection
 
 # Загружаем переменные окружения из .env если файл существует (для разработки)
@@ -79,6 +79,8 @@ app.include_router(categories.router, prefix="/api")
 app.include_router(products.router, prefix="/api")
 app.include_router(orders.router, prefix="/api")
 app.include_router(favorites.router, prefix="/api")
+app.include_router(notifications.router)  # Без префикса, так как уже есть в роутах
+app.include_router(chat.router)  # Без префикса, так как у него есть и API и WebSocket
 
 @app.get("/health")
 async def health_check():

@@ -45,7 +45,9 @@ services:
     container_name: garden-store-frontend
     restart: unless-stopped
     environment:
+      # Для браузера (client-side) - внешний URL
       - NEXT_PUBLIC_API_URL=http://185.21.13.91:4001
+      # Для сервера Next.js (server-side) - внутренний URL
       - BACKEND_URL=http://backend:4000
     ports:
       - "3003:3000"

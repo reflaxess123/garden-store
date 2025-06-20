@@ -51,8 +51,19 @@ export async function POST(req: NextRequest) {
     if (!response.ok) {
       const errorText = await response.text();
       console.error("Error creating category:", errorText);
+
+      // Пытаемся распарсить JSON ошибку
+      let errorDetails = `HTTP error! status: ${response.status}`;
+      try {
+        const errorJson = JSON.parse(errorText);
+        errorDetails = errorJson.detail || errorJson.message || errorDetails;
+      } catch (e) {
+        // Если не JSON, используем текст как есть
+        errorDetails = errorText || errorDetails;
+      }
+
       return NextResponse.json(
-        { error: `HTTP error! status: ${response.status}` },
+        { error: "Failed to create category", details: errorDetails },
         { status: response.status }
       );
     }

@@ -211,7 +211,15 @@ async def update_admin_order_status(
     db.add(db_order)
     await db.commit()
     await db.refresh(db_order)
-    return OrderInDB.model_validate(db_order, from_attributes=True)
+    
+    # Загружаем заказ заново с order_items для корректной сериализации
+    result = await db.execute(
+        select(models.Order)
+        .options(joinedload(models.Order.order_items))
+        .filter(models.Order.id == order_id)
+    )
+    db_order_with_items = result.scalars().first()
+    return OrderInDB.model_validate(db_order_with_items, from_attributes=True)
 
 @router.delete("/admin/orders/{order_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_admin_order(

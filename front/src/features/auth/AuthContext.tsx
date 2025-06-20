@@ -7,18 +7,14 @@ import {
   signinApiAuthSigninPost,
   signupApiAuthSignupPost,
 } from "@/shared/api/generated";
-import {
-  createContext,
-  ReactNode,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { createContext, ReactNode, useContext } from "react";
 
 interface AuthContextType {
   user: CustomUser | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  isError: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   signup: (
@@ -26,35 +22,84 @@ interface AuthContextType {
     password: string,
     confirmPassword: string
   ) => Promise<void>;
+  refetchUser: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<CustomUser | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const queryClient = useQueryClient();
 
-  // Проверяем текущую сессию при загрузке
-  useEffect(() => {
-    checkAuth();
-  }, []);
+  // Используем TanStack Query для получения данных пользователя
+  const {
+    data: user,
+    isLoading,
+    isError,
+    error,
+    refetch: refetchUser,
+  } = useQuery({
+    queryKey: ["currentUser"],
+    queryFn: getCurrentUserInfoApiAuthMeGet,
+    retry: false, // Не повторяем запрос при ошибке авторизации
+    staleTime: 10 * 60 * 1000, // 10 минут - увеличиваем время актуальности
+    gcTime: 30 * 60 * 1000, // 30 минут - увеличиваем время жизни кэша
+    refetchOnWindowFocus: false, // Отключаем рефетч при фокусе
+    refetchOnMount: "always", // Всегда рефетчим при маунте для диагностики
+    refetchOnReconnect: false, // Отключаем рефетч при переподключении
+  });
 
-  const checkAuth = async () => {
-    try {
-      const userData = await getCurrentUserInfoApiAuthMeGet();
-      setUser(userData);
-    } catch (error) {
-      console.error("Error checking auth:", error);
-      setUser(null);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // Мутация для входа
+  const loginMutation = useMutation({
+    mutationFn: async ({
+      email,
+      password,
+    }: {
+      email: string;
+      password: string;
+    }) => {
+      return await signinApiAuthSigninPost({ email, password });
+    },
+    onSuccess: () => {
+      // После успешного входа обновляем данные пользователя
+      queryClient.invalidateQueries({ queryKey: ["currentUser"] });
+    },
+  });
+
+  // Мутация для регистрации
+  const signupMutation = useMutation({
+    mutationFn: async ({
+      email,
+      password,
+      confirmPassword,
+    }: {
+      email: string;
+      password: string;
+      confirmPassword: string;
+    }) => {
+      return await signupApiAuthSignupPost({
+        email,
+        password,
+        confirmPassword,
+      });
+    },
+    onSuccess: (userData) => {
+      // Сразу сохраняем данные пользователя в кэш
+      queryClient.setQueryData(["currentUser"], userData);
+    },
+  });
+
+  // Мутация для выхода
+  const logoutMutation = useMutation({
+    mutationFn: logoutApiAuthLogoutPost,
+    onSettled: () => {
+      // Очищаем кэш пользователя независимо от результата
+      queryClient.setQueryData(["currentUser"], null);
+      queryClient.clear(); // Очищаем весь кэш при выходе
+    },
+  });
 
   const login = async (email: string, password: string) => {
-    await signinApiAuthSigninPost({ email, password });
-    // После успешного входа обновляем пользователя
-    await checkAuth();
+    await loginMutation.mutateAsync({ email, password });
   };
 
   const signup = async (
@@ -62,35 +107,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     password: string,
     confirmPassword: string
   ) => {
-    const userData = await signupApiAuthSignupPost({
-      email,
-      password,
-      confirmPassword,
-    });
-    setUser(userData);
+    await signupMutation.mutateAsync({ email, password, confirmPassword });
   };
 
   const logout = async () => {
-    try {
-      await logoutApiAuthLogoutPost();
-    } catch (error) {
-      console.error("Logout error:", error);
-    } finally {
-      setUser(null);
-    }
+    await logoutMutation.mutateAsync();
   };
 
-  const isAuthenticated = !!user;
+  const isAuthenticated = !!user && !isError;
 
   return (
     <AuthContext.Provider
       value={{
-        user,
+        user: user || null,
         isLoading,
+        isError,
         isAuthenticated,
         login,
         logout,
         signup,
+        refetchUser: () => refetchUser(),
       }}
     >
       {children}
@@ -104,4 +140,20 @@ export function useAuth() {
     throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
+}
+
+// Дополнительные хуки для удобства
+export function useUser() {
+  const { user, isLoading, isError } = useAuth();
+  return { user, isLoading, isError };
+}
+
+export function useIsAdmin() {
+  const { user, isLoading } = useAuth();
+  return { isAdmin: user?.isAdmin || false, isLoading };
+}
+
+export function useAuthActions() {
+  const { login, logout, signup, refetchUser } = useAuth();
+  return { login, logout, signup, refetchUser };
 }

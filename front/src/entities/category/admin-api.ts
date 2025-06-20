@@ -57,9 +57,15 @@ export async function updateAdminCategory(
   });
 
   if (!res.ok) {
-    const errorData = await res.json();
-    console.error("Error updating admin category:", errorData);
-    throw new Error(errorData.details || "Failed to update admin category");
+    let errorMessage = `HTTP error! status: ${res.status}`;
+    try {
+      const errorData = await res.json();
+      console.error("Error updating admin category:", errorData);
+      errorMessage = errorData.details || errorData.error || errorMessage;
+    } catch (e) {
+      console.error("Failed to parse error response:", e);
+    }
+    throw new Error(errorMessage);
   }
 
   return (await res.json()) as CategoryInDB;
@@ -71,8 +77,16 @@ export async function deleteAdminCategory(id: string): Promise<void> {
   });
 
   if (!res.ok) {
-    const errorData = await res.json();
-    console.error("Error deleting admin category:", errorData);
-    throw new Error(errorData.details || "Failed to delete admin category");
+    let errorMessage = `HTTP error! status: ${res.status}`;
+    try {
+      const errorData = await res.json();
+      console.error("Error deleting admin category:", errorData);
+      errorMessage = errorData.details || errorData.error || errorMessage;
+    } catch (e) {
+      console.error("Failed to parse error response:", e);
+    }
+    throw new Error(errorMessage);
   }
+
+  // Не пытаемся парсить JSON для статуса 204 No Content
 }

@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import Link from "next/link";
-import React from "react";
+import React, { Suspense } from "react";
 
 export default function AuthLayout({
   children,
@@ -19,7 +19,7 @@ export default function AuthLayout({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {children}
+          <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
           <div className="mt-4 text-center text-sm">
             {/* Placeholder for Link-switcher */}
             <p>Auth links will go here</p>

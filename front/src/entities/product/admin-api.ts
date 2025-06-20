@@ -58,9 +58,15 @@ export async function updateAdminProduct(
   });
 
   if (!res.ok) {
-    const errorData = await res.json();
-    console.error("Error updating admin product:", errorData);
-    throw new Error(errorData.details || "Failed to update admin product");
+    let errorMessage = `HTTP error! status: ${res.status}`;
+    try {
+      const errorData = await res.json();
+      console.error("Error updating admin product:", errorData);
+      errorMessage = errorData.details || errorData.error || errorMessage;
+    } catch (e) {
+      console.error("Failed to parse error response:", e);
+    }
+    throw new Error(errorMessage);
   }
 
   return (await res.json()) as AdminProductClient;
@@ -72,8 +78,17 @@ export async function deleteAdminProduct(id: string): Promise<void> {
   });
 
   if (!res.ok) {
-    const errorData = await res.json();
-    console.error("Error deleting admin product:", errorData);
-    throw new Error(errorData.details || "Failed to delete admin product");
+    let errorMessage = `HTTP error! status: ${res.status}`;
+    try {
+      const errorData = await res.json();
+      console.error("Error deleting admin product:", errorData);
+      errorMessage = errorData.details || errorData.error || errorMessage;
+    } catch (e) {
+      console.error("Failed to parse error response:", e);
+    }
+    throw new Error(errorMessage);
   }
+
+  // Не пытаемся парсить JSON для статуса 204 No Content
+  // return (await res.json()) as AdminProductClient;
 }

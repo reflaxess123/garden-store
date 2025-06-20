@@ -15,12 +15,21 @@ function SearchInputInner() {
   const [query] = useDebounce(text, 400);
 
   useEffect(() => {
+    // Получаем текущий путь
+    const currentPath = window.location.pathname;
+
     if (query) {
+      // Если есть поисковый запрос, переходим на главную с параметром поиска
       router.push(`/?q=${query}`);
-    } else {
-      router.push("/");
+    } else if (initialQuery && !query) {
+      // Только если изначально был поисковый запрос, а теперь его убрали
+      // И мы находимся на главной странице
+      if (currentPath === "/") {
+        router.push("/");
+      }
+      // Иначе не делаем редирект - остаемся на текущей странице
     }
-  }, [query, router]);
+  }, [query, router, initialQuery]);
 
   const isSearching = text !== query && text.length > 0;
 

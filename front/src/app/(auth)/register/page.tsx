@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -25,9 +25,13 @@ type SignUpFormValues = z.infer<typeof signUpSchema>;
 
 export default function RegisterPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { signup } = useAuth();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  // Получаем callback URL из параметров поиска
+  const callbackUrl = searchParams.get("callback") || "/";
 
   const form = useForm<SignUpFormValues>({
     resolver: zodResolver(signUpSchema),
@@ -47,7 +51,7 @@ export default function RegisterPage() {
       setSuccessMessage(
         "Регистрация прошла успешно! Вы автоматически вошли в систему."
       );
-      router.push("/");
+      router.push(callbackUrl);
     } catch (error) {
       setErrorMessage(
         error instanceof Error

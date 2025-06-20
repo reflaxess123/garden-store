@@ -25,8 +25,19 @@ export async function PATCH(req: NextRequest, context: CategoryRouteContext) {
     if (!response.ok) {
       const errorText = await response.text();
       console.error("Error updating category:", errorText);
+
+      // Пытаемся распарсить JSON ошибку
+      let errorDetails = `HTTP error! status: ${response.status}`;
+      try {
+        const errorJson = JSON.parse(errorText);
+        errorDetails = errorJson.detail || errorJson.message || errorDetails;
+      } catch (e) {
+        // Если не JSON, используем текст как есть
+        errorDetails = errorText || errorDetails;
+      }
+
       return NextResponse.json(
-        { error: `HTTP error! status: ${response.status}` },
+        { error: "Failed to update category", details: errorDetails },
         { status: response.status }
       );
     }
@@ -60,13 +71,24 @@ export async function DELETE(req: NextRequest, context: CategoryRouteContext) {
     if (!response.ok) {
       const errorText = await response.text();
       console.error("Error deleting category:", errorText);
+
+      // Пытаемся распарсить JSON ошибку
+      let errorDetails = `HTTP error! status: ${response.status}`;
+      try {
+        const errorJson = JSON.parse(errorText);
+        errorDetails = errorJson.detail || errorJson.message || errorDetails;
+      } catch (e) {
+        // Если не JSON, используем текст как есть
+        errorDetails = errorText || errorDetails;
+      }
+
       return NextResponse.json(
-        { error: `HTTP error! status: ${response.status}` },
+        { error: "Failed to delete category", details: errorDetails },
         { status: response.status }
       );
     }
 
-    return NextResponse.json({}, { status: 204 });
+    return new NextResponse(null, { status: 204 });
   } catch (e: unknown) {
     console.error("Error deleting category:", e);
     return NextResponse.json(

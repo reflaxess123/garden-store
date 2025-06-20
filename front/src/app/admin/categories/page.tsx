@@ -17,6 +17,7 @@ import {
   updateAdminCategory,
   UpdateCategoryPayload,
 } from "@/entities/category/admin-api";
+import { generateSlug } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import {
   Dialog,
@@ -49,7 +50,6 @@ import Image from "next/image";
 // Zod schema for category form validation
 const categoryFormSchema = z.object({
   name: z.string().min(1, "Имя категории обязательно."),
-  slug: z.string().min(1, "Slug категории обязателен."),
   imageUrl: z.string().optional().or(z.literal("")),
 });
 
@@ -73,7 +73,6 @@ function CategoryFormDialog({
     resolver: zodResolver(categoryFormSchema),
     defaultValues: {
       name: category?.name || "",
-      slug: category?.slug || "",
       imageUrl: category?.imageUrl || "",
     },
   });
@@ -114,19 +113,21 @@ function CategoryFormDialog({
   });
 
   const onSubmit = (values: CategoryFormValues) => {
+    const slug = generateSlug(values.name);
+
     if (category) {
       updateMutate({
         id: category.id,
         payload: {
           name: values.name,
-          slug: values.slug,
+          slug: slug,
           imageUrl: values.imageUrl || null,
         },
       });
     } else {
       createMutate({
         name: values.name,
-        slug: values.slug,
+        slug: slug,
         imageUrl: values.imageUrl || null,
       });
     }
@@ -161,19 +162,6 @@ function CategoryFormDialog({
                   <FormLabel>Имя</FormLabel>
                   <FormControl>
                     <Input placeholder="Название категории" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="slug"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Slug</FormLabel>
-                  <FormControl>
-                    <Input placeholder="slug-категории" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -312,7 +300,9 @@ export default function AdminCategoriesPage() {
             categories.map((category) => (
               <TableRow key={category.id}>
                 <TableCell>{category.name}</TableCell>
-                <TableCell>{category.slug}</TableCell>
+                <TableCell className="font-mono text-sm text-muted-foreground">
+                  {category.slug}
+                </TableCell>
                 <TableCell>
                   {category.imageUrl && (
                     <Image

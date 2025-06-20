@@ -64,7 +64,7 @@ export async function DELETE(req: NextRequest, context: ProductRouteContext) {
       );
     }
 
-    return NextResponse.json({}, { status: 204 });
+    return new NextResponse(null, { status: 204 });
   } catch (e: unknown) {
     console.error("Error deleting product:", e);
     return NextResponse.json(

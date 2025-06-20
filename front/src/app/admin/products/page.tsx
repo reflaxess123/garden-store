@@ -57,19 +57,107 @@ import {
   UpdateProductPayload,
 } from "@/entities/product/admin-api";
 import { getBestsellers, Product } from "@/entities/product/api";
-import { formatPrice } from "@/shared/lib/utils";
+import { formatPrice, generateSlug } from "@/shared/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Textarea } from "@/shared/ui/textarea";
 import Image from "next/image";
 
+// Компонент для редактирования характеристик
+interface CharacteristicsEditorProps {
+  value: Record<string, string>;
+  onChange: (value: Record<string, string>) => void;
+}
+
+function CharacteristicsEditor({
+  value,
+  onChange,
+}: CharacteristicsEditorProps) {
+  const characteristics = Object.entries(value || {});
+
+  const addCharacteristic = () => {
+    onChange({ ...value, "": "" });
+  };
+
+  const updateCharacteristic = (index: number, key: string, val: string) => {
+    const newCharacteristics = { ...value };
+    const oldKey = characteristics[index][0];
+
+    // Удаляем старый ключ если он изменился
+    if (oldKey !== key) {
+      delete newCharacteristics[oldKey];
+    }
+
+    // Добавляем новый ключ-значение
+    if (key.trim()) {
+      newCharacteristics[key] = val;
+    }
+
+    onChange(newCharacteristics);
+  };
+
+  const removeCharacteristic = (index: number) => {
+    const newCharacteristics = { ...value };
+    const keyToRemove = characteristics[index][0];
+    delete newCharacteristics[keyToRemove];
+    onChange(newCharacteristics);
+  };
+
+  return (
+    <div className="space-y-2">
+      <div className="flex justify-end items-center">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={addCharacteristic}
+        >
+          <Plus className="h-4 w-4 mr-1" />
+          Добавить
+        </Button>
+      </div>
+
+      {characteristics.map(([key, val], index) => (
+        <div key={index} className="flex gap-2 items-center">
+          <Input
+            placeholder="Название характеристики"
+            value={key}
+            onChange={(e) => updateCharacteristic(index, e.target.value, val)}
+            className="flex-1"
+          />
+          <Input
+            placeholder="Значение"
+            value={val}
+            onChange={(e) => updateCharacteristic(index, key, e.target.value)}
+            className="flex-1"
+          />
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => removeCharacteristic(index)}
+          >
+            <Trash className="h-4 w-4" />
+          </Button>
+        </div>
+      ))}
+
+      {characteristics.length === 0 && (
+        <p className="text-sm text-muted-foreground">
+          Нет характеристик. Нажмите &quot;Добавить&quot; чтобы добавить
+          характеристику.
+        </p>
+      )}
+    </div>
+  );
+}
+
 // Zod schema for product form validation
 const productFormSchema = z.object({
   name: z.string().min(1, "Имя продукта обязательно."),
-  slug: z.string().min(1, "Slug продукта обязателен."),
   description: z.string().optional().or(z.literal("")),
   price: z.coerce.number().min(0.01, "Цена должна быть больше 0."),
   discount: z.coerce.number().min(0).optional().or(z.literal("")),
-  characteristics: z.string().optional().or(z.literal("")),
+  characteristics: z.record(z.string()).optional(),
   imageUrl: z.string().optional().or(z.literal("")),
   categoryId: z.string().min(1, "Категория обязательна."),
 });
@@ -103,11 +191,10 @@ function ProductFormDialog({
     resolver: zodResolver(productFormSchema),
     defaultValues: {
       name: product?.name || "",
-      slug: product?.slug || "",
       description: product?.description || "",
       price: product?.price ? parseFloat(product.price) : 0,
       discount: product?.discount ? parseFloat(product.discount) : 0,
-      characteristics: JSON.stringify(product?.characteristics, null, 2) || "",
+      characteristics: product?.characteristics || {},
       imageUrl: product?.imageUrl || "",
       categoryId: product?.categoryId || "",
     },
@@ -149,16 +236,15 @@ function ProductFormDialog({
   });
 
   const onSubmit = (values: ProductFormValues) => {
-    const characteristicsParsed = values.characteristics
-      ? JSON.parse(values.characteristics)
-      : null;
+    const slug = generateSlug(values.name);
+
     const payload = {
       name: values.name,
-      slug: values.slug,
+      slug: slug,
       description: values.description || null,
       price: values.price.toString(),
       discount: values.discount ? values.discount.toString() : null,
-      characteristics: characteristicsParsed,
+      characteristics: values.characteristics || null,
       imageUrl: values.imageUrl || null,
       categoryId: values.categoryId,
     };
@@ -206,19 +292,6 @@ function ProductFormDialog({
                   <FormLabel>Имя</FormLabel>
                   <FormControl>
                     <Input placeholder="Название продукта" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="slug"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Slug</FormLabel>
-                  <FormControl>
-                    <Input placeholder="slug-продукта" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -280,9 +353,12 @@ function ProductFormDialog({
               name="characteristics"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Характеристики (JSON)</FormLabel>
+                  <FormLabel>Характеристики</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="{'цвет': 'красный'}" {...field} />
+                    <CharacteristicsEditor
+                      value={field.value || {}}
+                      onChange={field.onChange}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -510,7 +586,6 @@ export default function AdminProductsPage() {
           <TableRow>
             <TableHead>Изображение</TableHead>
             <TableHead>Имя</TableHead>
-            <TableHead>Slug</TableHead>
             <TableHead>Категория</TableHead>
             <TableHead>Цена</TableHead>
             <TableHead>Скидка</TableHead>
@@ -533,7 +608,6 @@ export default function AdminProductsPage() {
                 )}
               </TableCell>
               <TableCell className="font-medium">{product.name}</TableCell>
-              <TableCell>{product.slug}</TableCell>
               <TableCell>{product.category?.name}</TableCell>
               <TableCell>{formatPrice(parseFloat(product.price))}</TableCell>
               <TableCell>

@@ -27,6 +27,16 @@ services:
       - "../files/backend-uploads:/app/uploads"
     networks:
       - garden-store-network
+      - dokploy-network
+    labels:
+      # Traefik labels для API через тот же домен
+      - "traefik.enable=true"
+      - "traefik.docker.network=dokploy-network"
+      - "traefik.http.routers.mamasha-mono-14rbed-backend.rule=Host(`sadovnick.store`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.mamasha-mono-14rbed-backend.entrypoints=websecure"
+      - "traefik.http.routers.mamasha-mono-14rbed-backend.service=mamasha-mono-14rbed-backend"
+      - "traefik.http.routers.mamasha-mono-14rbed-backend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.mamasha-mono-14rbed-backend.loadbalancer.server.port=4000"
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:4000/health || exit 1"]
       interval: 30s
@@ -45,9 +55,9 @@ services:
     container_name: frontend
     restart: unless-stopped
     environment:
-      # API URL для браузера (внешний адрес сервера)
-      - NEXT_PUBLIC_API_URL=http://103.74.93.55:4001
-      - NEXT_PUBLIC_WS_URL=ws://103.74.93.55:4001
+      # API URL для браузера (через домен)
+      - NEXT_PUBLIC_API_URL=https://sadovnick.store
+      - NEXT_PUBLIC_WS_URL=wss://sadovnick.store
       # Внутренний URL фронтенда для SSR запросов
       - FRONTEND_INTERNAL_URL=http://localhost:80
     ports:
@@ -66,6 +76,8 @@ services:
 networks:
   garden-store-network:
     driver: bridge
+  dokploy-network:
+    external: true
 
 volumes:
   # Используем именованные volumes для данных

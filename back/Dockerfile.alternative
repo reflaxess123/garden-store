@@ -1,19 +1,21 @@
-# Используем официальный Python образ вместо Ubuntu для избежания rate limit
-FROM python:3.11-slim
+# Альтернативный Dockerfile с образом из cgr.dev (в случае проблем с Docker Hub)
+FROM cgr.dev/chainguard/python:3.11-dev
+
+# Переключаемся на root для установки пакетов
+USER root
 
 # Устанавливаем рабочую директорию
 WORKDIR /app
 
 # Устанавливаем системные зависимости
-RUN apt-get update && apt-get install -y \
+RUN apk add --no-cache \
     gcc \
     g++ \
     libpq-dev \
+    musl-dev \
+    postgresql-dev \
     procps \
-    passwd \
-    gosu \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+    curl
 
 # Устанавливаем Poetry
 RUN pip install poetry
@@ -25,7 +27,7 @@ COPY pyproject.toml poetry.lock ./
 RUN poetry config virtualenvs.create false \
     && poetry install --without dev --no-interaction --no-ansi --no-root
 
-# Копируем исходный код приложения (исключая .env через .dockerignore)
+# Копируем исходный код приложения
 COPY . .
 
 # Копируем и настраиваем entrypoint
@@ -33,14 +35,14 @@ COPY entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
 # Создаем непривилегированного пользователя
-RUN useradd --create-home --shell /bin/bash app \
+RUN adduser -D -s /bin/sh app \
     && chown -R app:app /app
 
-# Устанавливаем entrypoint. Он будет запущен от root.
+# Устанавливаем entrypoint
 ENTRYPOINT ["entrypoint.sh"]
 
 # Открываем порт
 EXPOSE 4000
 
-# Команда запуска, которая будет выполнена от пользователя app
+# Команда запуска
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "4000"] 

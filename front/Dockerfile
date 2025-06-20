@@ -1,6 +1,9 @@
 # Используем Node.js 20 Alpine
 FROM node:20-alpine
 
+# Устанавливаем curl для health check
+RUN apk add --no-cache curl
+
 WORKDIR /app
 
 # Копируем package.json и package-lock.json

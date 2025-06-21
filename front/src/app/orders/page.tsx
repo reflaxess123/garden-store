@@ -1,12 +1,12 @@
 "use client";
 
 import { useAuth } from "@/features/auth/AuthContext";
+import { formatPrice } from "@/shared";
 import {
   OrderInDB,
   useDeleteorderapiordersdelete,
   useGetuserordersapiordersget,
 } from "@/shared/api/generated";
-import { formatPrice } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";

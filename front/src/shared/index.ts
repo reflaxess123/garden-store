@@ -21,9 +21,43 @@ export {
   useOperationState,
 } from "./hooks/useAsyncState";
 export { useForm, validators } from "./hooks/useForm";
+export {
+  paginationUtils,
+  usePageSize,
+  usePagination,
+} from "./hooks/usePagination";
+export type {
+  PageSizeOptions,
+  PaginationActions,
+  PaginationOptions,
+  PaginationState,
+} from "./hooks/usePagination";
 
 // Lib
 export { logger } from "./lib/logger";
+export {
+  createBreadcrumbs,
+  createSafeLink,
+  createUrl,
+  getUrlParam,
+  isActiveRoute,
+  isExternalUrl,
+  parseSearchParams,
+  routes,
+  updateUrlParams,
+} from "./lib/navigation";
+export type { Breadcrumb } from "./lib/navigation";
+export {
+  dismissAll,
+  notifications,
+  showError,
+  showInfo,
+  showLoading,
+  showPromise,
+  showSuccess,
+  showWarning,
+} from "./lib/notifications";
+export { Storage, storage } from "./lib/storage";
 export { cn, formatPrice, generateSlug } from "./lib/utils";
 
 // Types
@@ -79,6 +113,11 @@ export {
   LoadingPage,
   LoadingSpinner,
 } from "./ui/Loading";
+export {
+  MobilePagination,
+  Pagination,
+  SimplePagination,
+} from "./ui/Pagination";
 
 // Переэкспорт часто используемых UI компонентов
 export { Badge } from "./ui/badge";

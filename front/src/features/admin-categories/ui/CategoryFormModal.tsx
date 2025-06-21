@@ -14,7 +14,7 @@ import {
 } from "@/entities/category/admin-api";
 import { useCrudOperations } from "@/features/admin-common/hooks";
 import CrudFormModal from "@/features/admin-common/ui/CrudFormModal";
-import { generateSlug } from "@/shared/lib/utils";
+import { generateSlug } from "@/shared";
 import {
   Form,
   FormControl,

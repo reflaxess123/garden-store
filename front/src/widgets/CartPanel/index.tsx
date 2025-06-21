@@ -3,8 +3,8 @@
 import { Minus, Plus, ShoppingBag, ShoppingCart, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-import { useCart } from "@/features/cart/useCart";
-import { formatPrice } from "@/shared/lib/utils";
+import { useCart } from "@/features/cart/hooks";
+import { formatPrice } from "@/shared";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Separator } from "@/shared/ui/separator";

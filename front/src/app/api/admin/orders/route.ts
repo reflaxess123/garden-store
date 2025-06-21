@@ -1,36 +1,58 @@
 import { NextRequest, NextResponse } from "next/server";
+import { handleApiError, logApiRequest, logError } from "../../_utils/logger";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
-export async function GET(req: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/admin/orders`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Cookie: req.headers.get("cookie") || "",
-      },
+    logApiRequest("GET", "/api/admin/orders");
+
+    const { searchParams } = new URL(request.url);
+    const page = searchParams.get("page") || "1";
+    const limit = searchParams.get("limit") || "10";
+    const status = searchParams.get("status") || "";
+
+    const token = request.cookies.get("access_token")?.value;
+    if (!token) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const queryParams = new URLSearchParams({
+      page,
+      limit,
+      ...(status && { status }),
     });
+
+    const response = await fetch(
+      `${process.env.BACKEND_URL}/admin/orders?${queryParams}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Error fetching admin orders:", errorText);
+      logError("Failed to fetch orders", null, {
+        endpoint: "/admin/orders",
+        status: response.status,
+        errorText,
+        queryParams: Object.fromEntries(queryParams),
+      });
       return NextResponse.json(
-        { error: `HTTP error! status: ${response.status}` },
+        { error: "Failed to fetch orders" },
         { status: response.status }
       );
     }
 
-    const orders = await response.json();
-    return NextResponse.json(orders);
-  } catch (e: unknown) {
-    console.error("Error fetching admin orders:", e);
-    return NextResponse.json(
-      {
-        error: "Server error",
-        details: e instanceof Error ? e.message : String(e),
-      },
-      { status: 500 }
-    );
+    const data = await response.json();
+    return NextResponse.json(data);
+  } catch (error) {
+    const { error: errorMsg, status } = handleApiError(error, {
+      endpoint: "/admin/orders",
+      method: "GET",
+    });
+    return NextResponse.json({ error: errorMsg }, { status });
   }
 }

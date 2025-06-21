@@ -45,7 +45,7 @@ import {
   updateAdminProduct,
   UpdateProductPayload,
 } from "@/entities/product/admin-api";
-import { generateSlug } from "@/shared/lib/utils";
+import { generateSlug } from "@/shared";
 
 // Компонент для редактирования характеристик
 interface CharacteristicsEditorProps {

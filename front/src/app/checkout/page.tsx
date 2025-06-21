@@ -1,8 +1,8 @@
 "use client";
 
 import { createOrder } from "@/entities/product/apiClient"; // Предполагаемый API для создания заказа
-import { useCart } from "@/features/cart/useCart";
-import { formatPrice } from "@/shared/lib/utils";
+import { useCart } from "@/features/cart/hooks";
+import { formatPrice, logger, notifications } from "@/shared";
 import { Button } from "@/shared/ui/button";
 import {
   Form,
@@ -76,7 +76,7 @@ export default function CheckoutPage() {
         imageUrl: item.imageUrl,
       }));
 
-      await createOrder(
+      const result = await createOrder(
         values.fullName,
         values.email,
         values.address,
@@ -87,12 +87,28 @@ export default function CheckoutPage() {
         totalAmount
       );
 
-      clearCart();
-      toast.success("Заказ успешно оформлен!");
-      router.push("/orders"); // Перенаправляем на страницу заказов
+      if (result && result.id) {
+        clearCart();
+        notifications.orders.created(result.id);
+        router.push(`/orders/${result.id}`);
+      }
     } catch (error) {
-      console.error("Ошибка при оформлении заказа:", error);
-      toast.error("Не удалось оформить заказ. Пожалуйста, попробуйте еще раз.");
+      logger.error("Ошибка при оформлении заказа", error, {
+        component: "CheckoutPage",
+        orderData: {
+          fullName: values.fullName,
+          email: values.email,
+          address: values.address,
+          city: values.city,
+          postalCode: values.postalCode,
+          phone: values.phone,
+          items: orderItems,
+          totalAmount: totalAmount,
+        },
+      });
+      notifications.orders.error(error as Error);
+    } finally {
+      form.reset();
     }
   }
 

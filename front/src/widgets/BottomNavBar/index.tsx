@@ -1,6 +1,6 @@
 "use client";
 
-import { useCart } from "@/features/cart/useCart";
+import { useCart } from "@/features/cart/hooks";
 import { cn } from "@/shared";
 import { Badge } from "@/shared/ui/badge";
 import { Home, ShoppingBag, Store } from "lucide-react";

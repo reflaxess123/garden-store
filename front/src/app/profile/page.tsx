@@ -1,11 +1,11 @@
 "use client";
 
 import { useAuth } from "@/features/auth/AuthContext";
+import { formatPrice, logger, notifications } from "@/shared";
 import {
   OrderInDB,
   useGetuserordersapiordersget,
 } from "@/shared/api/generated";
-import { formatPrice } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
@@ -33,6 +33,7 @@ import {
   TrendingUp,
   User,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -389,6 +390,7 @@ export default function ProfilePage() {
   const { user, logout, isLoading } = useAuth();
   const [activeTab, setActiveTab] = useState("overview");
   const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const router = useRouter();
 
   // Загружаем заказы пользователя
   const {
@@ -399,11 +401,17 @@ export default function ProfilePage() {
     enabled: !!user,
   });
 
-  const handleSignOut = async () => {
+  const handleLogout = async () => {
     try {
       await logout();
+      notifications.auth.logoutSuccess();
+      router.push("/");
     } catch (error) {
-      console.error("Ошибка выхода:", error);
+      logger.error("Ошибка выхода", error, {
+        component: "ProfilePage",
+        userId: user?.id,
+      });
+      notifications.auth.loginError(error as Error);
     }
   };
 
@@ -448,7 +456,7 @@ export default function ProfilePage() {
             onSave={handleSaveProfile}
             isLoading={isEditingProfile}
           />
-          <Button onClick={handleSignOut} variant="outline">
+          <Button onClick={handleLogout} variant="outline">
             Выйти
           </Button>
         </div>

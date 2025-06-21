@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { handleApiError, logApiRequest, logError } from "../_utils/logger";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 interface OrderItemInput {
   productId: string;
@@ -21,73 +21,101 @@ interface CreateOrderRequestBody {
   totalAmount: number;
 }
 
-export async function DELETE(req: NextRequest) {
+export async function DELETE(request: NextRequest) {
   try {
-    const body = await req.json();
+    logApiRequest("DELETE", "/api/orders");
 
-    const response = await fetch(`${API_BASE_URL}/api/orders`, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        Cookie: req.headers.get("cookie") || "",
-      },
-      body: JSON.stringify(body),
-    });
+    const { searchParams } = new URL(request.url);
+    const orderId = searchParams.get("id");
+
+    if (!orderId) {
+      return NextResponse.json(
+        { error: "Order ID is required" },
+        { status: 400 }
+      );
+    }
+
+    const token = request.cookies.get("access_token")?.value;
+    if (!token) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const response = await fetch(
+      `${process.env.BACKEND_URL}/orders/${orderId}`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Error deleting order:", errorText);
+      logError("Failed to delete order", null, {
+        endpoint: `/orders/${orderId}`,
+        status: response.status,
+        errorText,
+        orderId,
+      });
       return NextResponse.json(
-        { error: `HTTP error! status: ${response.status}` },
+        { error: "Failed to delete order" },
         { status: response.status }
       );
     }
 
     return NextResponse.json({ success: true });
-  } catch (e: unknown) {
-    console.error("Error deleting order:", e);
-    return NextResponse.json(
-      {
-        error: "Server error",
-        details: e instanceof Error ? e.message : String(e),
-      },
-      { status: 500 }
-    );
+  } catch (error) {
+    const { error: errorMsg, status } = handleApiError(error, {
+      endpoint: "/orders",
+      method: "DELETE",
+    });
+    return NextResponse.json({ error: errorMsg }, { status });
   }
 }
 
-export async function POST(req: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    const body = await req.json();
+    logApiRequest("POST", "/api/orders");
 
-    const response = await fetch(`${API_BASE_URL}/api/orders`, {
+    const token = request.cookies.get("access_token")?.value;
+    if (!token) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const body = await request.json();
+
+    const response = await fetch(`${process.env.BACKEND_URL}/orders`, {
       method: "POST",
       headers: {
+        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
-        Cookie: req.headers.get("cookie") || "",
       },
       body: JSON.stringify(body),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Error creating order:", errorText);
+      logError("Failed to create order", null, {
+        endpoint: "/orders",
+        status: response.status,
+        errorText,
+        orderTotal: body.total,
+      });
       return NextResponse.json(
-        { error: `HTTP error! status: ${response.status}` },
+        { error: "Failed to create order" },
         { status: response.status }
       );
     }
 
-    const result = await response.json();
-    return NextResponse.json(result);
-  } catch (e: unknown) {
-    console.error("Error creating order:", e);
-    return NextResponse.json(
-      {
-        error: "Server error",
-        details: e instanceof Error ? e.message : String(e),
-      },
-      { status: 500 }
-    );
+    const data = await response.json();
+    return NextResponse.json(data);
+  } catch (error) {
+    const { error: errorMsg, status } = handleApiError(error, {
+      endpoint: "/orders",
+      method: "POST",
+    });
+    return NextResponse.json({ error: errorMsg }, { status });
   }
 }

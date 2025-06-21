@@ -1,39 +1,44 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { handleApiError, logApiRequest, logError } from "../../_utils/logger";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
 export async function GET(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  request: NextRequest,
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await params;
+    logApiRequest("GET", `/api/products/${params.id}`);
 
-    const response = await fetch(`${API_BASE_URL}/api/products/${id}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    const response = await fetch(
+      `${process.env.BACKEND_URL}/products/${params.id}`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Error fetching product:", errorText);
+      logError("Failed to fetch product", null, {
+        endpoint: `/products/${params.id}`,
+        status: response.status,
+        errorText,
+        productId: params.id,
+      });
       return NextResponse.json(
-        { error: `HTTP error! status: ${response.status}` },
+        { error: "Product not found" },
         { status: response.status }
       );
     }
 
-    const product = await response.json();
-    return NextResponse.json(product);
+    const data = await response.json();
+    return NextResponse.json(data);
   } catch (error) {
-    console.error("Error fetching product:", error);
-    return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : "Internal Server Error",
-      },
-      { status: 500 }
-    );
+    const { error: errorMsg, status } = handleApiError(error, {
+      endpoint: `/products/${params.id}`,
+      method: "GET",
+    });
+    return NextResponse.json({ error: errorMsg }, { status });
   }
 }

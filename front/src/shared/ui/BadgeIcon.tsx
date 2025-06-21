@@ -1,4 +1,4 @@
-import { cn } from "@/shared/lib/utils";
+import { cn } from "../lib/utils";
 import { Badge } from "@/shared/ui/badge";
 import React from "react";
 

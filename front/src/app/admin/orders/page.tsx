@@ -40,7 +40,7 @@ import {
   StatsGrid,
 } from "@/features/admin-common/ui";
 import { OrderEditModal } from "@/features/admin-orders/ui";
-import { formatPrice } from "@/shared/lib/utils";
+import { formatPrice } from "@/shared";
 
 // Типы данных
 interface OrderItem {

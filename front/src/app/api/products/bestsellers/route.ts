@@ -1,14 +1,15 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { handleApiError, logApiRequest, logError } from "../../_utils/logger";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
-
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
+    logApiRequest("GET", "/api/products/bestsellers");
+
     const { searchParams } = new URL(request.url);
     const limit = searchParams.get("limit") || "10";
 
     const response = await fetch(
-      `${API_BASE_URL}/api/products/bestsellers?limit=${limit}`,
+      `${process.env.BACKEND_URL}/products/bestsellers?limit=${limit}`,
       {
         method: "GET",
         headers: {
@@ -19,9 +20,13 @@ export async function GET(request: Request) {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Error fetching bestsellers:", errorText);
+      logError("Failed to fetch bestsellers", null, {
+        endpoint: "/products/bestsellers",
+        status: response.status,
+        errorText,
+      });
       return NextResponse.json(
-        { error: `HTTP error! status: ${response.status}` },
+        { error: "Failed to fetch bestsellers" },
         { status: response.status }
       );
     }
@@ -29,12 +34,10 @@ export async function GET(request: Request) {
     const bestsellers = await response.json();
     return NextResponse.json(bestsellers);
   } catch (error) {
-    console.error("Error fetching bestsellers:", error);
-    return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : "Internal Server Error",
-      },
-      { status: 500 }
-    );
+    const { error: errorMsg, status } = handleApiError(error, {
+      endpoint: "/products/bestsellers",
+      method: "GET",
+    });
+    return NextResponse.json({ error: errorMsg }, { status });
   }
 }

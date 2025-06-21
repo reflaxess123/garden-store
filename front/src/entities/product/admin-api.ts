@@ -1,3 +1,4 @@
+import { logger } from "@/shared";
 import { ProductInDB } from "@/shared/api/generated/types";
 
 export interface AdminProductClient extends ProductInDB {
@@ -17,78 +18,134 @@ export interface CreateProductPayload {
 
 export type UpdateProductPayload = Partial<CreateProductPayload>;
 
-export async function getAdminProducts(): Promise<AdminProductClient[]> {
-  const res = await fetch("/api/admin/products");
+export async function getAdminProducts(): Promise<ProductInDB[]> {
+  try {
+    const response = await fetch("/api/admin/products", {
+      credentials: "include",
+    });
 
-  if (!res.ok) {
-    const errorData = await res.json();
-    console.error("Error fetching admin products:", errorData);
-    throw new Error(errorData.details || "Failed to fetch admin products");
+    if (!response.ok) {
+      const errorData = await response.text();
+      logger.error("Error fetching admin products", null, {
+        component: "getAdminProducts",
+        status: response.status,
+        errorData,
+      });
+      throw new Error(`Failed to fetch admin products: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    logger.error("Failed to fetch admin products", error, {
+      component: "getAdminProducts",
+    });
+    throw error;
   }
-
-  return (await res.json()) as AdminProductClient[];
 }
 
 export async function createAdminProduct(
   payload: CreateProductPayload
-): Promise<AdminProductClient> {
-  const res = await fetch("/api/admin/products", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
+): Promise<ProductInDB> {
+  try {
+    const response = await fetch("/api/admin/products", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(payload),
+    });
 
-  if (!res.ok) {
-    const errorData = await res.json();
-    console.error("Error creating admin product:", errorData);
-    throw new Error(errorData.details || "Failed to create admin product");
+    if (!response.ok) {
+      const errorData = await response.text();
+      logger.error("Error creating admin product", null, {
+        component: "createAdminProduct",
+        status: response.status,
+        errorData,
+        payload,
+      });
+      throw new Error(`Failed to create admin product: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    logger.error("Failed to create admin product", error, {
+      component: "createAdminProduct",
+      payload,
+    });
+    throw error;
   }
-
-  return (await res.json()) as AdminProductClient;
 }
 
 export async function updateAdminProduct(
   id: string,
   payload: UpdateProductPayload
-): Promise<AdminProductClient> {
-  const res = await fetch(`/api/admin/products/${id}`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
+): Promise<ProductInDB> {
+  try {
+    const response = await fetch(`/api/admin/products/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(payload),
+    });
 
-  if (!res.ok) {
-    let errorMessage = `HTTP error! status: ${res.status}`;
-    try {
-      const errorData = await res.json();
-      console.error("Error updating admin product:", errorData);
-      errorMessage = errorData.details || errorData.error || errorMessage;
-    } catch (e) {
-      console.error("Failed to parse error response:", e);
+    if (!response.ok) {
+      const errorData = await response.text();
+      logger.error("Error updating admin product", null, {
+        component: "updateAdminProduct",
+        status: response.status,
+        errorData,
+        id,
+        payload,
+      });
+      throw new Error(`Failed to update admin product: ${response.status}`);
     }
-    throw new Error(errorMessage);
-  }
 
-  return (await res.json()) as AdminProductClient;
+    return await response.json();
+  } catch (error) {
+    if (error instanceof SyntaxError) {
+      logger.error("Failed to parse error response", error, {
+        component: "updateAdminProduct",
+        id,
+      });
+    } else {
+      logger.error("Failed to update admin product", error, {
+        component: "updateAdminProduct",
+        id,
+        payload,
+      });
+    }
+    throw error;
+  }
 }
 
 export async function deleteAdminProduct(id: string): Promise<void> {
-  const res = await fetch(`/api/admin/products/${id}`, {
-    method: "DELETE",
-  });
+  try {
+    const response = await fetch(`/api/admin/products/${id}`, {
+      method: "DELETE",
+      credentials: "include",
+    });
 
-  if (!res.ok) {
-    let errorMessage = `HTTP error! status: ${res.status}`;
-    try {
-      const errorData = await res.json();
-      console.error("Error deleting admin product:", errorData);
-      errorMessage = errorData.details || errorData.error || errorMessage;
-    } catch (e) {
-      console.error("Failed to parse error response:", e);
+    if (!response.ok) {
+      const errorData = await response.text();
+      logger.error("Error deleting admin product", null, {
+        component: "deleteAdminProduct",
+        status: response.status,
+        errorData,
+        id,
+      });
+      throw new Error(`Failed to delete admin product: ${response.status}`);
     }
-    throw new Error(errorMessage);
+  } catch (error) {
+    if (error instanceof SyntaxError) {
+      logger.error("Failed to parse error response", error, {
+        component: "deleteAdminProduct",
+        id,
+      });
+    } else {
+      logger.error("Failed to delete admin product", error, {
+        component: "deleteAdminProduct",
+        id,
+      });
+    }
+    throw error;
   }
-
-  // Не пытаемся парсить JSON для статуса 204 No Content
-  // return (await res.json()) as AdminProductClient;
 }

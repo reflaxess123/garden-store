@@ -1,13 +1,14 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { handleApiError, logApiRequest, logError } from "../_utils/logger";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
-
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const slug = searchParams.get("slug");
 
   try {
-    let url = `${API_BASE_URL}/api/categories`;
+    logApiRequest("GET", "/api/categories");
+
+    let url = `${process.env.BACKEND_URL}/categories`;
     if (slug) {
       url += `?slug=${slug}`;
     }
@@ -21,9 +22,13 @@ export async function GET(request: Request) {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Error fetching categories:", errorText);
+      logError("Failed to fetch categories", null, {
+        endpoint: "/categories",
+        status: response.status,
+        errorText,
+      });
       return NextResponse.json(
-        { error: `HTTP error! status: ${response.status}` },
+        { error: "Failed to fetch categories" },
         { status: response.status }
       );
     }
@@ -50,12 +55,10 @@ export async function GET(request: Request) {
 
     return NextResponse.json(data);
   } catch (error) {
-    console.error("Error fetching categories:", error);
-    return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : "Internal Server Error",
-      },
-      { status: 500 }
-    );
+    const { error: errorMsg, status } = handleApiError(error, {
+      endpoint: "/categories",
+      method: "GET",
+    });
+    return NextResponse.json({ error: errorMsg }, { status });
   }
 }

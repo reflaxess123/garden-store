@@ -39,7 +39,7 @@ import {
   deleteAdminProduct,
   getAdminProducts,
 } from "@/entities/product/admin-api";
-import { formatPrice } from "@/shared/lib/utils";
+import { formatPrice } from "@/shared";
 
 export default function AdminProductsPage() {
   // Загрузка данных

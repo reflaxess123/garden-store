@@ -1,83 +1,94 @@
 import { NextRequest, NextResponse } from "next/server";
+import { handleApiError, logApiRequest, logError } from "../../_utils/logger";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
-export async function GET(req: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/admin/categories`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Cookie: req.headers.get("cookie") || "",
-      },
-    });
+    logApiRequest("GET", "/api/admin/categories");
+
+    const token = request.cookies.get("access_token")?.value;
+    if (!token) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const response = await fetch(
+      `${process.env.BACKEND_URL}/admin/categories`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Error fetching admin categories:", errorText);
+      logError("Failed to fetch categories", null, {
+        endpoint: "/admin/categories",
+        status: response.status,
+        errorText,
+      });
       return NextResponse.json(
-        { error: `HTTP error! status: ${response.status}` },
+        { error: "Failed to fetch categories" },
         { status: response.status }
       );
     }
 
-    const categories = await response.json();
-    return NextResponse.json(categories);
-  } catch (e: unknown) {
-    console.error("Error fetching admin categories:", e);
-    return NextResponse.json(
-      {
-        error: "Server error",
-        details: e instanceof Error ? e.message : String(e),
-      },
-      { status: 500 }
-    );
+    const data = await response.json();
+    return NextResponse.json(data);
+  } catch (error) {
+    const { error: errorMsg, status } = handleApiError(error, {
+      endpoint: "/admin/categories",
+      method: "GET",
+    });
+    return NextResponse.json({ error: errorMsg }, { status });
   }
 }
 
-export async function POST(req: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    const body = await req.json();
+    logApiRequest("POST", "/api/admin/categories");
 
-    const response = await fetch(`${API_BASE_URL}/api/admin/categories`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Cookie: req.headers.get("cookie") || "",
-      },
-      body: JSON.stringify(body),
-    });
+    const token = request.cookies.get("access_token")?.value;
+    if (!token) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const body = await request.json();
+
+    const response = await fetch(
+      `${process.env.BACKEND_URL}/admin/categories`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      }
+    );
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Error creating category:", errorText);
-
-      // Пытаемся распарсить JSON ошибку
-      let errorDetails = `HTTP error! status: ${response.status}`;
-      try {
-        const errorJson = JSON.parse(errorText);
-        errorDetails = errorJson.detail || errorJson.message || errorDetails;
-      } catch (e) {
-        // Если не JSON, используем текст как есть
-        errorDetails = errorText || errorDetails;
-      }
-
+      logError("Failed to create category", null, {
+        endpoint: "/admin/categories",
+        status: response.status,
+        errorText,
+        categoryName: body.name,
+      });
       return NextResponse.json(
-        { error: "Failed to create category", details: errorDetails },
+        { error: "Failed to create category" },
         { status: response.status }
       );
     }
 
-    const newCategory = await response.json();
-    return NextResponse.json(newCategory, { status: 201 });
-  } catch (e: unknown) {
-    console.error("Error creating category:", e);
-    return NextResponse.json(
-      {
-        error: "Failed to create category",
-        details: e instanceof Error ? e.message : String(e),
-      },
-      { status: 500 }
-    );
+    const data = await response.json();
+    return NextResponse.json(data);
+  } catch (error) {
+    const { error: errorMsg, status } = handleApiError(error, {
+      endpoint: "/admin/categories",
+      method: "POST",
+    });
+    return NextResponse.json({ error: errorMsg }, { status });
   }
 }

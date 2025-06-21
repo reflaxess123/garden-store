@@ -1,6 +1,6 @@
 "use client";
 
-import { formatPrice } from "@/shared/lib/utils";
+import { formatPrice } from "@/shared";
 import { Button } from "@/shared/ui/button";
 import { Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
 

@@ -1,12 +1,12 @@
 "use client";
 
+import { formatPrice } from "@/shared";
 import {
   useGetadmincategoriesapiadmincategoriesget,
   useGetadminordersapiadminordersget,
   useGetadminproductsapiadminproductsget,
   useGetadminusersapiadminusersget,
 } from "@/shared/api/generated/api-client";
-import { formatPrice } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";

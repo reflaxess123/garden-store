@@ -1,7 +1,7 @@
 "use client";
 
 import { Product } from "@/entities/product/api";
-import { useCart } from "@/features/cart/useCart";
+import { useCart } from "@/features/cart/hooks";
 import { FavouriteButton } from "@/features/manage-favourites/ui/FavouriteButton";
 import { useFavourites } from "@/features/manage-favourites/useFavourites";
 import { Button } from "@/shared/ui/button";

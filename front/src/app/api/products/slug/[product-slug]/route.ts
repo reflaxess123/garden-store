@@ -1,6 +1,10 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import {
+  handleApiError,
+  logApiRequest,
+  logError,
+} from "../../../_utils/logger";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
 interface ProductBySlugProps {
   params: Promise<{
@@ -8,14 +12,16 @@ interface ProductBySlugProps {
   }>;
 }
 
-export async function GET(request: Request, { params }: ProductBySlugProps) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { "product-slug": string } }
+) {
   try {
-    const productSlug = (await params)["product-slug"];
+    logApiRequest("GET", `/api/products/slug/${params["product-slug"]}`);
 
     const response = await fetch(
-      `${API_BASE_URL}/api/products/slug/${productSlug}`,
+      `${process.env.BACKEND_URL}/products/slug/${params["product-slug"]}`,
       {
-        method: "GET",
         headers: {
           "Content-Type": "application/json",
         },
@@ -23,18 +29,26 @@ export async function GET(request: Request, { params }: ProductBySlugProps) {
     );
 
     if (!response.ok) {
-      if (response.status === 404) {
-        return new NextResponse("Product not found", { status: 404 });
-      }
       const errorText = await response.text();
-      console.error("Error fetching product by slug:", errorText);
-      return new NextResponse("Internal Server Error", { status: 500 });
+      logError("Failed to fetch product by slug", null, {
+        endpoint: `/products/slug/${params["product-slug"]}`,
+        status: response.status,
+        errorText,
+        slug: params["product-slug"],
+      });
+      return NextResponse.json(
+        { error: "Product not found" },
+        { status: response.status }
+      );
     }
 
-    const product = await response.json();
-    return NextResponse.json(product);
+    const data = await response.json();
+    return NextResponse.json(data);
   } catch (error) {
-    console.error("Error fetching product by slug:", error);
-    return new NextResponse("Internal Server Error", { status: 500 });
+    const { error: errorMsg, status } = handleApiError(error, {
+      endpoint: `/products/slug/${params["product-slug"]}`,
+      method: "GET",
+    });
+    return NextResponse.json({ error: errorMsg }, { status });
   }
 }

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { logError } from "../../../_utils/logger";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
 interface ProductRouteContext {
   params: Promise<{
@@ -12,7 +12,7 @@ export async function GET(req: NextRequest, context: ProductRouteContext) {
   try {
     const { id } = await context.params;
 
-    const response = await fetch(`${API_BASE_URL}/api/admin/products/${id}`, {
+    const response = await fetch(`${process.env.BACKEND_URL}/admin/products/${id}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -22,7 +22,7 @@ export async function GET(req: NextRequest, context: ProductRouteContext) {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Error fetching admin product:", errorText);
+      logError("Error fetching admin product:", errorText);
       return NextResponse.json(
         { error: `HTTP error! status: ${response.status}` },
         { status: response.status }
@@ -32,7 +32,7 @@ export async function GET(req: NextRequest, context: ProductRouteContext) {
     const product = await response.json();
     return NextResponse.json(product);
   } catch (e: unknown) {
-    console.error("Error fetching admin product:", e);
+    logError("Error fetching admin product:", e);
     return NextResponse.json(
       {
         error: "Server error",
@@ -47,7 +47,7 @@ export async function DELETE(req: NextRequest, context: ProductRouteContext) {
   try {
     const { id } = await context.params;
 
-    const response = await fetch(`${API_BASE_URL}/api/admin/products/${id}`, {
+    const response = await fetch(`${process.env.BACKEND_URL}/admin/products/${id}`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
@@ -57,7 +57,7 @@ export async function DELETE(req: NextRequest, context: ProductRouteContext) {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Error deleting product:", errorText);
+      logError("Error deleting product:", errorText);
       return NextResponse.json(
         { error: `HTTP error! status: ${response.status}` },
         { status: response.status }
@@ -66,7 +66,7 @@ export async function DELETE(req: NextRequest, context: ProductRouteContext) {
 
     return new NextResponse(null, { status: 204 });
   } catch (e: unknown) {
-    console.error("Error deleting product:", e);
+    logError("Error deleting product:", e);
     return NextResponse.json(
       {
         error: "Failed to delete product",
@@ -82,7 +82,7 @@ export async function PATCH(req: NextRequest, context: ProductRouteContext) {
     const { id } = await context.params;
     const body = await req.json();
 
-    const response = await fetch(`${API_BASE_URL}/api/admin/products/${id}`, {
+    const response = await fetch(`${process.env.BACKEND_URL}/admin/products/${id}`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
@@ -93,7 +93,7 @@ export async function PATCH(req: NextRequest, context: ProductRouteContext) {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Error updating product:", errorText);
+      logError("Error updating product:", errorText);
       return NextResponse.json(
         { error: `HTTP error! status: ${response.status}` },
         { status: response.status }
@@ -103,7 +103,7 @@ export async function PATCH(req: NextRequest, context: ProductRouteContext) {
     const updatedProduct = await response.json();
     return NextResponse.json(updatedProduct);
   } catch (e: unknown) {
-    console.error("Error updating product:", e);
+    logError("Error updating product:", e);
     return NextResponse.json(
       {
         error: "Failed to update product",

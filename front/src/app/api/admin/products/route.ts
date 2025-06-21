@@ -1,72 +1,105 @@
 import { NextRequest, NextResponse } from "next/server";
+import { handleApiError, logApiRequest, logError } from "../../_utils/logger";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
-export async function GET(req: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/admin/products`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Cookie: req.headers.get("cookie") || "",
-      },
+    logApiRequest("GET", "/api/admin/products");
+
+    const { searchParams } = new URL(request.url);
+    const page = searchParams.get("page") || "1";
+    const limit = searchParams.get("limit") || "10";
+    const search = searchParams.get("search") || "";
+    const category = searchParams.get("category") || "";
+
+    const token = request.cookies.get("access_token")?.value;
+    if (!token) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const queryParams = new URLSearchParams({
+      page,
+      limit,
+      ...(search && { search }),
+      ...(category && { category }),
     });
+
+    const response = await fetch(
+      `${process.env.BACKEND_URL}/admin/products?${queryParams}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Error fetching admin products:", errorText);
+      logError("Failed to fetch products", null, {
+        endpoint: "/admin/products",
+        status: response.status,
+        errorText,
+        queryParams: Object.fromEntries(queryParams),
+      });
       return NextResponse.json(
-        { error: `HTTP error! status: ${response.status}` },
+        { error: "Failed to fetch products" },
         { status: response.status }
       );
     }
 
-    const products = await response.json();
-    return NextResponse.json(products);
-  } catch (e: unknown) {
-    console.error("Error fetching admin products:", e);
-    return NextResponse.json(
-      {
-        error: "Server error",
-        details: e instanceof Error ? e.message : String(e),
-      },
-      { status: 500 }
-    );
+    const data = await response.json();
+    return NextResponse.json(data);
+  } catch (error) {
+    const { error: errorMsg, status } = handleApiError(error, {
+      endpoint: "/admin/products",
+      method: "GET",
+    });
+    return NextResponse.json({ error: errorMsg }, { status });
   }
 }
 
-export async function POST(req: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    const body = await req.json();
+    logApiRequest("POST", "/api/admin/products");
 
-    const response = await fetch(`${API_BASE_URL}/api/admin/products`, {
+    const token = request.cookies.get("access_token")?.value;
+    if (!token) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const body = await request.json();
+
+    const response = await fetch(`${process.env.BACKEND_URL}/admin/products`, {
       method: "POST",
       headers: {
+        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
-        Cookie: req.headers.get("cookie") || "",
       },
       body: JSON.stringify(body),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Error creating product:", errorText);
+      logError("Failed to create product", null, {
+        endpoint: "/admin/products",
+        status: response.status,
+        errorText,
+        productName: body.name,
+      });
       return NextResponse.json(
-        { error: `HTTP error! status: ${response.status}` },
+        { error: "Failed to create product" },
         { status: response.status }
       );
     }
 
-    const newProduct = await response.json();
-    return NextResponse.json(newProduct, { status: 201 });
-  } catch (e: unknown) {
-    console.error("Error creating product:", e);
-    return NextResponse.json(
-      {
-        error: "Failed to create product",
-        details: e instanceof Error ? e.message : String(e),
-      },
-      { status: 500 }
-    );
+    const data = await response.json();
+    return NextResponse.json(data);
+  } catch (error) {
+    const { error: errorMsg, status } = handleApiError(error, {
+      endpoint: "/admin/products",
+      method: "POST",
+    });
+    return NextResponse.json({ error: errorMsg }, { status });
   }
 }

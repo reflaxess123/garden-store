@@ -1,8 +1,5 @@
-import {
-  OrderCreate,
-  ProductInDB,
-  createOrderApiOrdersPost,
-} from "@/shared/api/generated";
+import { logger } from "@/shared";
+import { ProductInDB } from "@/shared/api/generated";
 
 interface GetProductsOptions {
   limit?: number;
@@ -58,38 +55,34 @@ export async function getProductsClient(
   return productsInDB as ProductInDB[];
 }
 
-export async function createOrder(
-  fullName: string,
-  email: string,
-  address: string,
-  city: string,
-  postalCode: string,
-  phone: string,
-  items: OrderItem[],
-  totalAmount: number
-) {
+export async function createOrder(orderData: any): Promise<any> {
   try {
-    const orderData: OrderCreate = {
-      full_name: fullName,
-      email,
-      address,
-      city,
-      postal_code: postalCode,
-      phone,
-      total_amount: Math.round(totalAmount * 100) / 100, // Округляем до 2 знаков после запятой
-      order_items: items.map((item) => ({
-        product_id: item.productId,
-        quantity: item.quantity,
-        price_snapshot: Math.round(item.priceSnapshot * 100) / 100, // Округляем цену товара тоже
-        name: item.name,
-        image_url: item.imageUrl || null,
-      })),
-    };
+    const response = await fetch(`/api/orders`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify(orderData),
+    });
 
-    const result = await createOrderApiOrdersPost(orderData);
-    return result;
+    if (!response.ok) {
+      const errorText = await response.text();
+      logger.error("Error creating order", null, {
+        component: "createOrder",
+        status: response.status,
+        errorText,
+        orderData,
+      });
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
   } catch (error) {
-    console.error("Error creating order:", error);
+    logger.error("Error creating order", error, {
+      component: "createOrder",
+      orderData,
+    });
     throw error;
   }
 }

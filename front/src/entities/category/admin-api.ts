@@ -1,3 +1,4 @@
+import { logger } from "@/shared";
 import { CategoryInDB } from "@/shared/api/generated/types";
 
 export type AdminCategory = CategoryInDB;
@@ -17,76 +18,133 @@ export interface UpdateCategoryPayload {
 }
 
 export async function getAdminCategories(): Promise<CategoryInDB[]> {
-  const res = await fetch("/api/admin/categories");
+  try {
+    const response = await fetch("/api/admin/categories", {
+      credentials: "include",
+    });
 
-  if (!res.ok) {
-    const errorData = await res.json();
-    console.error("Error fetching admin categories:", errorData);
-    throw new Error(errorData.details || "Failed to fetch admin categories");
+    if (!response.ok) {
+      const errorData = await response.text();
+      logger.error("Error fetching admin categories", null, {
+        component: "getAdminCategories",
+        status: response.status,
+        errorData,
+      });
+      throw new Error(`Failed to fetch admin categories: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    logger.error("Failed to fetch admin categories", error, {
+      component: "getAdminCategories",
+    });
+    throw error;
   }
-
-  return (await res.json()) as CategoryInDB[];
 }
 
 export async function createAdminCategory(
   payload: CreateCategoryPayload
 ): Promise<CategoryInDB> {
-  const res = await fetch("/api/admin/categories", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
+  try {
+    const response = await fetch("/api/admin/categories", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(payload),
+    });
 
-  if (!res.ok) {
-    const errorData = await res.json();
-    console.error("Error creating admin category:", errorData);
-    throw new Error(errorData.details || "Failed to create admin category");
+    if (!response.ok) {
+      const errorData = await response.text();
+      logger.error("Error creating admin category", null, {
+        component: "createAdminCategory",
+        status: response.status,
+        errorData,
+        payload,
+      });
+      throw new Error(`Failed to create admin category: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    logger.error("Failed to create admin category", error, {
+      component: "createAdminCategory",
+      payload,
+    });
+    throw error;
   }
-
-  return (await res.json()) as CategoryInDB;
 }
 
 export async function updateAdminCategory(
   id: string,
   payload: UpdateCategoryPayload
 ): Promise<CategoryInDB> {
-  const res = await fetch(`/api/admin/categories/${id}`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
+  try {
+    const response = await fetch(`/api/admin/categories/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(payload),
+    });
 
-  if (!res.ok) {
-    let errorMessage = `HTTP error! status: ${res.status}`;
-    try {
-      const errorData = await res.json();
-      console.error("Error updating admin category:", errorData);
-      errorMessage = errorData.details || errorData.error || errorMessage;
-    } catch (e) {
-      console.error("Failed to parse error response:", e);
+    if (!response.ok) {
+      const errorData = await response.text();
+      logger.error("Error updating admin category", null, {
+        component: "updateAdminCategory",
+        status: response.status,
+        errorData,
+        id,
+        payload,
+      });
+      throw new Error(`Failed to update admin category: ${response.status}`);
     }
-    throw new Error(errorMessage);
-  }
 
-  return (await res.json()) as CategoryInDB;
+    return await response.json();
+  } catch (error) {
+    if (error instanceof SyntaxError) {
+      logger.error("Failed to parse error response", error, {
+        component: "updateAdminCategory",
+        id,
+      });
+    } else {
+      logger.error("Failed to update admin category", error, {
+        component: "updateAdminCategory",
+        id,
+        payload,
+      });
+    }
+    throw error;
+  }
 }
 
 export async function deleteAdminCategory(id: string): Promise<void> {
-  const res = await fetch(`/api/admin/categories/${id}`, {
-    method: "DELETE",
-  });
+  try {
+    const response = await fetch(`/api/admin/categories/${id}`, {
+      method: "DELETE",
+      credentials: "include",
+    });
 
-  if (!res.ok) {
-    let errorMessage = `HTTP error! status: ${res.status}`;
-    try {
-      const errorData = await res.json();
-      console.error("Error deleting admin category:", errorData);
-      errorMessage = errorData.details || errorData.error || errorMessage;
-    } catch (e) {
-      console.error("Failed to parse error response:", e);
+    if (!response.ok) {
+      const errorData = await response.text();
+      logger.error("Error deleting admin category", null, {
+        component: "deleteAdminCategory",
+        status: response.status,
+        errorData,
+        id,
+      });
+      throw new Error(`Failed to delete admin category: ${response.status}`);
     }
-    throw new Error(errorMessage);
+  } catch (error) {
+    if (error instanceof SyntaxError) {
+      logger.error("Failed to parse error response", error, {
+        component: "deleteAdminCategory",
+        id,
+      });
+    } else {
+      logger.error("Failed to delete admin category", error, {
+        component: "deleteAdminCategory",
+        id,
+      });
+    }
+    throw error;
   }
-
-  // Не пытаемся парсить JSON для статуса 204 No Content
 }

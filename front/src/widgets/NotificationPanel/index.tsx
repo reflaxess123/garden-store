@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "@/shared";
 import {
   getUnreadCountApiNotificationsUnreadCountGet,
   getUserNotificationsApiNotificationsGet,
@@ -7,7 +8,6 @@ import {
   markNotificationReadApiNotificationsNotificationIdPatch,
 } from "@/shared/api/generated";
 import type { NotificationInDB } from "@/shared/api/generated/types";
-import { cn } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import {

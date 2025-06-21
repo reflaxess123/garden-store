@@ -4,7 +4,7 @@ import { ShoppingBag, ShoppingCart } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import { useCart } from "@/features/cart/useCart";
+import { useCart } from "@/features/cart/hooks";
 import { formatPrice } from "@/shared";
 import { Button } from "@/shared/ui/button";
 import { Separator } from "@/shared/ui/separator";

@@ -1,13 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { handleApiError, logApiRequest, logError } from "../../_utils/logger";
 
-
-interface LocalCartItem {
-  productId: string;
-  quantity: number;
-  priceSnapshot: number;
-}
-
 export async function POST(request: NextRequest) {
   try {
     logApiRequest("POST", "/api/cart/merge");

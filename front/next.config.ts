@@ -1,3 +1,4 @@
+import ForkTsCheckerWebpackPlugin from "fork-ts-checker-webpack-plugin";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
@@ -25,6 +26,30 @@ const nextConfig: NextConfig = {
   env: {
     NEXT_PUBLIC_API_URL:
       process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000",
+  },
+  typescript: {
+    // Включаем TypeScript проверки во время разработки
+    ignoreBuildErrors: false,
+  },
+  eslint: {
+    // Не игнорируем ESLint ошибки во время сборки
+    ignoreDuringBuilds: false,
+  },
+  webpack: (config, options) => {
+    // Добавляем TypeScript checker только в dev режиме
+    if (options.dev && !options.isServer) {
+      config.plugins.push(
+        new ForkTsCheckerWebpackPlugin({
+          typescript: {
+            diagnosticOptions: {
+              semantic: true,
+              syntactic: true,
+            },
+          },
+        })
+      );
+    }
+    return config;
   },
 };
 

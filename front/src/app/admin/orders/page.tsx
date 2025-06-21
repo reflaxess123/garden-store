@@ -244,16 +244,16 @@ export default function AdminOrdersPage() {
   };
 
   const handleSaveOrder = async (
-    orderId: string,
-    items: OrderItem[],
-    totalAmount: number
+    _orderId: string,
+    _items: OrderItem[],
+    _totalAmount: number
   ) => {
     try {
       // Здесь должна быть логика сохранения заказа
       toast.success("Заказ успешно обновлен!");
       setShowEditModal(false);
       refetch();
-    } catch (error) {
+    } catch (_error) {
       toast.error("Ошибка при обновлении заказа");
     }
   };

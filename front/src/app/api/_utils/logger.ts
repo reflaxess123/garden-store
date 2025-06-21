@@ -8,16 +8,20 @@ interface LogContext {
   status?: number;
   userId?: string;
   requestId?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
-export function logError(message: string, error?: any, context?: LogContext) {
+export function logError(
+  message: string,
+  error?: unknown,
+  context?: LogContext
+) {
   const timestamp = new Date().toISOString();
   const logData = {
     timestamp,
     level: "ERROR",
     message,
-    error: error?.message || error,
+    error: error instanceof Error ? error.message : error,
     context,
   };
 

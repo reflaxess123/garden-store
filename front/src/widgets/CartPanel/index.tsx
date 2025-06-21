@@ -1,6 +1,7 @@
 "use client";
 
 import { Minus, Plus, ShoppingBag, ShoppingCart, Trash2 } from "lucide-react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 
 import { useCart } from "@/features/cart/hooks";
@@ -92,9 +93,11 @@ const CartPanel = () => {
                     {/* Изображение товара */}
                     <div className="flex-shrink-0">
                       {item.imageUrl ? (
-                        <img
+                        <Image
                           src={item.imageUrl}
                           alt={item.name}
+                          width={80}
+                          height={80}
                           className="h-20 w-20 object-cover rounded-lg border border-gray-200"
                         />
                       ) : (

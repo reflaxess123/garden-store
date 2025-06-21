@@ -3,6 +3,7 @@
 import { formatPrice } from "@/shared";
 import { Button } from "@/shared/ui/button";
 import { Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
+import Image from "next/image";
 
 export interface CartItemData {
   id: string;
@@ -33,11 +34,14 @@ export default function CartItem({
         {/* Изображение товара */}
         <div className="flex-shrink-0">
           {item.imageUrl ? (
-            <img
-              src={item.imageUrl}
-              alt={item.name}
-              className="h-20 w-20 md:h-24 md:w-24 object-cover rounded-lg border"
-            />
+            <div className="relative h-20 w-20 md:h-24 md:w-24 rounded-lg border overflow-hidden">
+              <Image
+                src={item.imageUrl}
+                alt={item.name}
+                fill
+                className="object-cover"
+              />
+            </div>
           ) : (
             <div className="h-20 w-20 md:h-24 md:w-24 bg-muted rounded-lg border flex items-center justify-center">
               <ShoppingBag className="h-8 w-8 text-muted-foreground" />

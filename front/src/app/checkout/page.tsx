@@ -1,6 +1,6 @@
 "use client";
 
-import { createOrder } from "@/entities/product/apiClient"; // Предполагаемый API для создания заказа
+import { createOrder } from "@/entities/product/apiClient";
 import { useCart } from "@/features/cart/hooks";
 import { formatPrice, logger, notifications } from "@/shared";
 import { Button } from "@/shared/ui/button";
@@ -14,10 +14,11 @@ import {
 } from "@/shared/ui/form";
 import { Input } from "@/shared/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import * as z from "zod";
+import { z } from "zod";
 
 const formSchema = z.object({
   fullName: z.string().min(2, {
@@ -212,11 +213,14 @@ export default function CheckoutPage() {
               {items.map((item) => (
                 <div key={item.cartId} className="flex items-center space-x-4">
                   {item.imageUrl && (
-                    <img
-                      src={item.imageUrl}
-                      alt={item.name}
-                      className="h-16 w-16 object-cover rounded-md"
-                    />
+                    <div className="relative h-16 w-16 rounded-md overflow-hidden">
+                      <Image
+                        src={item.imageUrl}
+                        alt={item.name}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
                   )}
                   <div className="flex-1">
                     <p className="font-medium">{item.name}</p>

@@ -5,12 +5,6 @@ import {
   logError,
 } from "../../../_utils/logger";
 
-interface ProductBySlugProps {
-  params: Promise<{
-    "product-slug": string;
-  }>;
-}
-
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ "product-slug": string }> }

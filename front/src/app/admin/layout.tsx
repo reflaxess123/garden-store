@@ -69,7 +69,6 @@ export default function AdminLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = useState(true);
 
   const toggleSidebar = () => {

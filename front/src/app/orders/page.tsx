@@ -4,9 +4,10 @@ import { useAuth } from "@/features/auth/AuthContext";
 import { formatPrice } from "@/shared";
 import {
   OrderInDB,
-  useDeleteorderapiordersdelete,
-  useGetuserordersapiordersget,
+  useDeleteOrderApiOrdersDelete,
+  useGetUserOrdersApiOrdersGet,
 } from "@/shared/api/generated";
+import { formatDate } from "@/shared/lib/date-utils";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
@@ -47,29 +48,25 @@ import {
   TrendingUp,
   XCircle,
 } from "lucide-react";
+import Image from "next/image";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 // Функция для получения цвета бейджа по статусу
-const getStatusBadgeVariant = (status: string) => {
+const getStatusColor = (status: string) => {
   switch (status.toLowerCase()) {
     case "pending":
-    case "ожидает":
-      return "default";
+      return "bg-yellow-100 text-yellow-800";
     case "processing":
-    case "обработка":
-      return "secondary";
+      return "bg-blue-100 text-blue-800";
     case "shipped":
-    case "доставляется":
-      return "outline";
+      return "bg-purple-100 text-purple-800";
     case "delivered":
-    case "доставлен":
-      return "default";
+      return "bg-green-100 text-green-800";
     case "cancelled":
-    case "отменен":
-      return "destructive";
+      return "bg-red-100 text-red-800";
     default:
-      return "outline";
+      return "bg-gray-100 text-gray-800";
   }
 };
 
@@ -120,18 +117,24 @@ export default function OrdersPage() {
   const [orderToDelete, setOrderToDelete] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [sortBy, setSortBy] = useState<string>("date-desc");
+  const [sortBy, setSortBy] = useState<"date" | "amount" | "status">("date");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const queryClient = useQueryClient();
 
   const {
     data: orders,
     isLoading,
     error,
-  } = useGetuserordersapiordersget({
-    enabled: isAuthenticated,
-  });
+  } = useGetUserOrdersApiOrdersGet(
+    {},
+    {
+      query: {
+        enabled: isAuthenticated,
+      },
+    }
+  );
 
-  const deleteOrderMutation = useDeleteorderapiordersdelete();
+  const deleteOrderMutation = useDeleteOrderApiOrdersDelete();
 
   // Фильтрация и сортировка заказов
   const filteredAndSortedOrders = useMemo(() => {
@@ -153,18 +156,12 @@ export default function OrdersPage() {
     // Сортировка
     filtered.sort((a: OrderInDB, b: OrderInDB) => {
       switch (sortBy) {
-        case "date-desc":
+        case "date":
           return (
             new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
           );
-        case "date-asc":
-          return (
-            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-          );
-        case "amount-desc":
+        case "amount":
           return parseFloat(b.totalAmount) - parseFloat(a.totalAmount);
-        case "amount-asc":
-          return parseFloat(a.totalAmount) - parseFloat(b.totalAmount);
         case "status":
           return a.status.localeCompare(b.status);
         default:
@@ -172,18 +169,25 @@ export default function OrdersPage() {
       }
     });
 
+    if (sortOrder === "desc") {
+      filtered.reverse();
+    }
+
     return filtered;
-  }, [orders, searchQuery, statusFilter, sortBy]);
+  }, [orders, searchQuery, statusFilter, sortBy, sortOrder]);
 
   // Статистика заказов
   const orderStats = useMemo(() => {
     if (!orders) return { total: 0, totalAmount: 0, statusCounts: {} };
 
-    const statusCounts = orders.reduce((acc: any, order: OrderInDB) => {
-      const status = getReadableStatus(order.status);
-      acc[status] = (acc[status] || 0) + 1;
-      return acc;
-    }, {});
+    const statusCounts = orders.reduce(
+      (acc: Record<string, number>, order: OrderInDB) => {
+        const status = getReadableStatus(order.status);
+        acc[status] = (acc[status] || 0) + 1;
+        return acc;
+      },
+      {}
+    );
 
     const totalAmount = orders.reduce((sum: number, order: OrderInDB) => {
       return sum + parseFloat(order.totalAmount);
@@ -444,15 +448,20 @@ export default function OrdersPage() {
                     <SelectValue placeholder="Сортировка" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="date-desc">Сначала новые</SelectItem>
-                    <SelectItem value="date-asc">Сначала старые</SelectItem>
-                    <SelectItem value="amount-desc">
-                      По убыванию суммы
-                    </SelectItem>
-                    <SelectItem value="amount-asc">
-                      По возрастанию суммы
-                    </SelectItem>
-                    <SelectItem value="status">По статусу</SelectItem>
+                    <SelectItem value="date">Дата</SelectItem>
+                    <SelectItem value="amount">Сумма</SelectItem>
+                    <SelectItem value="status">Статус</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <Select value={sortOrder} onValueChange={setSortOrder}>
+                  <SelectTrigger className="w-48">
+                    <TrendingUp className="h-4 w-4 mr-2" />
+                    <SelectValue placeholder="Порядок" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="asc">По возрастанию</SelectItem>
+                    <SelectItem value="desc">По убыванию</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -494,7 +503,8 @@ export default function OrdersPage() {
               onClick={() => {
                 setSearchQuery("");
                 setStatusFilter("all");
-                setSortBy("date-desc");
+                setSortBy("date");
+                setSortOrder("desc");
               }}
               variant="outline"
             >
@@ -520,23 +530,14 @@ export default function OrdersPage() {
                         </CardTitle>
                         <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
                           <Calendar className="h-4 w-4" />
-                          {new Date(order.createdAt).toLocaleDateString(
-                            "ru-RU",
-                            {
-                              year: "numeric",
-                              month: "long",
-                              day: "numeric",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            }
-                          )}
+                          {formatDate(order.createdAt)}
                         </p>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-3">
                       <Badge
-                        variant={getStatusBadgeVariant(order.status)}
+                        variant={getStatusColor(order.status)}
                         className="flex items-center gap-1"
                       >
                         {getStatusIcon(order.status)}
@@ -594,9 +595,11 @@ export default function OrdersPage() {
                             className="flex items-center gap-3 bg-card border border-border rounded-lg p-3"
                           >
                             {item.imageUrl ? (
-                              <img
+                              <Image
                                 src={item.imageUrl}
                                 alt={item.name}
+                                width={48}
+                                height={48}
                                 className="h-12 w-12 object-cover rounded-lg border border-border"
                               />
                             ) : (

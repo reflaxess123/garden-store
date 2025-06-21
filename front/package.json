@@ -6,7 +6,10 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "type-check": "tsc --noEmit",
+    "generate:api": "orval --config orval.config.js",
+    "generate:api:watch": "orval --config orval.config.js --watch"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.1.1",
@@ -23,6 +26,7 @@
     "@tanstack/react-query": "^5.80.7",
     "@tanstack/react-query-next-experimental": "^5.80.7",
     "@types/uuid": "^10.0.0",
+    "axios": "^1.10.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.516.0",
@@ -47,6 +51,8 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.3.3",
+    "fork-ts-checker-webpack-plugin": "^9.1.0",
+    "orval": "^7.10.0",
     "tailwindcss": "^4",
     "ts-node": "^10.9.2",
     "tsx": "^4.20.3",

@@ -14,10 +14,11 @@ const eslintConfig = [
   {
     rules: {
       "@typescript-eslint/no-unused-vars": "warn",
-      "@typescript-eslint/no-explicit-any": "warn",
-      "prefer-const": "warn",
-      "@next/next/no-img-element": "warn",
-      "react-hooks/exhaustive-deps": "warn",
+      "@typescript-eslint/no-explicit-any": "error",
+      "@typescript-eslint/ban-ts-comment": "warn",
+      "prefer-const": "error",
+      "@next/next/no-img-element": "error",
+      "react-hooks/exhaustive-deps": "error",
     },
   },
 ];

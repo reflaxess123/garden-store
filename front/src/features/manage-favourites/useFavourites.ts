@@ -4,9 +4,9 @@ import { useAuth } from "@/features/auth/AuthContext";
 import { logger } from "@/shared";
 import {
   FavouriteInDB,
-  useAddtofavoritesapifavoritesproductidpost,
-  useGetfavoritesapifavoritesget,
-  useRemovefromfavoritesapifavoritesproductiddelete,
+  useAddToFavoritesApiFavoritesProductIdPost,
+  useGetFavoritesApiFavoritesGet,
+  useRemoveFromFavoritesApiFavoritesProductIdDelete,
 } from "@/shared/api/generated";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -20,7 +20,7 @@ export const useFavourites = () => {
 
   // Получаем избранное с сервера
   const { data: favoritesData, isLoading: isFavouritesLoading } =
-    useGetfavoritesapifavoritesget({
+    useGetFavoritesApiFavoritesGet({
       enabled: isAuthenticated,
     });
 
@@ -35,8 +35,8 @@ export const useFavourites = () => {
   };
 
   // Мутации для управления избранным
-  const addMutation = useAddtofavoritesapifavoritesproductidpost();
-  const removeMutation = useRemovefromfavoritesapifavoritesproductiddelete();
+  const addMutation = useAddToFavoritesApiFavoritesProductIdPost();
+  const removeMutation = useRemoveFromFavoritesApiFavoritesProductIdDelete();
 
   const toggleFavourite = async (productId: string) => {
     if (!isAuthenticated) {

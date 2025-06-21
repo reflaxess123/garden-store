@@ -1,45 +1,53 @@
+import { CartItem } from "@/entities/cart/types";
 import { useAuth } from "@/features/auth/AuthContext";
-import { useGetcartapicartget } from "@/shared/api/generated";
+import { LocalCartItem, useGetCartApiCartGet } from "@/shared/api/generated";
 import { logger } from "@/shared/lib/logger";
 import { useMemo } from "react";
-import { LocalCartItem, useLocalCart } from "./useLocalCart";
-
-export interface CartItem {
-  cartId: string;
-  productId: string;
-  name: string;
-  imageUrl: string | null;
-  priceSnapshot: number;
-  quantity: number;
-}
+import { useLocalCart } from "./useLocalCart";
 
 // Хук для получения данных корзины (объединяет локальную и серверную)
 export function useCartData() {
   const { isAuthenticated } = useAuth();
   const localCartHook = useLocalCart();
 
-  const { data: serverCartData, isLoading } = useGetcartapicartget({
+  const { data: serverCartData, isLoading } = useGetCartApiCartGet({
     enabled: isAuthenticated,
   });
 
   const cartItems: CartItem[] = useMemo(() => {
     if (isAuthenticated && serverCartData) {
-      return serverCartData.map((item) => ({
+      return serverCartData.map((item: any) => ({
         cartId: item.id,
         productId: item.productId,
-        name: item.name,
-        imageUrl: item.imageUrl,
-        priceSnapshot: item.priceSnapshot,
+        product: item.product,
         quantity: item.quantity,
+        priceSnapshot: item.priceSnapshot,
+        createdAt: item.createdAt,
+        updatedAt: item.updatedAt,
       }));
     } else {
       return localCartHook.localCart.map((item: LocalCartItem) => ({
         cartId: item.productId, // Для локальной корзины используем productId как cartId
         productId: item.productId,
-        name: item.name,
-        imageUrl: item.imageUrl,
-        priceSnapshot: item.priceSnapshot,
+        product: {
+          id: item.productId,
+          name: item.name,
+          imageUrl: item.imageUrl || null,
+          slug: item.slug || "",
+          price: item.priceSnapshot,
+          description: item.description || null,
+          discount: null,
+          category: null,
+          timesOrdered: 0,
+          isAvailable: true,
+          characteristics: {},
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        },
         quantity: item.quantity,
+        priceSnapshot: item.priceSnapshot,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       }));
     }
   }, [isAuthenticated, serverCartData, localCartHook.localCart]);
@@ -82,17 +90,17 @@ export function useCartData() {
         itemsCount: cartItems.length,
         totalItems,
         totalAmount,
-        isAuthenticated,
+        isAuthenticated: !!isAuthenticated,
       });
     }
-  }, [cartItems.length, totalItems, totalAmount, isAuthenticated]);
+  }, [cartItems.length, totalItems, totalAmount, !!isAuthenticated]);
 
   return {
     items: cartItems,
     totalItems,
     totalAmount,
     isEmpty,
-    isLoading: isAuthenticated ? isLoading : false,
+    isLoading,
     getItemByProductId,
     getItemQuantity,
     isItemInCart,

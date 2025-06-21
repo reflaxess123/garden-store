@@ -542,6 +542,57 @@
         }
       }
     },
+    "/api/admin/products/{product_id}/offline": {
+      "patch": {
+        "summary": "Update Product Offline Purchases",
+        "description": "Обновить количество оффлайн покупок и заказов продукта",
+        "operationId": "update_product_offline_purchases_api_admin_products__product_id__offline_patch",
+        "parameters": [
+          {
+            "name": "product_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Product Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductOfflineUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductInDB"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/admin/orders": {
       "get": {
         "summary": "Get Admin Orders",
@@ -632,6 +683,57 @@
         "responses": {
           "204": {
             "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/orders/{order_id}/edit": {
+      "patch": {
+        "summary": "Edit Admin Order",
+        "description": "Редактировать состав заказа (только для админа)",
+        "operationId": "edit_admin_order_api_admin_orders__order_id__edit_patch",
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Order Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderEdit"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderInDB"
+                }
+              }
+            }
           },
           "422": {
             "description": "Validation Error",
@@ -2675,6 +2777,34 @@
         ],
         "title": "OrderDelete"
       },
+      "OrderEdit": {
+        "properties": {
+          "orderItems": {
+            "items": {
+              "$ref": "#/components/schemas/OrderItemCreate"
+            },
+            "type": "array",
+            "title": "Orderitems"
+          },
+          "totalAmount": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Totalamount"
+          }
+        },
+        "type": "object",
+        "required": [
+          "orderItems",
+          "totalAmount"
+        ],
+        "title": "OrderEdit"
+      },
       "OrderInDB": {
         "properties": {
           "fullName": {
@@ -3043,6 +3173,11 @@
           "timesOrdered": {
             "type": "integer",
             "title": "Timesordered"
+          },
+          "offlinePurchases": {
+            "type": "integer",
+            "title": "Offlinepurchases",
+            "default": 0
           }
         },
         "type": "object",
@@ -3056,6 +3191,32 @@
           "timesOrdered"
         ],
         "title": "ProductInDB"
+      },
+      "ProductOfflineUpdate": {
+        "properties": {
+          "offlinePurchases": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Offlinepurchases"
+          },
+          "timesOrdered": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Timesordered"
+          }
+        },
+        "type": "object",
+        "required": [
+          "offlinePurchases"
+        ],
+        "title": "ProductOfflineUpdate"
       },
       "ProductUpdate": {
         "properties": {

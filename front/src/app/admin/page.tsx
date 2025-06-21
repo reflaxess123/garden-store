@@ -85,7 +85,9 @@ export default function AdminHome() {
     const productOrderCounts = products.map((product) => ({
       ...product,
       orderCount: orders.filter((order) =>
-        order.orderItems?.some((item: any) => item.productId === product.id)
+        order.orderItems?.some(
+          (item: { productId: string }) => item.productId === product.id
+        )
       ).length,
     }));
 

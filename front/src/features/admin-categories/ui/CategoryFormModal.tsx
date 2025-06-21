@@ -107,6 +107,7 @@ export default function CategoryFormModal({
       trigger={trigger}
       title={isEdit ? "Редактировать категорию" : "Создать категорию"}
       onSubmit={handleFormSubmit}
+      onClose={() => {}}
       loading={isLoading}
       size="md"
     >

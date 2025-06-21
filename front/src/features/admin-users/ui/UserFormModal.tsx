@@ -123,12 +123,8 @@ export default function UserFormModal({
       item={user}
       trigger={trigger}
       title={isEdit ? "Редактировать пользователя" : "Создать пользователя"}
-      description={
-        isEdit
-          ? "Измените информацию о пользователе"
-          : "Создайте нового пользователя для системы"
-      }
       onSubmit={handleFormSubmit}
+      onClose={() => {}}
       loading={isLoading}
       size="md"
     >

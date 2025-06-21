@@ -16,8 +16,8 @@ export function useNotificationToasts(enabled: boolean = true) {
       if (message.type === "notification") {
         const notificationData = message.data;
 
-        toast(notificationData?.title || "Новое уведомление", {
-          description: notificationData?.message,
+        toast(String(notificationData?.title || "Новое уведомление"), {
+          description: String(notificationData?.message || ""),
           duration: 5000,
           action: {
             label: "Посмотреть",

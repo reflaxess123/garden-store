@@ -3,7 +3,6 @@ import {
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
-  MoreHorizontal,
 } from "lucide-react";
 import type {
   PageSizeOptions,
@@ -52,6 +51,9 @@ export function Pagination({
     pagination.totalItems,
     pagination.itemsPerPage
   );
+
+  const startPage = Math.max(1, pagination.currentPage - 2);
+  const endPage = Math.min(pagination.totalPages, pagination.currentPage + 2);
 
   return (
     <div
@@ -121,21 +123,12 @@ export function Pagination({
 
             {/* Номера страниц */}
             {!compact &&
-              pagination.visiblePages.map((page, index) => {
+              Array.from({ length: endPage - startPage + 1 }, (_, index) => {
+                const page = startPage + index;
                 const isCurrentPage = page === pagination.currentPage;
-                const showEllipsis =
-                  (index === 0 && page > 1) ||
-                  (index === pagination.visiblePages.length - 1 &&
-                    page < pagination.totalPages);
 
                 return (
                   <div key={page} className="flex items-center">
-                    {index === 0 && page > 1 && (
-                      <div className="flex items-center justify-center h-8 w-8">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </div>
-                    )}
-
                     <Button
                       variant={isCurrentPage ? "default" : "outline"}
                       size="sm"
@@ -144,13 +137,6 @@ export function Pagination({
                     >
                       {page}
                     </Button>
-
-                    {index === pagination.visiblePages.length - 1 &&
-                      page < pagination.totalPages && (
-                        <div className="flex items-center justify-center h-8 w-8">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </div>
-                      )}
                   </div>
                 );
               })}

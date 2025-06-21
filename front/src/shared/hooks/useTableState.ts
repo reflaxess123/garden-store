@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 export interface TableState {
   searchQuery: string;
@@ -8,7 +8,7 @@ export interface TableState {
   sortOrder: "asc" | "desc";
   currentPage: number;
   itemsPerPage: number;
-  filters: Record<string, any>;
+  filters: Record<string, unknown>;
 }
 
 export interface UseTableStateProps<T> {
@@ -18,7 +18,7 @@ export interface UseTableStateProps<T> {
   sortFields?: Record<string, (a: T, b: T) => number>;
 }
 
-export function useTableState<T extends Record<string, any>>({
+export function useTableState<T extends Record<string, unknown>>({
   data,
   initialState = {},
   searchFields = [],
@@ -43,14 +43,19 @@ export function useTableState<T extends Record<string, any>>({
     updateState({ searchQuery, currentPage: 1 });
   };
 
-  const setSorting = (sortBy: string, sortOrder?: "asc" | "desc") => {
-    updateState({
-      sortBy,
-      sortOrder:
-        sortOrder ||
-        (state.sortBy === sortBy && state.sortOrder === "asc" ? "desc" : "asc"),
-    });
-  };
+  const setSorting = useCallback(
+    (sortBy: string, sortOrder: "asc" | "desc") => {
+      updateState({
+        sortBy,
+        sortOrder:
+          sortOrder ||
+          (state.sortBy === sortBy && state.sortOrder === "asc"
+            ? "desc"
+            : "asc"),
+      });
+    },
+    [state.sortBy, state.sortOrder]
+  );
 
   const setCurrentPage = (currentPage: number) => {
     updateState({ currentPage });
@@ -60,12 +65,15 @@ export function useTableState<T extends Record<string, any>>({
     updateState({ itemsPerPage, currentPage: 1 });
   };
 
-  const setFilter = (key: string, value: any) => {
-    updateState({
-      filters: { ...state.filters, [key]: value },
-      currentPage: 1,
-    });
-  };
+  const setFilter = useCallback(
+    (key: string, value: unknown) => {
+      updateState({
+        filters: { ...state.filters, [key]: value },
+        currentPage: 1,
+      });
+    },
+    [state.filters]
+  );
 
   const clearFilters = () => {
     updateState({
@@ -146,6 +154,11 @@ export function useTableState<T extends Record<string, any>>({
     startIndex,
     startIndex + state.itemsPerPage
   );
+
+  // Здесь будет логика применения фильтров
+  // const applyFilters = useCallback((data: T[], filters: Record<string, unknown>) => {
+  //   return data;
+  // }, []);
 
   return {
     // Состояние

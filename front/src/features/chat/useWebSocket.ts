@@ -12,20 +12,49 @@ export interface WebSocketMessage {
   senderName?: string;
   timestamp?: string;
   isFromAdmin?: boolean;
-  data?: any;
+  data?: Record<string, unknown>;
 }
 
-interface UseWebSocketProps {
+export interface UseWebSocketProps {
   onMessage?: (message: WebSocketMessage) => void;
   onConnect?: () => void;
   onDisconnect?: () => void;
 }
 
-export function useWebSocket({
-  onMessage,
-  onConnect,
-  onDisconnect,
-}: UseWebSocketProps = {}) {
+// Перегрузки функции для разных способов вызова
+export function useWebSocket(options: UseWebSocketProps): {
+  isConnected: boolean;
+  connectionError: string | null;
+  sendMessage: (message: WebSocketMessage) => void;
+  connect: () => void;
+  disconnect: () => void;
+};
+
+export function useWebSocket(
+  url: string,
+  options?: {
+    onMessage?: (message: WebSocketMessage) => void;
+    onConnect?: () => void;
+    onDisconnect?: () => void;
+    reconnectAttempts?: number;
+  }
+): {
+  isConnected: boolean;
+  connectionError: string | null;
+  sendMessage: (message: WebSocketMessage) => void;
+  connect: () => void;
+  disconnect: () => void;
+};
+
+export function useWebSocket(
+  urlOrOptions?: string | UseWebSocketProps,
+  options?: {
+    onMessage?: (message: WebSocketMessage) => void;
+    onConnect?: () => void;
+    onDisconnect?: () => void;
+    reconnectAttempts?: number;
+  }
+) {
   const { user, isAuthenticated } = useAuth();
   const [isConnected, setIsConnected] = useState(false);
   const [connectionError, setConnectionError] = useState<string | null>(null);
@@ -35,25 +64,29 @@ export function useWebSocket({
   const reconnectAttempts = useRef(0);
   const maxReconnectAttempts = 5;
 
+  // Определяем параметры в зависимости от способа вызова
+  const isUrlProvided = typeof urlOrOptions === "string";
+  const finalOptions = isUrlProvided ? options : urlOrOptions;
+
   // Стабилизируем callback'и
-  const onMessageRef = useRef(onMessage);
-  const onConnectRef = useRef(onConnect);
-  const onDisconnectRef = useRef(onDisconnect);
+  const onMessageRef = useRef(finalOptions?.onMessage);
+  const onConnectRef = useRef(finalOptions?.onConnect);
+  const onDisconnectRef = useRef(finalOptions?.onDisconnect);
 
   // Создаем ref для connect функции заранее
   const connectRef = useRef<(() => void) | undefined>(undefined);
 
   useEffect(() => {
-    onMessageRef.current = onMessage;
-  }, [onMessage]);
+    onMessageRef.current = finalOptions?.onMessage;
+  }, [finalOptions?.onMessage]);
 
   useEffect(() => {
-    onConnectRef.current = onConnect;
-  }, [onConnect]);
+    onConnectRef.current = finalOptions?.onConnect;
+  }, [finalOptions?.onConnect]);
 
   useEffect(() => {
-    onDisconnectRef.current = onDisconnect;
-  }, [onDisconnect]);
+    onDisconnectRef.current = finalOptions?.onDisconnect;
+  }, [finalOptions?.onDisconnect]);
 
   const disconnect = useCallback(() => {
     if (reconnectTimeout.current) {
@@ -108,11 +141,19 @@ export function useWebSocket({
     }
 
     try {
-      const wsUrl =
-        process.env.NEXT_PUBLIC_WS_URL || "wss://server.sadovnick.store";
-      const endpoint = user.isAdmin
-        ? `${wsUrl}/ws/admin/${user.id}`
-        : `${wsUrl}/ws/chat/${user.id}`;
+      // Определяем endpoint
+      let endpoint: string;
+      if (isUrlProvided && typeof urlOrOptions === "string") {
+        // Используем переданный URL
+        endpoint = urlOrOptions;
+      } else {
+        // Автоматически определяем URL на основе роли пользователя
+        const wsUrl =
+          process.env.NEXT_PUBLIC_WS_URL || "wss://server.sadovnick.store";
+        endpoint = user.isAdmin
+          ? `${wsUrl}/ws/admin/${user.id}`
+          : `${wsUrl}/ws/chat/${user.id}`;
+      }
 
       logger.info("Подключение к WebSocket", {
         component: "useWebSocket",
@@ -219,7 +260,7 @@ export function useWebSocket({
       });
       setConnectionError("Ошибка создания подключения");
     }
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user, isUrlProvided, urlOrOptions]);
 
   // Создаем стабильные ссылки на функции
   const disconnectRef = useRef(disconnect);
@@ -268,31 +309,34 @@ export function useWebSocket({
     };
   }, [isAuthenticated, user, isConnected]);
 
-  const sendMessage = useCallback((message: WebSocketMessage) => {
-    if (ws.current && ws.current.readyState === WebSocket.OPEN) {
-      try {
-        ws.current.send(JSON.stringify(message));
-        logger.debug("Отправлено WebSocket сообщение", {
+  const sendMessage = useCallback(
+    (message: WebSocketMessage) => {
+      if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+        try {
+          ws.current.send(JSON.stringify(message));
+          logger.debug("Отправлено WebSocket сообщение", {
+            component: "useWebSocket",
+            messageType: message.type,
+            chatId: message.chatId,
+          });
+        } catch (error) {
+          logger.error("Ошибка отправки WebSocket сообщения", error, {
+            component: "useWebSocket",
+            messageType: message.type,
+            chatId: message.chatId,
+          });
+          setConnectionError("Ошибка отправки сообщения");
+        }
+      } else {
+        logger.warn("WebSocket не подключен, сообщение не отправлено", {
           component: "useWebSocket",
-          messageType: message.type,
-          chatId: message.chatId,
+          userId: user?.id,
         });
-      } catch (error) {
-        logger.error("Ошибка отправки WebSocket сообщения", error, {
-          component: "useWebSocket",
-          messageType: message.type,
-          chatId: message.chatId,
-        });
-        setConnectionError("Ошибка отправки сообщения");
+        setConnectionError("Соединение не установлено");
       }
-    } else {
-      logger.warn("WebSocket не подключен, сообщение не отправлено", {
-        component: "useWebSocket",
-        userId: user?.id,
-      });
-      setConnectionError("Соединение не установлено");
-    }
-  }, []);
+    },
+    [user?.id, ws]
+  );
 
   return {
     isConnected,

@@ -3,6 +3,14 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
+interface ApiError extends Error {
+  response?: {
+    data?: {
+      detail?: string;
+    };
+  };
+}
+
 export interface CrudOperationsConfig<T, CreateData, UpdateData> {
   // Ключи для инвалидации запросов
   queryKeys: {
@@ -32,7 +40,11 @@ export interface CrudOperationsConfig<T, CreateData, UpdateData> {
   };
 }
 
-export function useCrudOperations<T, CreateData = any, UpdateData = any>({
+export function useCrudOperations<
+  T,
+  CreateData = Record<string, unknown>,
+  UpdateData = Record<string, unknown>
+>({
   queryKeys,
   api,
   messages = {},
@@ -48,7 +60,7 @@ export function useCrudOperations<T, CreateData = any, UpdateData = any>({
       toast.success(messages.create || "Запись успешно создана!");
       onSuccess.create?.(data);
     },
-    onError: (error: any) => {
+    onError: (error: ApiError) => {
       const errorMessage =
         error?.message ||
         error?.response?.data?.detail ||
@@ -71,7 +83,7 @@ export function useCrudOperations<T, CreateData = any, UpdateData = any>({
       toast.success(messages.update || "Запись успешно обновлена!");
       onSuccess.update?.(data);
     },
-    onError: (error: any) => {
+    onError: (error: ApiError) => {
       const errorMessage =
         error?.message ||
         error?.response?.data?.detail ||
@@ -93,7 +105,7 @@ export function useCrudOperations<T, CreateData = any, UpdateData = any>({
       toast.success(messages.delete || "Запись успешно удалена!");
       onSuccess.delete?.();
     },
-    onError: (error: any) => {
+    onError: (error: ApiError) => {
       const errorMessage =
         error?.message ||
         error?.response?.data?.detail ||

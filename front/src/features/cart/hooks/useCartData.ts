@@ -1,9 +1,9 @@
 import { CartItem } from "@/entities/cart/types";
 import { useAuth } from "@/features/auth/AuthContext";
-import { LocalCartItem, useGetCartApiCartGet } from "@/shared/api/generated";
+import { useGetCartApiCartGet } from "@/shared/api/generated/fastAPI";
 import { logger } from "@/shared/lib/logger";
 import { useMemo } from "react";
-import { useLocalCart } from "./useLocalCart";
+import { LocalCartItem, useLocalCart } from "./useLocalCart";
 
 // Хук для получения данных корзины (объединяет локальную и серверную)
 export function useCartData() {
@@ -11,43 +11,37 @@ export function useCartData() {
   const localCartHook = useLocalCart();
 
   const { data: serverCartData, isLoading } = useGetCartApiCartGet({
-    enabled: isAuthenticated,
+    query: {
+      enabled: isAuthenticated,
+    },
   });
 
   const cartItems: CartItem[] = useMemo(() => {
     if (isAuthenticated && serverCartData) {
-      return serverCartData.map((item: any) => ({
+      return serverCartData.map((item) => ({
+        id: item.id,
         cartId: item.id,
         productId: item.productId,
-        product: item.product,
         quantity: item.quantity,
         priceSnapshot: item.priceSnapshot,
-        createdAt: item.createdAt,
-        updatedAt: item.updatedAt,
+        name: item.name,
+        imageUrl: item.imageUrl || null,
+        slug: item.slug,
+        description: item.description || null,
+        price: item.priceSnapshot.toString(),
       }));
     } else {
       return localCartHook.localCart.map((item: LocalCartItem) => ({
-        cartId: item.productId, // Для локальной корзины используем productId как cartId
+        id: item.productId,
+        cartId: item.productId,
         productId: item.productId,
-        product: {
-          id: item.productId,
-          name: item.name,
-          imageUrl: item.imageUrl || null,
-          slug: item.slug || "",
-          price: item.priceSnapshot,
-          description: item.description || null,
-          discount: null,
-          category: null,
-          timesOrdered: 0,
-          isAvailable: true,
-          characteristics: {},
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
         quantity: item.quantity,
         priceSnapshot: item.priceSnapshot,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        name: item.name || "Неизвестный товар",
+        imageUrl: item.imageUrl || null,
+        slug: "",
+        description: null,
+        price: item.priceSnapshot.toString(),
       }));
     }
   }, [isAuthenticated, serverCartData, localCartHook.localCart]);
@@ -90,10 +84,10 @@ export function useCartData() {
         itemsCount: cartItems.length,
         totalItems,
         totalAmount,
-        isAuthenticated: !!isAuthenticated,
+        isAuthenticated,
       });
     }
-  }, [cartItems.length, totalItems, totalAmount, !!isAuthenticated]);
+  }, [cartItems.length, totalItems, totalAmount, isAuthenticated]);
 
   return {
     items: cartItems,
@@ -117,25 +111,31 @@ export function useCartStats() {
   const uniqueProducts = items.length;
   const averageItemPrice = items.length > 0 ? totalAmount / totalItems : 0;
 
-  const mostExpensiveItem = items.reduce(
-    (prev, current) =>
-      prev.priceSnapshot > current.priceSnapshot ? prev : current,
-    items[0]
-  );
+  const mostExpensiveItem =
+    items.length > 0
+      ? items.reduce(
+          (prev, current) =>
+            prev.priceSnapshot > current.priceSnapshot ? prev : current,
+          items[0]
+        )
+      : null;
 
-  const cheapestItem = items.reduce(
-    (prev, current) =>
-      prev.priceSnapshot < current.priceSnapshot ? prev : current,
-    items[0]
-  );
+  const cheapestItem =
+    items.length > 0
+      ? items.reduce(
+          (prev, current) =>
+            prev.priceSnapshot < current.priceSnapshot ? prev : current,
+          items[0]
+        )
+      : null;
 
   return {
     uniqueProducts,
     totalItems,
     totalAmount,
     averageItemPrice: Math.round(averageItemPrice * 100) / 100,
-    mostExpensiveItem: isEmpty ? null : mostExpensiveItem,
-    cheapestItem: isEmpty ? null : cheapestItem,
+    mostExpensiveItem,
+    cheapestItem,
     isEmpty,
   };
 }

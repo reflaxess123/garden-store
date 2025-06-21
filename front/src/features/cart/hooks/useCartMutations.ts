@@ -1,4 +1,3 @@
-import { useAuth } from "@/features/auth/AuthContext";
 import { CartItemWithProduct } from "@/shared/api/generated";
 import { api } from "@/shared/api/httpClient";
 import { API_ROUTES } from "@/shared/config/api";
@@ -6,8 +5,7 @@ import { logger } from "@/shared/lib/logger";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 // Хук для добавления товара в корзину
-export function useAddToCart() {
-  const { isAuthenticated } = useAuth();
+export function useAddToCartMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -67,7 +65,7 @@ export function useAddToCart() {
         queryClient.setQueryData(["getCartApiCartGet"], context.previousCart);
       }
       logger.apiError(API_ROUTES.CART.ADD, error, {
-        component: "useAddToCart",
+        component: "useAddToCartMutation",
         productId: variables.productId,
         quantity: variables.quantity,
       });
@@ -79,7 +77,7 @@ export function useAddToCart() {
 
     onSuccess: (data, variables) => {
       logger.userAction("Add to cart", {
-        component: "useAddToCart",
+        component: "useAddToCartMutation",
         productId: variables.productId,
         quantity: variables.quantity,
       });
@@ -89,7 +87,6 @@ export function useAddToCart() {
 
 // Хук для обновления количества товара
 export function useUpdateCartQuantity() {
-  const { isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -145,7 +142,6 @@ export function useUpdateCartQuantity() {
 
 // Хук для удаления товара из корзины
 export function useRemoveFromCart() {
-  const { isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -193,7 +189,6 @@ export function useRemoveFromCart() {
 
 // Хук для очистки корзины
 export function useClearCart() {
-  const { isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
 
   return useMutation({

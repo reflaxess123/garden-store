@@ -14,14 +14,16 @@ interface FavouriteItem {
   productId: string;
 }
 
-export const useFavourites = () => {
-  const { user, isAuthenticated } = useAuth();
+export function useFavourites() {
+  const { isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
 
   // Получаем избранное с сервера
   const { data: favoritesData, isLoading: isFavouritesLoading } =
     useGetFavoritesApiFavoritesGet({
-      enabled: isAuthenticated,
+      query: {
+        enabled: isAuthenticated,
+      },
     });
 
   // Преобразуем данные в нужный формат
@@ -61,20 +63,23 @@ export const useFavourites = () => {
       );
 
       // Удаляем с сервера
-      removeMutation.mutate(productId, {
-        onSuccess: () => {
-          // Обновляем кэш после успешного удаления
-          queryClient.invalidateQueries({
-            queryKey: ["getFavoritesApiFavoritesGet"],
-          });
-        },
-        onError: () => {
-          // Откатываем оптимистичное обновление при ошибке
-          queryClient.invalidateQueries({
-            queryKey: ["getFavoritesApiFavoritesGet"],
-          });
-        },
-      });
+      removeMutation.mutate(
+        { productId },
+        {
+          onSuccess: () => {
+            // Обновляем кэш после успешного удаления
+            queryClient.invalidateQueries({
+              queryKey: ["getFavoritesApiFavoritesGet"],
+            });
+          },
+          onError: () => {
+            // Откатываем оптимистичное обновление при ошибке
+            queryClient.invalidateQueries({
+              queryKey: ["getFavoritesApiFavoritesGet"],
+            });
+          },
+        }
+      );
     } else {
       // Оптимистично добавляем в UI
       queryClient.setQueryData(
@@ -86,20 +91,23 @@ export const useFavourites = () => {
       );
 
       // Добавляем на сервер
-      addMutation.mutate(productId, {
-        onSuccess: () => {
-          // Обновляем кэш после успешного добавления
-          queryClient.invalidateQueries({
-            queryKey: ["getFavoritesApiFavoritesGet"],
-          });
-        },
-        onError: () => {
-          // Откатываем оптимистичное обновление при ошибке
-          queryClient.invalidateQueries({
-            queryKey: ["getFavoritesApiFavoritesGet"],
-          });
-        },
-      });
+      addMutation.mutate(
+        { productId },
+        {
+          onSuccess: () => {
+            // Обновляем кэш после успешного добавления
+            queryClient.invalidateQueries({
+              queryKey: ["getFavoritesApiFavoritesGet"],
+            });
+          },
+          onError: () => {
+            // Откатываем оптимистичное обновление при ошибке
+            queryClient.invalidateQueries({
+              queryKey: ["getFavoritesApiFavoritesGet"],
+            });
+          },
+        }
+      );
     }
   };
 
@@ -110,4 +118,4 @@ export const useFavourites = () => {
     toggleFavourite,
     favoriteItemCount: favourites.length,
   };
-};
+}

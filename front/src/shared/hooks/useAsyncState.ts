@@ -5,7 +5,7 @@ import { logger } from "../lib/logger";
 import { AsyncState, OperationState, OperationStatus } from "../types/common";
 
 // Хук для простого асинхронного состояния
-export function useAsyncState<T>(
+export function useAsyncState<T = unknown>(
   initialData: T | null = null
 ): AsyncState<T> & {
   setData: (data: T | null) => void;
@@ -89,7 +89,7 @@ export function useOperationState(): OperationState & {
 }
 
 // Хук для выполнения асинхронных операций
-export function useAsyncOperation<T, P extends any[] = []>(
+export function useAsyncOperation<T, P extends unknown[] = []>(
   operation: (...args: P) => Promise<T>,
   options?: {
     onSuccess?: (data: T) => void;
@@ -120,14 +120,17 @@ export function useAsyncOperation<T, P extends any[] = []>(
         }
 
         return result;
-      } catch (error: any) {
-        const errorMessage = error.message || "Произошла ошибка";
+      } catch (error: unknown) {
+        const errorMessage =
+          error instanceof Error ? error.message : "Произошла ошибка";
 
         asyncState.setError(errorMessage);
         asyncState.setLoading(false);
         operationState.setError(errorMessage);
 
-        options?.onError?.(error);
+        options?.onError?.(
+          error instanceof Error ? error : new Error(String(error))
+        );
 
         if (options?.logContext) {
           logger.error("Operation failed", error, options.logContext);

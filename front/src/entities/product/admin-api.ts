@@ -1,8 +1,9 @@
 import { logger } from "@/shared";
 import { ProductInDB } from "@/shared/api/generated/types";
 
-export interface AdminProductClient extends ProductInDB {
-  category?: { name: string };
+export interface AdminProductClient extends Omit<ProductInDB, "category"> {
+  category?: { name: string; slug: string; id: string } | null;
+  [key: string]: unknown;
 }
 
 export interface CreateProductPayload {

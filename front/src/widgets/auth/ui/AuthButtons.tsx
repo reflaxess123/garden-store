@@ -13,8 +13,8 @@ export function AuthButtons() {
       await logoutMutation.mutateAsync();
       logout();
       toast.success("Вы успешно вышли из аккаунта");
-    } catch (error) {
-      toast.error("Ошибка при выходе из аккаунта");
+    } catch (_error) {
+      // Ошибка уже обработана в AuthContext
     }
   };
 

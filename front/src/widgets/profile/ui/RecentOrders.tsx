@@ -7,7 +7,7 @@ import { Package, ShoppingBag } from "lucide-react";
 interface RecentOrdersProps {
   orders: OrderInDB[] | undefined;
   isLoading: boolean;
-  error: any;
+  error: unknown;
 }
 
 export function RecentOrders({ orders, isLoading, error }: RecentOrdersProps) {

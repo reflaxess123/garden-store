@@ -14,14 +14,6 @@ interface GetProductsOptions {
   hasDiscount?: boolean;
 }
 
-interface OrderItem {
-  productId: string;
-  quantity: number;
-  priceSnapshot: number;
-  name: string;
-  imageUrl?: string | null;
-}
-
 export async function getProductsClient(
   categorySlug: string,
   options: GetProductsOptions = {}
@@ -55,7 +47,9 @@ export async function getProductsClient(
   return productsInDB as ProductInDB[];
 }
 
-export async function createOrder(orderData: any): Promise<any> {
+export async function createOrder(
+  orderData: Record<string, unknown>
+): Promise<Record<string, unknown>> {
   try {
     const response = await fetch(`/api/orders`, {
       method: "POST",

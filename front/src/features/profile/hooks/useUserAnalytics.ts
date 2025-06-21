@@ -5,14 +5,44 @@ import { useMemo } from "react";
 export function useUserAnalytics(
   orders: OrderInDB[] | undefined
 ): UserAnalytics | null {
-  return useMemo(() => {
-    if (!orders?.length) return null;
+  // Извлекаем данные из заказов
+  const analyticsData = useMemo(() => {
+    if (!orders || orders.length === 0) {
+      return null;
+    }
+
+    const totalSpent = orders.reduce((sum, order) => {
+      return sum + parseFloat(order.totalAmount || "0");
+    }, 0);
+
+    const currentDate = new Date();
+    const thirtyDaysAgo = new Date(
+      currentDate.getTime() - 30 * 24 * 60 * 60 * 1000
+    );
+
+    const recentOrders = orders.filter((order) => {
+      const orderDate = new Date(order.createdAt);
+      return orderDate >= thirtyDaysAgo;
+    });
+
+    // Расчет среднего времени между заказами
+    const orderDates = orders
+      .map((order) => new Date(order.createdAt))
+      .sort((a, b) => a.getTime() - b.getTime());
+
+    let averageTimeBetweenOrders = 0;
+    if (orderDates.length > 1) {
+      const intervals = [];
+      for (let i = 1; i < orderDates.length; i++) {
+        intervals.push(orderDates[i].getTime() - orderDates[i - 1].getTime());
+      }
+      const avgInterval =
+        intervals.reduce((sum, interval) => sum + interval, 0) /
+        intervals.length;
+      averageTimeBetweenOrders = avgInterval / (1000 * 60 * 60 * 24); // в днях
+    }
 
     const totalOrders = orders.length;
-    const totalSpent = orders.reduce(
-      (sum: number, order: OrderInDB) => sum + parseFloat(order.totalAmount),
-      0
-    );
     const avgOrderValue = totalSpent / totalOrders;
 
     // Статистика по статусам
@@ -50,21 +80,27 @@ export function useUserAnalytics(
         acc: Record<string, { count: number; spent: number }>,
         order: OrderInDB
       ) => {
-        order.orderItems?.forEach((item: any) => {
-          if (!acc[item.name]) {
-            acc[item.name] = { count: 0, spent: 0 };
+        order.orderItems?.forEach(
+          (item: { name: string; quantity: number; priceSnapshot: string }) => {
+            if (!acc[item.name]) {
+              acc[item.name] = { count: 0, spent: 0 };
+            }
+            acc[item.name].count += item.quantity;
+            acc[item.name].spent +=
+              parseFloat(item.priceSnapshot) * item.quantity;
           }
-          acc[item.name].count += item.quantity;
-          acc[item.name].spent +=
-            parseFloat(item.priceSnapshot) * item.quantity;
-        });
+        );
         return acc;
       },
       {}
     );
 
     const topProducts = Object.entries(productStats)
-      .sort(([, a], [, b]) => (b as any).spent - (a as any).spent)
+      .sort(
+        ([, a], [, b]) =>
+          (b as { count: number; spent: number }).spent -
+          (a as { count: number; spent: number }).spent
+      )
       .slice(0, 5) as Array<[string, { count: number; spent: number }]>;
 
     return {
@@ -74,6 +110,19 @@ export function useUserAnalytics(
       statusStats,
       monthlyStats,
       topProducts,
+      recentOrders,
+      averageTimeBetweenOrders,
     };
   }, [orders]);
+
+  return analyticsData
+    ? {
+        totalOrders: analyticsData.totalOrders,
+        totalSpent: analyticsData.totalSpent,
+        avgOrderValue: analyticsData.avgOrderValue,
+        statusStats: analyticsData.statusStats,
+        monthlyStats: analyticsData.monthlyStats,
+        topProducts: analyticsData.topProducts,
+      }
+    : null;
 }

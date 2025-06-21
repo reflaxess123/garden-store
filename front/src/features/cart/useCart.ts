@@ -1,6 +1,6 @@
 // Переадресация на новую рефакторенную версию
 export {
-  useAddToCart,
+  useAddToCartMutation,
   useCart,
   useCartData,
   useClearCart,

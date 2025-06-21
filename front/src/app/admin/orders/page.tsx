@@ -65,6 +65,7 @@ interface Order {
   status: string;
   createdAt: string;
   orderItems: OrderItem[];
+  [key: string]: unknown; // Индексная сигнатура для совместимости
 }
 
 // Статус бейдж для заказов
@@ -220,7 +221,7 @@ export default function AdminOrdersPage() {
     handleFilterChange,
     clearFilters,
     isEmpty,
-  } = usePaginatedList(orders, {
+  } = usePaginatedList<Order>(orders || [], {
     itemsPerPage: 20,
     searchFields: ["id", "fullName", "email", "phone"],
   });

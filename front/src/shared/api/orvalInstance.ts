@@ -53,7 +53,8 @@ export const customInstance = <T>(
   }).then(({ data }: AxiosResponse<T>) => data);
 
   // Добавляем возможность отмены запроса
-  // @ts-ignore
+  // @ts-expect-error - Orval generated code issue
+
   promise.cancel = () => {
     source.cancel("Query was cancelled");
   };

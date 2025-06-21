@@ -60,7 +60,7 @@ export default function AdminUsersPage() {
     handleFilterChange,
     clearFilters,
     isEmpty,
-  } = usePaginatedList(users, {
+  } = usePaginatedList<AdminUser>(users || [], {
     itemsPerPage: 25,
     searchFields: ["email", "fullName"],
   });

@@ -178,7 +178,8 @@ export default function ProductFormModal({
       description: product?.description || "",
       price: product?.price || "",
       discount: product?.discount || "",
-      characteristics: product?.characteristics || {},
+      characteristics:
+        (product?.characteristics as Record<string, string>) || {},
       imageUrl: product?.imageUrl || "",
       categoryId: product?.categoryId || "",
     },
@@ -194,10 +195,9 @@ export default function ProductFormModal({
       onOpenChange(false);
       onSuccess();
     },
-    onError: (error: any) => {
-      toast.error(
-        error?.response?.data?.detail || "Ошибка при создании продукта"
-      );
+    onError: (error: Error) => {
+      toast.error("Ошибка при создании продукта");
+      console.error("Create product error:", error);
     },
   });
 
@@ -211,10 +211,9 @@ export default function ProductFormModal({
       onOpenChange(false);
       onSuccess();
     },
-    onError: (error: any) => {
-      toast.error(
-        error?.response?.data?.detail || "Ошибка при обновлении продукта"
-      );
+    onError: (error: Error) => {
+      toast.error("Ошибка при обновлении продукта");
+      console.error("Update product error:", error);
     },
   });
 

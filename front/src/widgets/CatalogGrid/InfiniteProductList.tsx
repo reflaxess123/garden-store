@@ -3,9 +3,33 @@
 import { Product } from "@/entities/product/api";
 import { getProductsClient } from "@/entities/product/apiClient";
 import { ProductCard } from "@/entities/product/ui/ProductCard";
+import { ProductInDB } from "@/shared/api/generated";
 import { LoadMoreTrigger } from "@/shared/ui/LoadMoreTrigger";
 import { CatalogGrid } from "@/widgets/CatalogGrid";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { InfiniteData, useInfiniteQuery } from "@tanstack/react-query";
+
+// Функция для трансформации ProductInDB в Product
+const transformProductInDBToProduct = (productInDB: ProductInDB): Product => ({
+  id: productInDB.id,
+  slug: productInDB.slug,
+  name: productInDB.name,
+  description: productInDB.description ?? null, // Преобразуем undefined в null
+  price: productInDB.price,
+  discount: productInDB.discount ?? null,
+  characteristics: productInDB.characteristics ?? null,
+  imageUrl: productInDB.imageUrl ?? null,
+  categoryId: productInDB.categoryId,
+  category: productInDB.category
+    ? {
+        id: productInDB.category.id || "",
+        name: productInDB.category.name || "",
+        slug: productInDB.category.slug || "",
+      }
+    : undefined,
+  timesOrdered: productInDB.timesOrdered,
+  createdAt: productInDB.createdAt,
+  updatedAt: productInDB.updatedAt ?? productInDB.createdAt, // Используем createdAt как fallback для updatedAt
+});
 
 interface InfiniteProductListProps {
   initialProducts: Product[];
@@ -19,15 +43,22 @@ export function InfiniteProductList({
   searchQuery,
 }: InfiniteProductListProps) {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
-    useInfiniteQuery({
+    useInfiniteQuery<
+      Product[],
+      Error,
+      InfiniteData<Product[]>,
+      [string, string, string?],
+      number
+    >({
       queryKey: ["products", categorySlug, searchQuery],
-      queryFn: async ({ pageParam = 0 }) => {
-        const products = await getProductsClient(categorySlug, {
+      queryFn: async ({ pageParam = 0 }: { pageParam: number }) => {
+        const productsInDB = await getProductsClient(categorySlug, {
           offset: pageParam,
           limit: 20,
           searchQuery: searchQuery || undefined,
         });
-        return products;
+        // Трансформируем ProductInDB[] в Product[]
+        return productsInDB.map(transformProductInDBToProduct);
       },
       initialPageParam: 0,
       getNextPageParam: (lastPage, allPages) => {

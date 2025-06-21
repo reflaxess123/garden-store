@@ -7,6 +7,7 @@ export interface AdminUser {
   favoritesCount: number;
   cartItemsCount: number;
   createdAt?: string;
+  [key: string]: unknown;
 }
 
 export interface CreateUserPayload {

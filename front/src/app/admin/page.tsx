@@ -2,11 +2,15 @@
 
 import { formatPrice } from "@/shared";
 import {
-  useGetadmincategoriesapiadmincategoriesget,
-  useGetadminordersapiadminordersget,
-  useGetadminproductsapiadminproductsget,
-  useGetadminusersapiadminusersget,
-} from "@/shared/api/generated/api-client";
+  OrderInDB,
+  OrderItemInDB,
+  ProductInDB,
+  useGetAdminCategoriesApiAdminCategoriesGet,
+  useGetAdminOrdersApiAdminOrdersGet,
+  useGetAdminProductsApiAdminProductsGet,
+  useGetAdminUsersApiAdminUsersGet,
+  UserInDB,
+} from "@/shared/api/generated";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
@@ -28,87 +32,77 @@ import Link from "next/link";
 import { useMemo } from "react";
 
 export default function AdminHome() {
-  // Получаем данные из API
-  const { data: categories, isLoading: categoriesLoading } =
-    useGetadmincategoriesapiadmincategoriesget();
-  const { data: products, isLoading: productsLoading } =
-    useGetadminproductsapiadminproductsget();
-  const { data: orders, isLoading: ordersLoading } =
-    useGetadminordersapiadminordersget();
-  const { data: users, isLoading: usersLoading } =
-    useGetadminusersapiadminusersget();
+  const { data: categories = [] } =
+    useGetAdminCategoriesApiAdminCategoriesGet();
 
-  // Вычисляем статистику
+  const { data: products = [] } = useGetAdminProductsApiAdminProductsGet();
+
+  const { data: orders = [] } = useGetAdminOrdersApiAdminOrdersGet();
+
+  const { data: users = [] } = useGetAdminUsersApiAdminUsersGet();
+
+  // Вычисляем статистику с правильной типизацией
   const stats = useMemo(() => {
-    if (!products || !orders || !users || !categories) {
-      return {
-        totalProducts: 0,
-        totalOrders: 0,
-        totalUsers: 0,
-        totalCategories: 0,
-        totalRevenue: 0,
-        pendingOrders: 0,
-        completedOrders: 0,
-        adminUsers: 0,
-        lowStockProducts: 0,
-        recentOrders: [],
-        topProducts: [],
-      };
-    }
-
     const totalRevenue = orders.reduce(
-      (sum, order) => sum + parseFloat(order.totalAmount),
+      (sum: number, order: OrderInDB) => sum + parseFloat(order.totalAmount),
       0
     );
-    const pendingOrders = orders.filter(
-      (order) =>
-        order.status.toLowerCase() === "pending" ||
-        order.status.toLowerCase() === "processing"
-    ).length;
+
     const completedOrders = orders.filter(
-      (order) => order.status.toLowerCase() === "delivered"
-    ).length;
-    const adminUsers = users.filter((user) => user.isAdmin).length;
-    const lowStockProducts = products.filter(
-      (product) => product.timesOrdered < 10
+      (order: OrderInDB) =>
+        order.status && order.status.toLowerCase() === "completed"
     ).length;
 
-    // Последние 5 заказов
+    const deliveredOrders = orders.filter(
+      (order: OrderInDB) => order.status.toLowerCase() === "delivered"
+    ).length;
+
+    const adminUsers = users.filter((user: UserInDB) => user.isAdmin).length;
+
+    const lowStockProducts = products.filter(
+      (product: ProductInDB) => product.timesOrdered < 10
+    ).length;
+
+    // Последние заказы
     const recentOrders = orders
       .sort(
-        (a, b) =>
+        (a: OrderInDB, b: OrderInDB) =>
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       )
       .slice(0, 5);
 
-    // Топ продукты по количеству заказов (примерная логика)
-    const productOrderCounts = products.map((product) => ({
+    // Топ товары
+    const productOrderCounts = products.map((product: ProductInDB) => ({
       ...product,
-      orderCount: orders.filter((order) =>
+      orderCount: orders.filter((order: OrderInDB) =>
         order.orderItems?.some(
-          (item: { productId: string }) => item.productId === product.id
+          (item: OrderItemInDB) => item.productId === product.id
         )
       ).length,
     }));
 
     const topProducts = productOrderCounts
-      .sort((a, b) => b.orderCount - a.orderCount)
+      .sort(
+        (
+          a: ProductInDB & { orderCount: number },
+          b: ProductInDB & { orderCount: number }
+        ) => b.orderCount - a.orderCount
+      )
       .slice(0, 5);
 
     return {
-      totalProducts: products.length,
-      totalOrders: orders.length,
-      totalUsers: users.length,
-      totalCategories: categories.length,
       totalRevenue,
-      pendingOrders,
+      totalOrders: orders.length,
       completedOrders,
+      deliveredOrders,
+      totalUsers: users.length,
       adminUsers,
+      totalProducts: products.length,
       lowStockProducts,
       recentOrders,
       topProducts,
     };
-  }, [products, orders, users, categories]);
+  }, [orders, users, products]);
 
   const getStatusIcon = (status: string) => {
     switch (status.toLowerCase()) {
@@ -138,8 +132,7 @@ export default function AdminHome() {
     }
   };
 
-  const isLoading =
-    categoriesLoading || productsLoading || ordersLoading || usersLoading;
+  const isLoading = !categories || !products || !orders || !users;
 
   return (
     <div className="space-y-8">
@@ -184,7 +177,7 @@ export default function AdminHome() {
               {isLoading ? "..." : stats.totalOrders}
             </div>
             <p className="text-xs text-muted-foreground">
-              {stats.pendingOrders} в обработке
+              {stats.completedOrders} выполненных заказов
             </p>
           </CardContent>
         </Card>
@@ -299,7 +292,7 @@ export default function AdminHome() {
                 </Link>
               </Button>
               <Badge variant="outline" className="ml-auto">
-                {stats.pendingOrders} новых
+                {stats.completedOrders} новых
               </Badge>
             </div>
           </CardContent>

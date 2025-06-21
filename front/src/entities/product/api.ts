@@ -51,7 +51,7 @@ export async function getBestsellers(limit: number = 10): Promise<Product[]> {
     const data = await api.get<Product[]>(
       `${API_ROUTES.PRODUCTS.BESTSELLERS}?limit=${limit}`,
       {
-        cache: "no-store" as any, // TypeScript workaround для cache опции
+        cache: "no-store" as RequestInit["cache"], // TypeScript workaround для cache опции
       }
     );
     return data;

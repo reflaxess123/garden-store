@@ -13,18 +13,18 @@ import {
 import { Loader2 } from "lucide-react";
 import { ReactNode, useState } from "react";
 
-export interface CrudFormModalProps<T = any> {
-  item?: T | null; // Элемент для редактирования (null для создания)
-  trigger: ReactNode; // Кнопка-триггер
+interface CrudFormModalProps<T = Record<string, unknown>> {
+  isOpen?: boolean;
+  onClose: () => void;
+  onSubmit?: (data: T) => void;
+  initialData?: T | null;
+  item?: T | null; // Алиас для initialData для обратной совместимости
   title: string;
-  description?: string;
-  children: ReactNode; // Форма внутри модала
-  onSubmit?: () => void;
-  onOpenChange?: (open: boolean) => void;
-  loading?: boolean;
-  submitText?: string;
-  cancelText?: string;
-  open?: boolean; // Контролируемое состояние
+  children: React.ReactNode;
+  submitLabel?: string;
+  isLoading?: boolean;
+  loading?: boolean; // Алиас для isLoading
+  trigger?: ReactNode;
   size?: "sm" | "md" | "lg" | "xl";
 }
 
@@ -35,39 +35,45 @@ const sizeClasses = {
   xl: "sm:max-w-[1200px]",
 };
 
-export default function CrudFormModal<T = any>({
-  item,
-  trigger,
-  title,
-  description,
-  children,
+export function CrudFormModal<T = Record<string, unknown>>({
+  isOpen,
+  onClose,
   onSubmit,
-  onOpenChange,
+  initialData,
+  item,
+  title,
+  children,
+  submitLabel = "Сохранить",
+  isLoading = false,
   loading = false,
-  submitText,
-  cancelText = "Отмена",
-  open: controlledOpen,
+  trigger,
   size = "md",
 }: CrudFormModalProps<T>) {
   const [internalOpen, setInternalOpen] = useState(false);
 
-  const isControlled = controlledOpen !== undefined;
-  const open = isControlled ? controlledOpen : internalOpen;
-  const setOpen = isControlled ? onOpenChange! : setInternalOpen;
+  const isControlled = isOpen !== undefined;
+  const open = isControlled ? isOpen : internalOpen;
+  const setOpen = isControlled ? onClose : setInternalOpen;
 
-  const isEdit = !!item;
+  // Используем item как алиас для initialData если он передан
+  const data = item ?? initialData;
+  const isLoading_ = loading || isLoading;
+
+  const isEdit = !!data;
   const defaultSubmitText = isEdit ? "Сохранить изменения" : "Создать";
   const defaultDescription = isEdit
-    ? description || "Внесите изменения в запись"
-    : description || "Заполните форму для создания новой записи";
+    ? "Внесите изменения в запись"
+    : "Заполните форму для создания новой записи";
 
   const handleSubmit = () => {
-    onSubmit?.();
+    if (onSubmit) {
+      onSubmit(data as T);
+    }
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{trigger}</DialogTrigger>
+      {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
       <DialogContent
         className={`${sizeClasses[size]} max-h-[90vh] overflow-y-auto`}
       >
@@ -84,13 +90,13 @@ export default function CrudFormModal<T = any>({
               type="button"
               variant="outline"
               onClick={() => setOpen(false)}
-              disabled={loading}
+              disabled={isLoading_}
             >
-              {cancelText}
+              Отмена
             </Button>
-            <Button type="button" onClick={handleSubmit} disabled={loading}>
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {submitText || defaultSubmitText}
+            <Button type="button" onClick={handleSubmit} disabled={isLoading_}>
+              {isLoading_ && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {submitLabel || defaultSubmitText}
             </Button>
           </DialogFooter>
         )}
@@ -98,3 +104,5 @@ export default function CrudFormModal<T = any>({
     </Dialog>
   );
 }
+
+export default CrudFormModal;

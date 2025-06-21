@@ -40,22 +40,16 @@ const NotificationIcon = ({ type }: { type: string }) => {
 };
 
 const formatTimeAgo = (dateString: string) => {
-  const date = new Date(dateString);
   const now = new Date();
-  const diffInMinutes = Math.floor(
-    (now.getTime() - date.getTime()) / (1000 * 60)
-  );
+  const date = new Date(dateString);
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
-  if (diffInMinutes < 1) return "только что";
-  if (diffInMinutes < 60) return `${diffInMinutes} мин назад`;
-
-  const diffInHours = Math.floor(diffInMinutes / 60);
-  if (diffInHours < 24) return `${diffInHours} ч назад`;
-
-  const diffInDays = Math.floor(diffInHours / 24);
-  if (diffInDays < 7) return `${diffInDays} д назад`;
-
-  return date.toLocaleDateString("ru-RU");
+  if (diffInSeconds < 60) return "Только что";
+  if (diffInSeconds < 3600)
+    return `${Math.floor(diffInSeconds / 60)} мин назад`;
+  if (diffInSeconds < 86400)
+    return `${Math.floor(diffInSeconds / 3600)} ч назад`;
+  return `${Math.floor(diffInSeconds / 86400)} дн назад`;
 };
 
 export function NotificationPanel() {
@@ -117,7 +111,7 @@ export function NotificationPanel() {
       if (isRead) {
         queryClient.setQueryData(
           ["notifications", "unread-count"],
-          (old: any) => {
+          (old: { unreadCount?: number } | undefined) => {
             if (!old) return old;
             return {
               ...old,
@@ -186,7 +180,7 @@ export function NotificationPanel() {
       // Обнуляем счетчик непрочитанных
       queryClient.setQueryData(
         ["notifications", "unread-count"],
-        (old: any) => {
+        (old: { unreadCount?: number } | undefined) => {
           if (!old) return old;
           return { ...old, unreadCount: 0 };
         }
@@ -232,7 +226,8 @@ export function NotificationPanel() {
     markAllAsReadMutation.mutate();
   };
 
-  const unreadCountValue = (unreadCount as any)?.unreadCount || 0;
+  const unreadCountValue =
+    (unreadCount as { unreadCount?: number } | undefined)?.unreadCount || 0;
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>

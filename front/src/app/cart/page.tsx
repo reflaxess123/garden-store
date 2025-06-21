@@ -31,13 +31,15 @@ export default function CartPage() {
   }, []);
 
   // Преобразуем items в нужный формат
-  const cartItems: CartItemData[] = items.map((item) => ({
-    id: item.cartId,
-    name: item.name,
-    priceSnapshot: item.priceSnapshot,
-    quantity: item.quantity,
-    imageUrl: item.imageUrl || undefined,
-  }));
+  const cartItems: CartItemData[] = items
+    .filter((item) => item.cartId) // Фильтруем элементы без cartId
+    .map((item) => ({
+      id: item.cartId!,
+      name: item.name,
+      priceSnapshot: item.priceSnapshot,
+      quantity: item.quantity,
+      imageUrl: item.imageUrl || undefined,
+    }));
 
   return (
     <main className="container mx-auto p-4 md:p-8">

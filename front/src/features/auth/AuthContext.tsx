@@ -35,7 +35,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     data: user,
     isLoading,
     isError,
-    error,
     refetch: refetchUser,
   } = useQuery({
     queryKey: ["currentUser"],
@@ -111,7 +110,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = async () => {
-    await logoutMutation.mutateAsync();
+    await logoutMutation.mutateAsync(undefined);
   };
 
   const isAuthenticated = !!user && !isError;

@@ -41,6 +41,9 @@ import {
 } from "@/entities/product/admin-api";
 import { formatPrice } from "@/shared";
 
+// Локальный тип с индексной сигнатурой для совместимости
+type ProductWithIndex = AdminProductClient & Record<string, unknown>;
+
 export default function AdminProductsPage() {
   // Загрузка данных
   const {
@@ -49,7 +52,7 @@ export default function AdminProductsPage() {
     isError: isProductsError,
     error,
     refetch,
-  } = useQuery<AdminProductClient[]>({
+  } = useQuery({
     queryKey: ["adminProducts"],
     queryFn: getAdminProducts,
   });
@@ -74,10 +77,13 @@ export default function AdminProductsPage() {
     handleFilterChange,
     clearFilters,
     isEmpty,
-  } = usePaginatedList(products, {
-    itemsPerPage: 20,
-    searchFields: ["name", "description"],
-  });
+  } = usePaginatedList<ProductWithIndex>(
+    (products as ProductWithIndex[]) || [],
+    {
+      itemsPerPage: 20,
+      searchFields: ["name", "description"],
+    }
+  );
 
   // CRUD операции
   const { delete: deleteProduct, isDeleting } =

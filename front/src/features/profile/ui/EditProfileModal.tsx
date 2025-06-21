@@ -1,4 +1,5 @@
 import { ProfileFormData } from "@/entities/user";
+import { CustomUser } from "@/shared/api/generated/types";
 import { Button } from "@/shared/ui/button";
 import {
   Dialog,
@@ -15,7 +16,7 @@ import { Edit, User } from "lucide-react";
 import { useState } from "react";
 
 interface EditProfileModalProps {
-  user: { fullName?: string; email?: string } | null;
+  user: CustomUser | null;
   onSave: (data: ProfileFormData) => void;
   isLoading: boolean;
 }
@@ -27,7 +28,7 @@ export function EditProfileModal({
 }: EditProfileModalProps) {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState<ProfileFormData>({
-    fullName: user?.fullName || "",
+    fullName: user?.fullName ?? "",
     email: user?.email || "",
     phone: "",
     address: "",

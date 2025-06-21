@@ -92,7 +92,7 @@ export default function CheckoutPage() {
 
       if (result && result.id) {
         clearCart();
-        notifications.orders.created(result.id);
+        notifications.orders.created(String(result.id));
         router.push(`/orders/${result.id}`);
       }
     } catch (error) {

@@ -5,17 +5,22 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { BarChart3, Calendar, Mail, User } from "lucide-react";
 
 interface ProfileOverviewProps {
-  user: any;
-  orders: OrderInDB[] | undefined;
-  isOrdersLoading: boolean;
-  ordersError: any;
+  user: {
+    fullName?: string | null;
+    email?: string;
+    id?: string;
+    isAdmin?: boolean;
+  };
+  orders?: OrderInDB[];
+  _isOrdersLoading?: boolean;
+  _ordersError?: unknown;
 }
 
 export function ProfileOverview({
   user,
   orders,
-  isOrdersLoading,
-  ordersError,
+  _isOrdersLoading,
+  _ordersError,
 }: ProfileOverviewProps) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -83,7 +88,7 @@ export function ProfileOverview({
             <div className="text-2xl font-bold text-green-600">
               {orders?.length
                 ? formatPrice(
-                    orders.reduce(
+                    (orders as OrderInDB[]).reduce(
                       (sum: number, order: OrderInDB) =>
                         sum + parseFloat(order.totalAmount),
                       0
@@ -95,7 +100,7 @@ export function ProfileOverview({
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-purple-600">
-              {orders?.filter(
+              {(orders as OrderInDB[])?.filter(
                 (order: OrderInDB) => order.status === "delivered"
               ).length || 0}
             </div>

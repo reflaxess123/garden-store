@@ -7,7 +7,7 @@ import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Input } from "@/shared/ui/input";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { MessageCircle, Minimize2, Send, X } from "lucide-react";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
@@ -90,7 +90,6 @@ export default function ChatWidget() {
   const [currentMessage, setCurrentMessage] = useState("");
   const [currentChat, setCurrentChat] = useState<Chat | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
-  const queryClient = useQueryClient();
 
   const { data: chats = [], refetch: refetchChats } = useQuery({
     queryKey: ["userChats"],

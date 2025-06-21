@@ -2,49 +2,58 @@
 
 import { useCallback, useMemo, useState } from "react";
 import { logger } from "../lib/logger";
-import { FormField, FormState } from "../types/common";
+import { FormState } from "../types/common";
 
-type ValidationRule<T = any> = {
+type ValidationRule<T = unknown> = {
   validator: (value: T) => boolean;
   message: string;
 };
 
-type FieldValidationRules<T extends Record<string, any>> = {
+type FieldValidationRules<T extends Record<string, unknown>> = {
   [K in keyof T]?: ValidationRule<T[K]>[];
 };
 
-interface UseFormOptions<T extends Record<string, any>> {
+interface FormFieldLocal<T = unknown> {
+  value: T;
+  error?: string;
+  touched: boolean;
+  dirty: boolean;
+}
+
+interface UseFormOptions<T extends Record<string, unknown>> {
   initialValues: T;
   validationRules?: FieldValidationRules<T>;
   onSubmit?: (values: T) => Promise<void> | void;
   validateOnChange?: boolean;
   validateOnBlur?: boolean;
+  transformBeforeSubmit?: (values: T) => T;
 }
 
-export function useForm<T extends Record<string, any>>({
+export function useForm<T extends Record<string, unknown>>({
   initialValues,
   validationRules = {},
   onSubmit,
-  validateOnChange = true,
+  validateOnChange = false,
   validateOnBlur = true,
+  transformBeforeSubmit,
 }: UseFormOptions<T>) {
   // Инициализация полей формы
-  const [fields, setFields] = useState<{ [K in keyof T]: FormField<T[K]> }>(
-    () => {
-      const initialFields = {} as { [K in keyof T]: FormField<T[K]> };
+  const [fields, setFields] = useState<{
+    [K in keyof T]: FormFieldLocal<T[K]>;
+  }>(() => {
+    const initialFields = {} as { [K in keyof T]: FormFieldLocal<T[K]> };
 
-      for (const key in initialValues) {
-        initialFields[key] = {
-          value: initialValues[key],
-          error: undefined,
-          touched: false,
-          dirty: false,
-        };
-      }
-
-      return initialFields;
+    for (const key in initialValues) {
+      initialFields[key] = {
+        value: initialValues[key],
+        error: undefined,
+        touched: false,
+        dirty: false,
+      };
     }
-  );
+
+    return initialFields;
+  });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -158,7 +167,7 @@ export function useForm<T extends Record<string, any>>({
   // Сброс формы
   const resetForm = useCallback(() => {
     setFields(() => {
-      const resetFields = {} as { [K in keyof T]: FormField<T[K]> };
+      const resetFields = {} as { [K in keyof T]: FormFieldLocal<T[K]> };
 
       for (const key in initialValues) {
         resetFields[key] = {
@@ -244,9 +253,14 @@ export function useForm<T extends Record<string, any>>({
       setIsSubmitting(true);
 
       try {
-        const values = {} as T;
+        let values = {} as T;
         for (const key in fields) {
           values[key] = fields[key].value;
+        }
+
+        // Применяем трансформацию перед отправкой, если она задана
+        if (transformBeforeSubmit) {
+          values = transformBeforeSubmit(values);
         }
 
         await onSubmit(values);
@@ -263,7 +277,7 @@ export function useForm<T extends Record<string, any>>({
         setIsSubmitting(false);
       }
     },
-    [validateForm, onSubmit, fields]
+    [validateForm, onSubmit, transformBeforeSubmit, fields]
   );
 
   // Вычисляемые значения
@@ -309,8 +323,24 @@ export function useForm<T extends Record<string, any>>({
     return Object.values(fields).some((field) => field.dirty);
   }, [fields]);
 
+  // Преобразуем локальные поля в поля для FormState
+  const formStateFields = useMemo(() => {
+    const result = {} as {
+      [K in keyof T]: import("../types/common").FormField<T[K]>;
+    };
+    for (const key in fields) {
+      result[key] = {
+        value: fields[key].value,
+        error: fields[key].error,
+        touched: fields[key].touched,
+        dirty: fields[key].dirty,
+      };
+    }
+    return result;
+  }, [fields]);
+
   const formState: FormState<T> = {
-    fields,
+    fields: formStateFields,
     isValid,
     isSubmitting,
     isDirty,

@@ -129,17 +129,17 @@ export class Storage {
 export const storage = {
   // Корзина для неавторизованных пользователей
   cart: {
-    get: () => Storage.get<any[]>("anonymousCart", []),
-    set: (items: any[]) => Storage.set("anonymousCart", items),
+    get: () => Storage.get<unknown[]>("anonymousCart", []),
+    set: (items: unknown[]) => Storage.set("anonymousCart", items),
     clear: () => Storage.remove("anonymousCart"),
   },
 
   // Настройки пользователя
   userPreferences: {
-    get: () => Storage.get<Record<string, any>>("userPreferences", {}),
-    set: (preferences: Record<string, any>) =>
+    get: () => Storage.get<Record<string, unknown>>("userPreferences", {}),
+    set: (preferences: Record<string, unknown>) =>
       Storage.set("userPreferences", preferences),
-    update: (key: string, value: any) => {
+    update: (key: string, value: unknown) => {
       const current = storage.userPreferences.get();
       storage.userPreferences.set({ ...current, [key]: value });
     },
@@ -176,8 +176,8 @@ export const storage = {
   // Временные данные формы
   formDraft: {
     get: (formId: string) =>
-      Storage.get<Record<string, any>>(`formDraft_${formId}`),
-    set: (formId: string, data: Record<string, any>) =>
+      Storage.get<Record<string, unknown>>(`formDraft_${formId}`),
+    set: (formId: string, data: Record<string, unknown>) =>
       Storage.set(`formDraft_${formId}`, data),
     clear: (formId: string) => Storage.remove(`formDraft_${formId}`),
   },
@@ -194,9 +194,123 @@ export const storage = {
     },
     tableSettings: {
       get: (tableId: string) =>
-        Storage.get<Record<string, any>>(`table_${tableId}`),
-      set: (tableId: string, settings: Record<string, any>) =>
+        Storage.get<Record<string, unknown>>(`table_${tableId}`),
+      set: (tableId: string, settings: Record<string, unknown>) =>
         Storage.set(`table_${tableId}`, settings),
     },
   },
 };
+
+/**
+ * Безопасное получение данных из localStorage с типизацией
+ */
+export function getFromLocalStorage<T = unknown>(
+  key: string,
+  defaultValue?: T
+): T | undefined {
+  try {
+    const item = localStorage.getItem(key);
+    return item ? JSON.parse(item) : defaultValue;
+  } catch (error) {
+    logger.error(`Error parsing localStorage item: ${key}`, error);
+    return defaultValue;
+  }
+}
+
+/**
+ * Безопасное сохранение данных в localStorage
+ */
+export function setToLocalStorage<T = unknown>(key: string, value: T): void {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch (error) {
+    logger.error(`Error setting localStorage item: ${key}`, error);
+  }
+}
+
+/**
+ * Безопасное удаление данных из localStorage
+ */
+export function removeFromLocalStorage(key: string): boolean {
+  if (typeof window === "undefined") return false;
+
+  try {
+    localStorage.removeItem(key);
+    return true;
+  } catch (error) {
+    logger.error(`Error removing from localStorage for key: ${key}`, error);
+    return false;
+  }
+}
+
+/**
+ * Безопасная очистка localStorage
+ */
+export function clearLocalStorage(): boolean {
+  if (typeof window === "undefined") return false;
+
+  try {
+    localStorage.clear();
+    return true;
+  } catch (error) {
+    logger.error("Error clearing localStorage", error);
+    return false;
+  }
+}
+
+// SessionStorage utilities
+/**
+ * Безопасное получение данных из sessionStorage
+ */
+export function getFromSessionStorage<T = unknown>(
+  key: string,
+  defaultValue?: T
+): T | undefined {
+  try {
+    const item = sessionStorage.getItem(key);
+    return item ? JSON.parse(item) : defaultValue;
+  } catch (error) {
+    logger.error(`Error parsing sessionStorage item: ${key}`, error);
+    return defaultValue;
+  }
+}
+
+/**
+ * Безопасное сохранение данных в sessionStorage
+ */
+export function setToSessionStorage<T = unknown>(key: string, value: T): void {
+  try {
+    sessionStorage.setItem(key, JSON.stringify(value));
+  } catch (error) {
+    logger.error(`Error setting sessionStorage item: ${key}`, error);
+  }
+}
+
+// Storage event handling
+/**
+ * Подписка на изменения localStorage
+ */
+export function subscribeToStorageChanges<T = unknown>(
+  key: string,
+  callback: (newValue: T | null, oldValue: T | null) => void
+): () => void {
+  if (typeof window === "undefined") return () => {};
+
+  let oldValue: T | null = getFromLocalStorage<T>(key) ?? null;
+
+  const handleStorageChange = (event: StorageEvent) => {
+    if (event.key === key) {
+      const newValue = event.newValue
+        ? (JSON.parse(event.newValue) as T)
+        : null;
+      callback(newValue, oldValue);
+      oldValue = newValue;
+    }
+  };
+
+  window.addEventListener("storage", handleStorageChange);
+
+  return () => {
+    window.removeEventListener("storage", handleStorageChange);
+  };
+}

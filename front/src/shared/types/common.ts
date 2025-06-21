@@ -33,7 +33,7 @@ export interface SearchParams {
 
 // Фильтрация
 export interface FilterParams {
-  [key: string]: any;
+  [key: string]: string | number | boolean | null | undefined;
 }
 
 // Объединенные параметры для запросов списков
@@ -68,14 +68,14 @@ export interface OperationState {
 }
 
 // Общие типы форм
-export interface FormField<T = any> {
+export interface FormField<T = unknown> {
   value: T;
   error?: string;
   touched: boolean;
   dirty: boolean;
 }
 
-export interface FormState<T extends Record<string, any>> {
+export interface FormState<T extends Record<string, unknown>> {
   fields: { [K in keyof T]: FormField<T[K]> };
   isValid: boolean;
   isSubmitting: boolean;
@@ -85,7 +85,7 @@ export interface FormState<T extends Record<string, any>> {
 // Модальные окна
 export interface ModalState {
   isOpen: boolean;
-  data?: any;
+  data?: Record<string, unknown>;
 }
 
 // Уведомления
@@ -130,14 +130,14 @@ export interface SelectOption<T = string> {
 }
 
 // Таблицы
-export interface TableColumn<T = any> {
+export interface TableColumn<T = Record<string, unknown>> {
   key: keyof T | string;
   title: string;
   sortable?: boolean;
   filterable?: boolean;
   width?: string | number;
   align?: "left" | "center" | "right";
-  render?: (value: any, record: T, index: number) => React.ReactNode;
+  render?: (value: unknown, record: T, index: number) => React.ReactNode;
 }
 
 export interface TableState {

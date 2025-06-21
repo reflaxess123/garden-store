@@ -1,196 +1,147 @@
-import { logger } from "../lib/logger";
-
-export interface ApiResponse<T = any> {
+export interface HttpResponse<T = unknown> {
   data: T;
   status: number;
-  message?: string;
+  headers: Record<string, string>;
 }
 
-export interface ApiError {
-  message: string;
-  status: number;
-  details?: any;
+export interface RequestConfig extends RequestInit {
+  params?: Record<string, string | number | boolean>;
+  timeout?: number;
+  retries?: number;
 }
 
 export class HttpClientError extends Error {
-  constructor(public error: ApiError) {
-    super(error.message);
+  public status: number;
+  public error: {
+    status: number;
+    message: string;
+    data?: unknown;
+  };
+
+  constructor(message: string, status: number, data?: unknown) {
+    super(message);
     this.name = "HttpClientError";
+    this.status = status;
+    this.error = {
+      status,
+      message,
+      data,
+    };
   }
 }
 
-interface RequestOptions extends RequestInit {
-  timeout?: number;
-}
+// Добавляем алиасы для типов
+export type ApiError = HttpClientError;
+export type ApiResponse<T = unknown> = HttpResponse<T>;
 
 class HttpClient {
-  private baseUrl: string;
-  private defaultTimeout = 10000; // 10 секунд
+  private baseURL: string;
 
-  constructor() {
-    this.baseUrl = this.getBaseUrl();
+  constructor(baseURL: string = "") {
+    this.baseURL = baseURL;
   }
 
-  private getBaseUrl(): string {
-    if (typeof window !== "undefined") return ""; // Use relative path on client-side
-    if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
-    return process.env.FRONTEND_INTERNAL_URL || "http://localhost:3000";
-  }
-
-  private async handleResponse<T>(
-    response: Response,
-    endpoint: string
+  private async makeRequest<T = unknown>(
+    url: string,
+    config: RequestConfig = {}
   ): Promise<T> {
-    const contentType = response.headers.get("content-type");
-    const isJson = contentType && contentType.includes("application/json");
+    const { params, ...requestConfig } = config;
 
-    let data: any;
-    try {
-      data = isJson ? await response.json() : await response.text();
-    } catch (error) {
-      logger.apiError(endpoint, error, {
-        status: response.status,
-        contentType,
+    let fullUrl = `${this.baseURL}${url}`;
+    if (params) {
+      const searchParams = new URLSearchParams();
+      Object.entries(params).forEach(([key, value]) => {
+        searchParams.append(key, String(value));
       });
-      throw new HttpClientError({
-        message: "Failed to parse response",
-        status: response.status,
-        details: error,
-      });
+      fullUrl += `?${searchParams.toString()}`;
     }
 
-    if (!response.ok) {
-      const errorMessage =
-        typeof data === "object" && data.message
-          ? data.message
-          : `HTTP ${response.status}: ${response.statusText}`;
-
-      logger.apiError(endpoint, errorMessage, {
-        status: response.status,
-        data,
-      });
-
-      throw new HttpClientError({
-        message: errorMessage,
-        status: response.status,
-        details: data,
-      });
-    }
-
-    logger.apiSuccess(endpoint, { status: response.status });
-    return data;
-  }
-
-  private async request<T>(
-    endpoint: string,
-    options: RequestOptions = {}
-  ): Promise<T> {
-    const { timeout = this.defaultTimeout, ...fetchOptions } = options;
-    const url = `${this.baseUrl}${endpoint}`;
-
-    // Добавляем дефолтные заголовки
-    const headers = {
-      "Content-Type": "application/json",
-      ...fetchOptions.headers,
-    };
-
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), timeout);
-
     try {
-      const response = await fetch(url, {
-        ...fetchOptions,
-        headers,
-        signal: controller.signal,
-        credentials: "include", // Для работы с cookies
+      const response = await fetch(fullUrl, {
+        ...requestConfig,
+        headers: {
+          "Content-Type": "application/json",
+          ...requestConfig.headers,
+        },
       });
 
-      clearTimeout(timeoutId);
-      return await this.handleResponse<T>(response, endpoint);
-    } catch (error: any) {
-      clearTimeout(timeoutId);
-
-      if (error.name === "AbortError") {
-        logger.apiError(endpoint, "Request timeout", { timeout });
-        throw new HttpClientError({
-          message: "Request timeout",
-          status: 408,
-          details: { timeout },
-        });
+      if (!response.ok) {
+        let errorData: unknown;
+        try {
+          errorData = await response.json();
+        } catch {
+          errorData = await response.text();
+        }
+        throw new HttpClientError(
+          `HTTP ${response.status}: ${response.statusText}`,
+          response.status,
+          errorData
+        );
       }
 
+      return (await response.json()) as T;
+    } catch (error) {
       if (error instanceof HttpClientError) {
         throw error;
       }
-
-      logger.apiError(endpoint, error, { url });
-      throw new HttpClientError({
-        message: error.message || "Network error",
-        status: 0,
-        details: error,
-      });
+      throw new HttpClientError("Network error", 0, error);
     }
   }
 
-  // GET запрос
-  async get<T>(endpoint: string, options?: RequestOptions): Promise<T> {
-    return this.request<T>(endpoint, { ...options, method: "GET" });
+  async get<T = unknown>(url: string, config?: RequestConfig): Promise<T> {
+    return this.makeRequest<T>(url, { ...config, method: "GET" });
   }
 
-  // POST запрос
-  async post<T>(
-    endpoint: string,
-    data?: any,
-    options?: RequestOptions
+  async post<T = unknown>(
+    url: string,
+    data?: unknown,
+    config?: RequestConfig
   ): Promise<T> {
-    return this.request<T>(endpoint, {
-      ...options,
+    return this.makeRequest<T>(url, {
+      ...config,
       method: "POST",
       body: data ? JSON.stringify(data) : undefined,
     });
   }
 
-  // PUT запрос
-  async put<T>(
-    endpoint: string,
-    data?: any,
-    options?: RequestOptions
+  async put<T = unknown>(
+    url: string,
+    data?: unknown,
+    config?: RequestConfig
   ): Promise<T> {
-    return this.request<T>(endpoint, {
-      ...options,
+    return this.makeRequest<T>(url, {
+      ...config,
       method: "PUT",
       body: data ? JSON.stringify(data) : undefined,
     });
   }
 
-  // PATCH запрос
-  async patch<T>(
-    endpoint: string,
-    data?: any,
-    options?: RequestOptions
+  async patch<T = unknown>(
+    url: string,
+    data?: unknown,
+    config?: RequestConfig
   ): Promise<T> {
-    return this.request<T>(endpoint, {
-      ...options,
+    return this.makeRequest<T>(url, {
+      ...config,
       method: "PATCH",
       body: data ? JSON.stringify(data) : undefined,
     });
   }
 
-  // DELETE запрос
-  async delete<T>(endpoint: string, options?: RequestOptions): Promise<T> {
-    return this.request<T>(endpoint, { ...options, method: "DELETE" });
+  async delete<T = unknown>(url: string, config?: RequestConfig): Promise<T> {
+    return this.makeRequest<T>(url, { ...config, method: "DELETE" });
   }
 
   // Загрузка файлов
   async upload<T>(
     endpoint: string,
     formData: FormData,
-    options?: RequestOptions
+    options?: RequestConfig
   ): Promise<T> {
     const { headers, ...restOptions } = options || {};
 
     // Убираем Content-Type для FormData, браузер установит его автоматически
-    return this.request<T>(endpoint, {
+    return this.makeRequest<T>(endpoint, {
       ...restOptions,
       method: "POST",
       body: formData,
@@ -207,16 +158,16 @@ export const httpClient = new HttpClient();
 
 // Экспортируем удобные функции для использования
 export const api = {
-  get: <T>(endpoint: string, options?: RequestOptions) =>
+  get: <T>(endpoint: string, options?: RequestConfig) =>
     httpClient.get<T>(endpoint, options),
-  post: <T>(endpoint: string, data?: any, options?: RequestOptions) =>
+  post: <T>(endpoint: string, data?: unknown, options?: RequestConfig) =>
     httpClient.post<T>(endpoint, data, options),
-  put: <T>(endpoint: string, data?: any, options?: RequestOptions) =>
+  put: <T>(endpoint: string, data?: unknown, options?: RequestConfig) =>
     httpClient.put<T>(endpoint, data, options),
-  patch: <T>(endpoint: string, data?: any, options?: RequestOptions) =>
+  patch: <T>(endpoint: string, data?: unknown, options?: RequestConfig) =>
     httpClient.patch<T>(endpoint, data, options),
-  delete: <T>(endpoint: string, options?: RequestOptions) =>
+  delete: <T>(endpoint: string, options?: RequestConfig) =>
     httpClient.delete<T>(endpoint, options),
-  upload: <T>(endpoint: string, formData: FormData, options?: RequestOptions) =>
+  upload: <T>(endpoint: string, formData: FormData, options?: RequestConfig) =>
     httpClient.upload<T>(endpoint, formData, options),
 };

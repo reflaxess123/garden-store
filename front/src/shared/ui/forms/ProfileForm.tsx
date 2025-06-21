@@ -25,7 +25,11 @@ export interface ProfileData {
 }
 
 export interface ProfileFormProps {
-  user: any;
+  user: {
+    fullName?: string;
+    email?: string;
+    id?: string;
+  };
   onSave: (data: ProfileData) => void;
   isLoading?: boolean;
   triggerLabel?: string;
@@ -51,7 +55,7 @@ export default function ProfileForm({
     postalCode: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>): void => {
     e.preventDefault();
     onSave(formData);
     setOpen(false);

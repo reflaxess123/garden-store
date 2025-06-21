@@ -1,14 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { handleApiError, logApiRequest, logError } from "../_utils/logger";
 
-interface OrderItemInput {
-  productId: string;
-  quantity: number;
-  priceSnapshot: number;
-  name: string;
-  imageUrl?: string | null;
-}
-
 export async function DELETE(request: NextRequest) {
   try {
     logApiRequest("DELETE", "/api/orders");

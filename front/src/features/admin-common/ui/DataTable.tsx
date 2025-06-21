@@ -13,9 +13,14 @@ export interface Column<T> {
   className?: string;
 }
 
-export interface DataTableProps<T> {
+export interface DataTableProps<T extends Record<string, unknown>> {
   data: T[];
-  columns: Column<T>[];
+  columns: Array<{
+    key: keyof T;
+    title: string;
+    render?: (value: unknown, record: T) => React.ReactNode;
+    className?: string;
+  }>;
   loading?: boolean;
   emptyMessage?: string;
   onRowClick?: (item: T) => void;
@@ -26,9 +31,11 @@ export interface DataTableProps<T> {
   onPageChange?: (page: number) => void;
   itemsPerPage?: number;
   totalItems?: number;
+  _onEdit?: (record: T) => void;
+  _onDelete?: (record: T) => void;
 }
 
-export default function DataTable<T extends Record<string, any>>({
+export default function DataTable<T extends Record<string, unknown>>({
   data,
   columns,
   loading = false,
@@ -40,6 +47,8 @@ export default function DataTable<T extends Record<string, any>>({
   onPageChange,
   itemsPerPage,
   totalItems,
+  _onEdit,
+  _onDelete,
 }: DataTableProps<T>) {
   if (loading) {
     return (
@@ -65,11 +74,15 @@ export default function DataTable<T extends Record<string, any>>({
     );
   }
 
-  const getCellValue = (item: T, column: Column<T>) => {
+  const getCellValue = (
+    item: T,
+    column: DataTableProps<T>["columns"][0]
+  ): ReactNode => {
     if (column.render) {
-      return column.render(item);
+      return column.render(item[column.key], item);
     }
-    return item[column.key as keyof T];
+    const value = item[column.key];
+    return String(value ?? "");
   };
 
   return (
@@ -87,7 +100,7 @@ export default function DataTable<T extends Record<string, any>>({
                         column.className || ""
                       }`}
                     >
-                      {column.header}
+                      {column.title}
                     </th>
                   ))}
                 </tr>

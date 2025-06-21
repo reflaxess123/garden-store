@@ -7,7 +7,7 @@ export interface PaginatedListConfig {
   searchFields?: string[]; // Поля для поиска
 }
 
-export function usePaginatedList<T extends Record<string, any>>(
+export function usePaginatedList<T extends Record<string, unknown>>(
   data: T[] = [],
   config: PaginatedListConfig = {}
 ) {

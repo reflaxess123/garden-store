@@ -2,7 +2,7 @@ import { useAuth } from "@/features/auth/AuthContext";
 import { logger } from "@/shared/lib/logger";
 import { useCartData } from "./useCartData";
 import {
-  useAddToCart,
+  useAddToCartMutation,
   useClearCart,
   useMergeCart,
   useRemoveFromCart,
@@ -17,7 +17,7 @@ export function useCart() {
   const localCartHook = useLocalCart();
 
   // Мутации
-  const addToCartMutation = useAddToCart();
+  const addToCartMutation = useAddToCartMutation();
   const updateQuantityMutation = useUpdateCartQuantity();
   const removeFromCartMutation = useRemoveFromCart();
   const clearCartMutation = useClearCart();
@@ -206,10 +206,10 @@ export function useCart() {
 }
 
 // Экспортируем все хуки для удобства
+export type { CartItem } from "@/entities/cart/types";
 export { useCartData } from "./useCartData";
-export type { CartItem } from "./useCartData";
 export {
-  useAddToCart,
+  useAddToCartMutation,
   useClearCart,
   useMergeCart,
   useRemoveFromCart,

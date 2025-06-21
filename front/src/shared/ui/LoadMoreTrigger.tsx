@@ -16,27 +16,26 @@ export function LoadMoreTrigger({
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!ref.current || !hasMore || isLoading) return;
-
+    const currentRef = ref.current;
     const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
+      ([entry]) => {
+        if (entry.isIntersecting && hasMore && !isLoading) {
           onLoadMore();
         }
       },
-      {
-        rootMargin: "200px",
-      }
+      { threshold: 0.1 }
     );
 
-    observer.observe(ref.current);
+    if (currentRef) {
+      observer.observe(currentRef);
+    }
 
     return () => {
-      if (ref.current) {
-        observer.unobserve(ref.current);
+      if (currentRef) {
+        observer.unobserve(currentRef);
       }
     };
-  }, [hasMore, isLoading, onLoadMore]);
+  }, [onLoadMore, hasMore, isLoading]);
 
   return <div ref={ref} className="h-10 w-full" />;
 }

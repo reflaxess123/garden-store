@@ -15,11 +15,13 @@ import { EditProfileModal } from "@/features/profile";
 import { formatPrice, logger, notifications } from "@/shared";
 import {
   OrderInDB,
+  OrderItemInDB,
   useGetUserOrdersApiOrdersGet,
 } from "@/shared/api/generated";
 import {
   ProfileAnalytics,
   ProfileOverview,
+  ProfileSettings,
   RecentOrders,
 } from "@/widgets/profile";
 
@@ -33,14 +35,11 @@ export default function ProfilePage() {
     data: orders,
     isLoading: isOrdersLoading,
     error: ordersError,
-  } = useGetUserOrdersApiOrdersGet(
-    {},
-    {
-      query: {
-        enabled: !!user,
-      },
-    }
-  );
+  } = useGetUserOrdersApiOrdersGet({
+    query: {
+      enabled: !!user,
+    },
+  });
 
   const handleLogout = async () => {
     try {
@@ -56,13 +55,13 @@ export default function ProfilePage() {
     }
   };
 
-  const handleSaveProfile = async (data: ProfileFormData) => {
+  const handleSaveProfile = async (_data: ProfileFormData) => {
     setIsEditingProfile(true);
     try {
       // Здесь должен быть API вызов для сохранения профиля
       // await updateProfile(data);
       toast.success("Профиль успешно обновлен!");
-    } catch (error) {
+    } catch (_error) {
       toast.error("Ошибка при обновлении профиля");
     } finally {
       setIsEditingProfile(false);
@@ -131,8 +130,8 @@ export default function ProfilePage() {
           <ProfileOverview
             user={user}
             orders={orders}
-            isOrdersLoading={isOrdersLoading}
-            ordersError={ordersError}
+            _isOrdersLoading={isOrdersLoading}
+            _ordersError={ordersError}
           />
           <RecentOrders
             orders={orders}
@@ -169,7 +168,7 @@ function OrdersList({
 }: {
   orders: OrderInDB[] | undefined;
   isLoading: boolean;
-  error: any;
+  error: unknown;
 }) {
   if (isLoading) {
     return <p>Загрузка заказов...</p>;
@@ -222,7 +221,7 @@ function OrdersList({
 
             {order.orderItems && (
               <div className="space-y-2">
-                {order.orderItems.map((item: any, index: number) => (
+                {order.orderItems.map((item: OrderItemInDB, index: number) => (
                   <div
                     key={index}
                     className="flex items-center gap-3 p-2 bg-muted/50 rounded"
@@ -251,51 +250,5 @@ function OrdersList({
         </Card>
       ))}
     </div>
-  );
-}
-
-function ProfileSettings() {
-  return (
-    <Card>
-      <CardContent className="pt-6">
-        <div className="space-y-4">
-          <div className="flex items-center justify-between p-4 border rounded-lg">
-            <div>
-              <h3 className="font-medium">Уведомления по email</h3>
-              <p className="text-sm text-muted-foreground">
-                Получать уведомления о статусе заказов
-              </p>
-            </div>
-            <Button variant="outline" size="sm">
-              Настроить
-            </Button>
-          </div>
-
-          <div className="flex items-center justify-between p-4 border rounded-lg">
-            <div>
-              <h3 className="font-medium">Изменить пароль</h3>
-              <p className="text-sm text-muted-foreground">
-                Обновить пароль для входа в аккаунт
-              </p>
-            </div>
-            <Button variant="outline" size="sm">
-              Изменить
-            </Button>
-          </div>
-
-          <div className="flex items-center justify-between p-4 border rounded-lg border-destructive/20">
-            <div>
-              <h3 className="font-medium text-destructive">Удалить аккаунт</h3>
-              <p className="text-sm text-muted-foreground">
-                Полностью удалить аккаунт и все данные
-              </p>
-            </div>
-            <Button variant="destructive" size="sm">
-              Удалить
-            </Button>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
   );
 }

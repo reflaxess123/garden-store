@@ -20,7 +20,7 @@ const convertToProduct = (productInDB: ProductInDB): Product => {
     characteristics: productInDB.characteristics || null,
     imageUrl: productInDB.imageUrl || null,
     categoryId: productInDB.categoryId,
-    category: productInDB.category,
+    category: productInDB.category || undefined,
     createdAt: productInDB.createdAt,
     updatedAt: productInDB.updatedAt || "",
     timesOrdered: productInDB.timesOrdered,
@@ -28,8 +28,8 @@ const convertToProduct = (productInDB: ProductInDB): Product => {
 };
 
 interface InfiniteProductListWithFiltersProps {
-  initialProducts?: ProductInDB[];
   categorySlug: string;
+  _initialProducts?: ProductInDB[];
   searchQuery?: string;
   sortBy?: string;
   sortOrder?: string;
@@ -41,8 +41,8 @@ interface InfiniteProductListWithFiltersProps {
 }
 
 export function InfiniteProductListWithFilters({
-  initialProducts,
   categorySlug,
+  _initialProducts,
   searchQuery,
   sortBy,
   sortOrder,
@@ -73,7 +73,7 @@ export function InfiniteProductListWithFilters({
       hasDiscount,
     ],
     queryFn: async ({ pageParam = 0 }) => {
-      const options: any = {
+      const options: Record<string, string | number | boolean> = {
         offset: pageParam,
         limit: 20,
       };

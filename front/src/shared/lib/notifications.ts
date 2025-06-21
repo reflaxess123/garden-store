@@ -13,7 +13,7 @@ export interface NotificationOptions {
 
 export interface ErrorNotificationOptions extends NotificationOptions {
   error?: Error | unknown;
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
 }
 
 /**
@@ -88,7 +88,7 @@ export function showWarning(message: string, options?: NotificationOptions) {
 /**
  * Показывает loading уведомление
  */
-export function showLoading(message: string, promise: Promise<any>) {
+export function showLoading(message: string, promise: Promise<unknown>) {
   return toast.promise(promise, {
     loading: message,
     success: "Операция выполнена успешно",
@@ -104,7 +104,7 @@ export function showPromise<T>(
   options: {
     loading: string;
     success: string | ((data: T) => string);
-    error: string | ((error: any) => string);
+    error: string | ((error: Error | unknown) => string);
   }
 ) {
   return toast.promise(promise, options);
@@ -123,10 +123,30 @@ export function dismissAll() {
 export const notifications = {
   // Аутентификация
   auth: {
-    loginSuccess: () => showSuccess("Вы успешно вошли в систему"),
-    logoutSuccess: () => showSuccess("Вы вышли из системы"),
-    loginError: (error?: Error) =>
-      showError("Ошибка входа в систему", { error }),
+    loginSuccess: () => {
+      toast.success("Добро пожаловать!");
+    },
+
+    loginError: (error: Error | unknown) => {
+      const message =
+        error instanceof Error ? error.message : "Ошибка входа в систему";
+      toast.error(message);
+    },
+
+    logoutSuccess: () => {
+      toast.success("Вы успешно вышли из системы");
+    },
+
+    registrationSuccess: () => {
+      toast.success("Регистрация прошла успешно! Добро пожаловать!");
+    },
+
+    registrationError: (error: Error | unknown) => {
+      const message =
+        error instanceof Error ? error.message : "Ошибка регистрации";
+      toast.error(message);
+    },
+
     unauthorized: () => showError("Необходимо войти в систему"),
   },
 
@@ -179,5 +199,54 @@ export const notifications = {
       showError("Ошибка сети. Проверьте подключение к интернету"),
     unexpectedError: (error?: Error) =>
       showError("Произошла неожиданная ошибка", { error }),
+  },
+
+  // API
+  api: {
+    success: (message: string = "Операция выполнена успешно") => {
+      toast.success(message);
+    },
+
+    error: (
+      error: Error | unknown,
+      fallbackMessage: string = "Произошла ошибка"
+    ) => {
+      let message = fallbackMessage;
+
+      if (error instanceof Error) {
+        message = error.message;
+      } else if (typeof error === "string") {
+        message = error;
+      } else if (error && typeof error === "object" && "message" in error) {
+        message = String((error as { message: unknown }).message);
+      }
+
+      toast.error(message);
+    },
+  },
+
+  // Общие
+  generic: {
+    success: (message: string) => {
+      toast.success(message);
+    },
+
+    error: (message: string) => {
+      toast.error(message);
+    },
+
+    info: (message: string) => {
+      toast.info(message);
+    },
+
+    warning: (message: string) => {
+      toast(message, {
+        icon: "⚠️",
+      });
+    },
+
+    custom: (message: string, options?: Record<string, unknown>) => {
+      toast(message, options);
+    },
   },
 };

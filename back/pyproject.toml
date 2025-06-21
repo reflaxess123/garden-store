@@ -29,6 +29,16 @@ target-version = ['py310']
 
 [tool.ruff]
 line-length = 120
+exclude = [
+    ".git",
+    "__pycache__",
+    "venv",
+    "env",
+    ".ruff_cache",
+    "migrations", # Alembic migrations
+]
+
+[tool.ruff.lint]
 select = [
     "E",  # pycodestyle errors
     "W",  # pycodestyle warnings
@@ -51,20 +61,19 @@ ignore = [
     "ANN102", # Missing type annotation for cls in classmethod
     "ANN002", # Missing type annotation for args
     "ANN003", # Missing type annotation for kwargs
+    "B008", # Do not perform function call in argument defaults (FastAPI Depends pattern)
+    "N815", # Mixed case variable in class scope (Pydantic fields with aliases)
 ]
-exclude = [
-    ".git",
-    "__pycache__",
-    "venv",
-    "env",
-    ".ruff_cache",
-    "migrations", # Alembic migrations
-] 
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0"
 httpx = "^0.27.0"
 pytest-asyncio = "^1.0.0"
+mypy = "^1.8.0"
+types-redis = "^4.6.0"
+types-passlib = "^1.7.7"
+ruff = "^0.12.0"
+black = "^25.1.0"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
@@ -72,3 +81,28 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.pytest.ini_options]
 pythonpath = [ "." ]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = [
+    "alembic.*",
+    "redis.*",
+    "passlib.*",
+    "jose.*",
+]
+ignore_missing_imports = true

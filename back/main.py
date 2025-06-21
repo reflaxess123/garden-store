@@ -1,29 +1,29 @@
-import app.env_setup
-from fastapi import FastAPI
+import json
 import os
-import psycopg2
+from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
+from decimal import Decimal
+
 import redis
 from dotenv import load_dotenv
-from fastapi.middleware.cors import CORSMiddleware # Import CORS middleware
-from decimal import Decimal
-import json
-from contextlib import asynccontextmanager
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+import app.env_setup
+from app.db.database import check_database_connection
+from app.routers import auth, cart, categories, chat, favorites, notifications, orders, products
+from app.routers.admin import router as admin_router
+
 
 class CustomJsonEncoder(json.JSONEncoder):
-    def default(self, obj):
+    def default(self, obj: object) -> str | float:
         if isinstance(obj, Decimal):
             return float(obj)
         return json.JSONEncoder.default(self, obj)
 
-# Применяем пользовательский кодировщик для json
-json._default_encoder = CustomJsonEncoder()
-
-# Импорт роутеров
-from app.routers import auth, admin, cart, categories, products, orders, favorites, chat, notifications
-from app.db.database import check_database_connection
 
 # Загружаем переменные окружения из .env если файл существует (для разработки)
-env_file = os.path.join(os.path.dirname(__file__), '.env')
+env_file = os.path.join(os.path.dirname(__file__), ".env")
 if os.path.exists(env_file):
     load_dotenv(env_file)
     print("Загружены переменные окружения из .env файла")
@@ -33,8 +33,9 @@ else:
 print("DATABASE_URL:", "***" if os.getenv("DATABASE_URL") else "НЕ ЗАДАН")
 print("REDIS_URL:", "***" if os.getenv("REDIS_URL") else "НЕ ЗАДАН")
 
+
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     # Проверяем подключение к базе данных при запуске
     print("🔄 Проверка подключения к базе данных...")
     db_connected = await check_database_connection()
@@ -44,15 +45,16 @@ async def lifespan(app: FastAPI):
     # Cleanup при завершении приложения
     print("🔄 Завершение работы приложения...")
 
+
 app = FastAPI(lifespan=lifespan)
 
 # CORS configuration
 origins = [
     "http://localhost:3000",  # Next.js frontend для разработки
     "http://127.0.0.1:3000",
-    "http://frontend:3000",   # Docker контейнер фронтенда
-    "http://37.252.23.87",    # Дополнительный сервер
-    "https://37.252.23.87",   # Дополнительный сервер (HTTPS)
+    "http://frontend:3000",  # Docker контейнер фронтенда
+    "http://37.252.23.87",  # Дополнительный сервер
+    "https://37.252.23.87",  # Дополнительный сервер (HTTPS)
 ]
 
 # Добавляем внешние домены из переменных окружения для продакшена
@@ -73,7 +75,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(auth.router, prefix="/api")
-app.include_router(admin.router, prefix="/api")
+app.include_router(admin_router, prefix="/api")
 app.include_router(cart.router, prefix="/api")
 app.include_router(categories.router, prefix="/api")
 app.include_router(products.router, prefix="/api")
@@ -82,8 +84,9 @@ app.include_router(favorites.router, prefix="/api")
 app.include_router(notifications.router)  # Без префикса, так как уже есть в роутах
 app.include_router(chat.router)  # Без префикса, так как у него есть и API и WebSocket
 
+
 @app.get("/health")
-async def health_check():
+async def health_check() -> dict[str, str]:
     db_status = "unknown"
     redis_status = "unknown"
 
@@ -98,18 +101,23 @@ async def health_check():
     try:
         # Используем REDIS_URL напрямую
         redis_url = os.getenv("REDIS_URL")
-        r = redis.from_url(redis_url)
-        r.ping()
-        print("Redis: подключение успешно!")
-        redis_status = "OK"
+        if redis_url:
+            r = redis.from_url(redis_url)
+            r.ping()
+            print("Redis: подключение успешно!")
+            redis_status = "OK"
+        else:
+            redis_status = "REDIS_URL not set"
     except Exception as e:
         redis_status = f"Error: {e}"
 
     return {"database": db_status, "redis": redis_status}
 
+
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run("main:app", host="localhost", port=4000, reload=True)
 
 # Удален блок if __name__ == "__main__":
-# Пользователь будет запускать сервер FastAPI вручную. 
+# Пользователь будет запускать сервер FastAPI вручную.

@@ -1,11 +1,10 @@
-import app.env_setup
-import os
-import asyncio
 import logging
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
+import os
+from collections.abc import AsyncGenerator
+
 from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.ext.declarative import declarative_base
 
 # Настройка логгирования
 logging.basicConfig(level=logging.INFO)
@@ -18,7 +17,7 @@ if not DATABASE_URL:
 
 # Создаем движок с расширенными параметрами для устранения timeout ошибок
 engine = create_async_engine(
-    DATABASE_URL, 
+    DATABASE_URL,
     echo=True,
     # Параметры пула соединений
     pool_size=5,
@@ -32,20 +31,19 @@ engine = create_async_engine(
         "server_settings": {
             "application_name": "garden_store_backend",
         },
-    }
+    },
 )
 
-AsyncSessionLocal = sessionmaker(
-    autocommit=False,
-    autoflush=False,
-    bind=engine,
+AsyncSessionLocal = async_sessionmaker(
+    engine,
     class_=AsyncSession,
     expire_on_commit=False,
 )
 
 Base = declarative_base()
 
-async def check_database_connection():
+
+async def check_database_connection() -> bool:
     """Проверка подключения к базе данных"""
     try:
         async with engine.begin() as conn:
@@ -56,17 +54,19 @@ async def check_database_connection():
         logger.error(f"❌ Ошибка подключения к базе данных: {e}")
         return False
 
-async def get_db():
+
+async def get_db() -> AsyncGenerator[AsyncSession, None]:
     async with AsyncSessionLocal() as db:
         try:
             yield db
         except Exception as e:
             # Не перехватываем HTTPException - они должны пройти дальше
             from fastapi import HTTPException
+
             if isinstance(e, HTTPException):
                 raise
             logger.error(f"Ошибка в сессии базы данных: {e}")
             await db.rollback()
             raise
         finally:
-            await db.close() 
+            await db.close()

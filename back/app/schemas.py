@@ -1,28 +1,35 @@
-from pydantic import BaseModel, Field
-from typing import Optional, List, Dict, Any
+import uuid
 from datetime import datetime
 from decimal import Decimal
-import uuid
+from typing import Any, Optional
+
+from pydantic import BaseModel, Field
+
 
 # region Auth Schemas
 class SignInSchema(BaseModel):
     email: str
     password: str
 
+
 class SignUpSchema(BaseModel):
     email: str
     password: str = Field(min_length=6, max_length=100)
     confirmPassword: str
 
+
 class ResetPasswordSchema(BaseModel):
     email: str
+
 
 class UpdatePasswordSchema(BaseModel):
     password: str = Field(min_length=6)
 
+
 class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"
+
 
 class ProfileBase(BaseModel):
     id: uuid.UUID
@@ -32,8 +39,10 @@ class ProfileBase(BaseModel):
 
     model_config = {"from_attributes": True, "populate_by_name": True}
 
+
 class CustomUser(ProfileBase):
     pass
+
 
 # Схемы для управления пользователями в админке
 class UserCreate(BaseModel):
@@ -42,10 +51,12 @@ class UserCreate(BaseModel):
     fullName: Optional[str] = None
     isAdmin: bool = False
 
+
 class UserUpdate(BaseModel):
     email: Optional[str] = None
     fullName: Optional[str] = None
     isAdmin: Optional[bool] = None
+
 
 class UserInDB(ProfileBase):
     createdAt: Optional[datetime] = None
@@ -54,7 +65,10 @@ class UserInDB(ProfileBase):
     cartItemsCount: int = 0
 
     model_config = {"from_attributes": True}
+
+
 # endregion
+
 
 # region Category Schemas
 class CategoryBase(BaseModel):
@@ -65,18 +79,24 @@ class CategoryBase(BaseModel):
 
     model_config = {"from_attributes": True, "populate_by_name": True}
 
+
 class CategoryCreate(CategoryBase):
     pass
+
 
 class CategoryUpdate(CategoryBase):
     name: Optional[str] = None
     slug: Optional[str] = None
 
+
 class CategoryInDB(CategoryBase):
     id: uuid.UUID
 
     model_config = {"from_attributes": True, "populate_by_name": True}
+
+
 # endregion
+
 
 # region Product Schemas
 class ProductBase(BaseModel):
@@ -85,14 +105,16 @@ class ProductBase(BaseModel):
     description: Optional[str] = None
     price: Decimal = Field(..., decimal_places=2)
     discount: Optional[Decimal] = Field(None, decimal_places=2)
-    characteristics: Optional[Dict[str, Any]] = None
+    characteristics: Optional[dict[str, Any]] = None
     imageUrl: Optional[str] = Field(None, alias="image_url", serialization_alias="imageUrl")
     categoryId: uuid.UUID = Field(..., alias="category_id", serialization_alias="categoryId")
 
     model_config = {"from_attributes": True, "populate_by_name": True}
 
+
 class ProductCreate(ProductBase):
     pass
+
 
 class ProductUpdate(ProductBase):
     name: Optional[str] = None
@@ -100,9 +122,11 @@ class ProductUpdate(ProductBase):
     price: Optional[Decimal] = Field(None, decimal_places=2)
     categoryId: Optional[uuid.UUID] = None
 
+
 class ProductOfflineUpdate(BaseModel):
     offlinePurchases: int = Field(..., ge=0)
     timesOrdered: Optional[int] = Field(None, ge=0)
+
 
 class ProductInDB(ProductBase):
     id: uuid.UUID
@@ -115,7 +139,9 @@ class ProductInDB(ProductBase):
 
     model_config = {"from_attributes": True, "populate_by_name": True}
 
+
 # endregion
+
 
 # region Cart Schemas
 class CartItemBase(BaseModel):
@@ -123,8 +149,10 @@ class CartItemBase(BaseModel):
     quantity: int = Field(..., ge=1)
     priceSnapshot: Decimal = Field(..., decimal_places=2)
 
+
 class CartItemCreate(CartItemBase):
     pass
+
 
 class CartItemInDB(BaseModel):
     id: uuid.UUID
@@ -135,14 +163,19 @@ class CartItemInDB(BaseModel):
 
     model_config = {"from_attributes": True, "populate_by_name": True}
 
+
 class LocalCartItem(BaseModel):
     productId: uuid.UUID
     quantity: int
     priceSnapshot: Decimal
 
+
 class CartMergeRequest(BaseModel):
-    localCart: List[LocalCartItem]
+    localCart: list[LocalCartItem]
+
+
 # endregion
+
 
 # region Order Schemas
 class OrderItemBase(BaseModel):
@@ -154,14 +187,17 @@ class OrderItemBase(BaseModel):
 
     model_config = {"from_attributes": True, "populate_by_name": True}
 
+
 class OrderItemCreate(OrderItemBase):
     pass
+
 
 class OrderItemInDB(OrderItemBase):
     id: uuid.UUID
     orderId: uuid.UUID = Field(..., alias="order_id", serialization_alias="orderId")
 
     model_config = {"from_attributes": True, "populate_by_name": True}
+
 
 class OrderBase(BaseModel):
     fullName: str = Field(..., alias="full_name", serialization_alias="fullName")
@@ -171,32 +207,40 @@ class OrderBase(BaseModel):
     postalCode: str = Field(..., alias="postal_code", serialization_alias="postalCode")
     phone: str
     totalAmount: Decimal = Field(..., alias="total_amount", serialization_alias="totalAmount", decimal_places=2)
-    orderItems: List[OrderItemCreate] = Field(..., alias="order_items", serialization_alias="orderItems")
+    orderItems: list[OrderItemCreate] = Field(..., alias="order_items", serialization_alias="orderItems")
 
     model_config = {"from_attributes": True, "populate_by_name": True}
+
 
 class OrderCreate(OrderBase):
     pass
 
+
 class OrderUpdateStatus(BaseModel):
     status: str
+
 
 class OrderInDB(OrderBase):
     id: uuid.UUID
     userId: uuid.UUID = Field(..., alias="user_id", serialization_alias="userId")
     status: str
     createdAt: datetime = Field(..., alias="created_at", serialization_alias="createdAt")
-    orderItems: List[OrderItemInDB] = Field(default_factory=list, alias="order_items", serialization_alias="orderItems")
+    orderItems: list[OrderItemInDB] = Field(default_factory=list, alias="order_items", serialization_alias="orderItems")
 
     model_config = {"from_attributes": True, "populate_by_name": True}
+
 
 class OrderDelete(BaseModel):
     orderId: uuid.UUID
 
+
 class OrderEdit(BaseModel):
-    orderItems: List[OrderItemCreate]
+    orderItems: list[OrderItemCreate]
     totalAmount: Decimal = Field(..., decimal_places=2)
+
+
 # endregion
+
 
 # region Favourite Schemas
 class FavouriteBase(BaseModel):
@@ -204,8 +248,10 @@ class FavouriteBase(BaseModel):
 
     model_config = {"from_attributes": True, "populate_by_name": True}
 
+
 class FavouriteCreate(FavouriteBase):
     pass
+
 
 class FavouriteInDB(FavouriteBase):
     id: uuid.UUID
@@ -214,20 +260,27 @@ class FavouriteInDB(FavouriteBase):
 
     model_config = {"from_attributes": True, "populate_by_name": True}
 
+
 class FavouriteDelete(BaseModel):
     productId: uuid.UUID
+
+
 # endregion
+
 
 # region Extended Cart Schemas
 class CartItemUpdate(BaseModel):
     quantity: int = Field(..., ge=1)
 
+
 class CartItemAdd(BaseModel):
     productId: uuid.UUID
     quantity: int = Field(default=1, ge=1)
 
+
 class CartItemDelete(BaseModel):
     productId: uuid.UUID
+
 
 class CartItemWithProduct(BaseModel):
     id: uuid.UUID
@@ -243,7 +296,10 @@ class CartItemWithProduct(BaseModel):
     categoryId: uuid.UUID = Field(..., serialization_alias="categoryId")
 
     model_config = {"from_attributes": True, "populate_by_name": True}
+
+
 # endregion
+
 
 # region Chat Schemas
 class ChatMessageBase(BaseModel):
@@ -252,8 +308,10 @@ class ChatMessageBase(BaseModel):
 
     model_config = {"from_attributes": True, "populate_by_name": True}
 
+
 class ChatMessageCreate(ChatMessageBase):
     pass
+
 
 class ChatMessageInDB(ChatMessageBase):
     id: str  # Используем строку для UUID
@@ -267,19 +325,24 @@ class ChatMessageInDB(ChatMessageBase):
 
     model_config = {"from_attributes": True, "populate_by_name": True}
 
+
 class ChatBase(BaseModel):
     isActive: bool = Field(True, alias="is_active", serialization_alias="isActive")
 
     model_config = {"from_attributes": True, "populate_by_name": True}
 
+
 class ChatCreate(ChatBase):
     pass
+
 
 class ChatInDB(ChatBase):
     id: str  # Используем строку для UUID
     userId: str = Field(..., alias="user_id", serialization_alias="userId")  # Используем строку для UUID
     unreadCount: int = Field(..., alias="unread_count", serialization_alias="unreadCount")
-    lastMessageAt: Optional[str] = Field(None, alias="last_message_at", serialization_alias="lastMessageAt")  # Используем строку для datetime
+    lastMessageAt: Optional[str] = Field(
+        None, alias="last_message_at", serialization_alias="lastMessageAt"
+    )  # Используем строку для datetime
     createdAt: str = Field(..., alias="created_at", serialization_alias="createdAt")  # Используем строку для datetime
     # Информация о пользователе
     userName: Optional[str] = None
@@ -287,13 +350,15 @@ class ChatInDB(ChatBase):
     # Последнее сообщение
     lastMessage: Optional[str] = None
     # Сообщения (для детального просмотра)
-    messages: List[ChatMessageInDB] = Field(default_factory=list)
+    messages: list[ChatMessageInDB] = Field(default_factory=list)
 
     model_config = {"from_attributes": True, "populate_by_name": True}
+
 
 class ChatMessageSend(BaseModel):
     chatId: uuid.UUID
     message: str
+
 
 class WebSocketMessage(BaseModel):
     type: str  # "message", "user_typing", "user_joined", "user_left"
@@ -302,20 +367,27 @@ class WebSocketMessage(BaseModel):
     senderId: Optional[uuid.UUID] = None
     senderName: Optional[str] = None
     timestamp: Optional[datetime] = None
-    data: Optional[Dict[str, Any]] = None
+    data: Optional[dict[str, Any]] = None
+
+
 # endregion
+
 
 # region Notification Schemas
 class NotificationBase(BaseModel):
     title: str
     message: str
     type: str  # 'order_status', 'chat_message', 'new_order', 'system'
-    notificationData: Optional[Dict[str, Any]] = Field(None, alias="notification_data", serialization_alias="notificationData")
+    notificationData: Optional[dict[str, Any]] = Field(
+        None, alias="notification_data", serialization_alias="notificationData"
+    )
 
     model_config = {"from_attributes": True, "populate_by_name": True}
 
+
 class NotificationCreate(NotificationBase):
     userId: str = Field(..., alias="user_id", serialization_alias="userId")
+
 
 class NotificationInDB(NotificationBase):
     id: str  # Используем строку для UUID
@@ -325,8 +397,11 @@ class NotificationInDB(NotificationBase):
 
     model_config = {"from_attributes": True, "populate_by_name": True}
 
+
 class NotificationUpdate(BaseModel):
     isRead: bool = Field(..., alias="is_read", serialization_alias="isRead")
 
     model_config = {"from_attributes": True, "populate_by_name": True}
-# endregion 
+
+
+# endregion

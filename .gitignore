@@ -163,7 +163,7 @@ temp/
 tmp/
 
 # Cleanup scripts
-clean_pycache.bat 
+clean_pycache.bat
 
 # Logs
 logs

@@ -43,4 +43,4 @@ ENTRYPOINT ["entrypoint.sh"]
 EXPOSE 4000
 
 # Команда запуска, которая будет выполнена от пользователя app
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "4000"] 
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "4000"]

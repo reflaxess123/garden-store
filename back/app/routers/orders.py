@@ -1,26 +1,25 @@
+import uuid
+
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
-from app.db.database import get_db
+
+from app.auth import CustomUser, get_current_user
 from app.db import models
-from app.schemas import OrderCreate, OrderInDB, OrderDelete, OrderItemInDB
-from app.auth import get_current_user, CustomUser
-from typing import List
-import uuid
-from sqlalchemy import select
-import json
+from app.db.database import get_db
 from app.routers.notifications import create_notification_for_admins
+from app.schemas import OrderCreate, OrderDelete, OrderInDB, OrderItemInDB
 
 router = APIRouter()
 
+
 @router.post("/orders", response_model=OrderInDB, status_code=status.HTTP_201_CREATED)
 async def create_order(
-    order_in: OrderCreate, 
-    db: AsyncSession = Depends(get_db),
-    current_user: CustomUser = Depends(get_current_user)
-):
+    order_in: OrderCreate, db: AsyncSession = Depends(get_db), current_user: CustomUser = Depends(get_current_user)
+) -> OrderInDB:
     user_id = current_user.id
-    
+
     # Отладка: выводим доступные атрибуты
     print(f"DEBUG: order_in attributes: {dir(order_in)}")
     print(f"DEBUG: order_in dict: {order_in.model_dump()}")
@@ -36,12 +35,12 @@ async def create_order(
             address=order_in.address,
             city=order_in.city,
             postal_code=order_in.postalCode,
-            phone=order_in.phone
+            phone=order_in.phone,
         )
-        
+
         db.add(new_order)
         await db.flush()  # Получаем ID заказа
-        
+
         # Создаем элементы заказа
         order_items = []
         for item in order_in.orderItems:
@@ -49,7 +48,7 @@ async def create_order(
             product = await db.get(models.Product, item.productId)
             if not product:
                 raise HTTPException(status_code=404, detail=f"Product {item.productId} not found")
-            
+
             # Создаем элемент заказа
             order_item = models.OrderItem(
                 order_id=new_order.id,
@@ -57,17 +56,17 @@ async def create_order(
                 quantity=item.quantity,
                 price_snapshot=item.priceSnapshot,
                 name=item.name,
-                image_url=item.imageUrl
+                image_url=item.imageUrl,
             )
-            
+
             db.add(order_item)
             order_items.append(order_item)
-            
+
             # Обновляем счетчик заказов для продукта
             product.times_ordered += item.quantity
-            
+
         await db.commit()
-        
+
         # Создаем уведомление для админов о новом заказе
         await create_notification_for_admins(
             db=db,
@@ -78,10 +77,10 @@ async def create_order(
                 "order_id": str(new_order.id),
                 "customer_name": new_order.full_name,
                 "customer_email": new_order.email,
-                "total_amount": float(new_order.total_amount)
-            }
+                "total_amount": float(new_order.total_amount),
+            },
         )
-        
+
         # Создаем список OrderItemInDB для ответа
         order_items_response = [
             OrderItemInDB(
@@ -91,11 +90,11 @@ async def create_order(
                 quantity=item.quantity,
                 priceSnapshot=item.price_snapshot,
                 name=item.name,
-                imageUrl=item.image_url
+                imageUrl=item.image_url,
             )
             for item in order_items
         ]
-        
+
         # Создаем и возвращаем OrderInDB
         return OrderInDB(
             id=new_order.id,
@@ -109,60 +108,57 @@ async def create_order(
             city=new_order.city,
             postalCode=new_order.postal_code,
             phone=new_order.phone,
-            orderItems=order_items_response
+            orderItems=order_items_response,
         )
 
     except Exception as e:
         await db.rollback()
         if isinstance(e, HTTPException):
             raise
-        raise HTTPException(status_code=500, detail=f"Error creating order: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error creating order: {str(e)}") from e
+
 
 @router.delete("/orders", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_order(
-    payload: OrderDelete,
-    db: AsyncSession = Depends(get_db),
-    current_user: CustomUser = Depends(get_current_user)
-):
+    payload: OrderDelete, db: AsyncSession = Depends(get_db), current_user: CustomUser = Depends(get_current_user)
+) -> None:
     order_id = payload.orderId
-    
+
     try:
         # Получаем заказ
         order_result = await db.execute(select(models.Order).filter(models.Order.id == order_id))
         db_order = order_result.scalars().first()
-        
+
         if not db_order:
             raise HTTPException(status_code=404, detail="Order not found")
-        
+
         if db_order.user_id != current_user.id:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to delete this order")
 
         # Сначала удаляем все элементы заказа
-        order_items_result = await db.execute(
-            select(models.OrderItem).filter(models.OrderItem.order_id == order_id)
-        )
+        order_items_result = await db.execute(select(models.OrderItem).filter(models.OrderItem.order_id == order_id))
         order_items = order_items_result.scalars().all()
-        
+
         for item in order_items:
             await db.delete(item)
-        
-        # Затем удаляем сам заказ  
+
+        # Затем удаляем сам заказ
         await db.delete(db_order)
         await db.commit()
-        
+
     except Exception as e:
         await db.rollback()
         if isinstance(e, HTTPException):
             raise
-        raise HTTPException(status_code=500, detail=f"Error deleting order: {str(e)}")
-    
-    return 
+        raise HTTPException(status_code=500, detail=f"Error deleting order: {str(e)}") from e
 
-@router.get("/orders", response_model=List[OrderInDB])
+    return
+
+
+@router.get("/orders", response_model=list[OrderInDB])
 async def get_user_orders(
-    db: AsyncSession = Depends(get_db),
-    current_user: CustomUser = Depends(get_current_user)
-):
+    db: AsyncSession = Depends(get_db), current_user: CustomUser = Depends(get_current_user)
+) -> list[OrderInDB]:
     """Получить заказы текущего пользователя"""
     result = await db.execute(
         select(models.Order)
@@ -173,23 +169,19 @@ async def get_user_orders(
     orders = result.scalars().unique().all()
     return [OrderInDB.model_validate(order, from_attributes=True) for order in orders]
 
+
 @router.get("/orders/{order_id}", response_model=OrderInDB)
 async def get_user_order(
-    order_id: uuid.UUID,
-    db: AsyncSession = Depends(get_db),
-    current_user: CustomUser = Depends(get_current_user)
-):
+    order_id: uuid.UUID, db: AsyncSession = Depends(get_db), current_user: CustomUser = Depends(get_current_user)
+) -> OrderInDB:
     """Получить конкретный заказ пользователя"""
     result = await db.execute(
         select(models.Order)
         .options(joinedload(models.Order.order_items))
-        .filter(
-            models.Order.id == order_id,
-            models.Order.user_id == current_user.id
-        )
+        .filter(models.Order.id == order_id, models.Order.user_id == current_user.id)
     )
     order = result.scalars().first()
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
-    
-    return OrderInDB.model_validate(order, from_attributes=True) 
+
+    return OrderInDB.model_validate(order, from_attributes=True)

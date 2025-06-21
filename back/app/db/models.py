@@ -1,10 +1,12 @@
-from sqlalchemy import Column, String, Boolean, DateTime, Integer, ForeignKey, Numeric
+import uuid
+
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, Numeric, String
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import declarative_base, relationship
 from sqlalchemy.sql import func
-import uuid
 
 Base = declarative_base()
+
 
 class Category(Base):
     __tablename__ = "categories"
@@ -17,6 +19,7 @@ class Category(Base):
     image_url = Column(String)
 
     products = relationship("Product", back_populates="category")
+
 
 class Product(Base):
     __tablename__ = "products"
@@ -40,11 +43,12 @@ class Product(Base):
     favourites = relationship("Favourite", back_populates="product")
     cart_items = relationship("CartItem", back_populates="product")
 
+
 class Profile(Base):
     __tablename__ = "profiles"
     __table_args__ = {"schema": "public"}
 
-    id = Column(UUID(as_uuid=True), primary_key=True) # Matches auth.users id
+    id = Column(UUID(as_uuid=True), primary_key=True)  # Matches auth.users id
     email = Column(String, unique=True, nullable=False)
     hashed_password = Column(String, nullable=False)
     full_name = Column(String)
@@ -53,6 +57,7 @@ class Profile(Base):
     favourites = relationship("Favourite", back_populates="profile")
     cart_items = relationship("CartItem", back_populates="profile")
     orders = relationship("Order", back_populates="profile")
+
 
 class Favourite(Base):
     __tablename__ = "favourites"
@@ -64,6 +69,7 @@ class Favourite(Base):
 
     profile = relationship("Profile", back_populates="favourites")
     product = relationship("Product", back_populates="favourites")
+
 
 class CartItem(Base):
     __tablename__ = "cart_items"
@@ -77,6 +83,7 @@ class CartItem(Base):
 
     profile = relationship("Profile", back_populates="cart_items")
     product = relationship("Product", back_populates="cart_items")
+
 
 class Order(Base):
     __tablename__ = "orders"
@@ -97,19 +104,21 @@ class Order(Base):
     profile = relationship("Profile", back_populates="orders")
     order_items = relationship("OrderItem", back_populates="order")
 
+
 class OrderItem(Base):
     __tablename__ = "order_items"
     __table_args__ = {"schema": "public"}
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     order_id = Column(UUID(as_uuid=True), ForeignKey("public.orders.id"), nullable=False)
-    product_id = Column(UUID(as_uuid=True), nullable=False) # No foreign key, it's a snapshot
+    product_id = Column(UUID(as_uuid=True), nullable=False)  # No foreign key, it's a snapshot
     quantity = Column(Integer, nullable=False)
     price_snapshot = Column(Numeric(10, 2), nullable=False)
     name = Column(String, nullable=False)
     image_url = Column(String)
 
     order = relationship("Order", back_populates="order_items")
+
 
 class Chat(Base):
     __tablename__ = "chats"
@@ -124,6 +133,7 @@ class Chat(Base):
 
     user = relationship("Profile", foreign_keys=[user_id])
     messages = relationship("ChatMessage", back_populates="chat", cascade="all, delete-orphan")
+
 
 class ChatMessage(Base):
     __tablename__ = "chat_messages"
@@ -140,6 +150,7 @@ class ChatMessage(Base):
     chat = relationship("Chat", back_populates="messages")
     sender = relationship("Profile", foreign_keys=[sender_id])
 
+
 class Notification(Base):
     __tablename__ = "notifications"
     __table_args__ = {"schema": "public"}
@@ -154,4 +165,4 @@ class Notification(Base):
     # Дополнительные данные для уведомления (order_id, chat_id и т.д.)
     notification_data = Column(JSONB)
 
-    user = relationship("Profile", foreign_keys=[user_id]) 
+    user = relationship("Profile", foreign_keys=[user_id])

@@ -31,4 +31,4 @@ RUN npm run build
 EXPOSE 80
 
 # Запускаем Next.js на порту 80
-CMD ["npm", "start", "--", "--port", "80"] 
+CMD ["npm", "start", "--", "--port", "80"]

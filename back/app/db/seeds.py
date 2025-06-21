@@ -1,32 +1,31 @@
 import asyncio
+import os
 import uuid
 from decimal import Decimal
-import os
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy import text, select
-
-from app.db.models import Base, Category, Product, Profile, Order, OrderItem, CartItem, Favourite
-from app.auth import get_password_hash # Assuming get_password_hash is in app.auth
 
 # Load environment variables
 from dotenv import load_dotenv
-load_dotenv(os.path.join(os.path.dirname(__file__), '..', '..', '.env'))
+from sqlalchemy import select, text
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+
+from app.auth import get_password_hash  # Assuming get_password_hash is in app.auth
+from app.db.models import Base, Category, Order, OrderItem, Product, Profile
+
+load_dotenv(os.path.join(os.path.dirname(__file__), "..", "..", ".env"))
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 if not DATABASE_URL:
     raise ValueError("DATABASE_URL environment variable is not set.")
 
 engine = create_async_engine(DATABASE_URL, echo=True)
-AsyncSessionLocal = sessionmaker(
-    autocommit=False,
-    autoflush=False,
-    bind=engine,
+AsyncSessionLocal = async_sessionmaker(
+    engine,
     class_=AsyncSession,
     expire_on_commit=False,
 )
 
-async def recreate_tables():
+
+async def recreate_tables() -> None:
     async with engine.begin() as conn:
         # Drop tables in reverse dependency order or use CASCADE
         await conn.execute(text("DROP TABLE IF EXISTS public.order_items CASCADE;"))
@@ -36,11 +35,12 @@ async def recreate_tables():
         await conn.execute(text("DROP TABLE IF EXISTS public.products CASCADE;"))
         await conn.execute(text("DROP TABLE IF EXISTS public.categories CASCADE;"))
         await conn.execute(text("DROP TABLE IF EXISTS public.profiles CASCADE;"))
-        
+
         await conn.run_sync(Base.metadata.create_all)
     print("Tables recreated successfully.")
 
-async def seed_data():
+
+async def seed_data() -> None:
     async with AsyncSessionLocal() as session:
         print("Start seeding ...")
 
@@ -64,7 +64,7 @@ async def seed_data():
 
         # Create test users (profiles)
         admin_user_id = uuid.UUID("28ad2b7d-02d6-4f84-b1c3-1ee26e6b4b58")
-        hashed_admin_password = get_password_hash("adminpassword") # Use a strong password in production
+        hashed_admin_password = get_password_hash("adminpassword")  # Use a strong password in production
 
         user1 = Profile(
             id=admin_user_id,
@@ -104,9 +104,7 @@ async def seed_data():
         await session.refresh(category_seeds)
         await session.refresh(category_pots)
 
-        print(
-            f"Created categories: {category_shovels.name}, {category_seeds.name}, {category_pots.name}"
-        )
+        print(f"Created categories: {category_shovels.name}, {category_seeds.name}, {category_pots.name}")
 
         # Add real products
         real_products_data = [
@@ -224,19 +222,19 @@ async def seed_data():
         # Create random orders
         number_of_orders = 50
         statuses = ["pending", "processing", "shipped", "delivered", "cancelled"]
-        users = [user1] # Only admin user for now
+        users = [user1]  # Only admin user for now
 
         for i in range(number_of_orders):
             random_user = users[os.urandom(1)[0] % len(users)]
             order_items_data = []
             total_amount = Decimal("0.00")
-            number_of_order_items = (os.urandom(1)[0] % 3) + 1 # From 1 to 3 items per order
+            number_of_order_items = (os.urandom(1)[0] % 3) + 1  # From 1 to 3 items per order
 
-            for j in range(number_of_order_items):
+            for _j in range(number_of_order_items):
                 random_product = all_products[os.urandom(1)[0] % len(all_products)]
-                quantity = (os.urandom(1)[0] % 5) + 1 # From 1 to 5 units of each item
+                quantity = (os.urandom(1)[0] % 5) + 1  # From 1 to 5 units of each item
                 price_snapshot = random_product.price
-                
+
                 order_items_data.append(
                     OrderItem(
                         product_id=random_product.id,
@@ -247,7 +245,7 @@ async def seed_data():
                     )
                 )
                 total_amount += price_snapshot * quantity
-            
+
             # Use random data for address, etc.
             full_name = f"Test User {i}"
             email = f"testuser{i}@example.com"
@@ -255,7 +253,7 @@ async def seed_data():
             city = f"Test City {i}"
             postal_code = f"12345-{i}"
             phone = f"+123456789{i}"
-            
+
             order = Order(
                 user_id=random_user.id,
                 total_amount=total_amount,
@@ -275,8 +273,11 @@ async def seed_data():
     print("Seeding complete.")
     await engine.dispose()
 
+
 if __name__ == "__main__":
-    async def main_seed():
+
+    async def main_seed() -> None:
         await recreate_tables()
         await seed_data()
-    asyncio.run(main_seed()) 
+
+    asyncio.run(main_seed())

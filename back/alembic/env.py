@@ -1,9 +1,9 @@
 import asyncio
-from logging.config import fileConfig
 import os
 import sys
-from dotenv import load_dotenv
+from logging.config import fileConfig
 
+from dotenv import load_dotenv
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 from alembic import context
 
 # Добавляем путь к приложению в sys.path
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 from app.db.models import Base
 
@@ -20,23 +20,17 @@ from app.db.models import Base
 config = context.config
 
 # Загружаем переменные окружения из .env файла
-load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
+load_dotenv(os.path.join(os.path.dirname(__file__), "..", ".env"))
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# add your model's MetaData object here
-# for 'autogenerate' support
-# from myapp import mymodel
-# target_metadata = mymodel.Base.metadata
+# Add your model's MetaData object here for 'autogenerate' support
 target_metadata = Base.metadata
 
-# other values from the config, defined by the needs of env.py,
-# can be acquired:
-# my_important_option = config.get_main_option("my_important_option")
-# ... etc.
+# Other values from the config can be acquired here if needed.
 
 
 def run_migrations_offline() -> None:
@@ -80,7 +74,7 @@ async def run_async_migrations() -> None:
         config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
-        url=os.getenv("DATABASE_URL")
+        url=os.getenv("DATABASE_URL"),
     )
 
     async with connectable.connect() as connection:

@@ -27,4 +27,4 @@ chown -R app:app /app
 log "Переключение на пользователя app..."
 
 # Запускаем команду от пользователя app
-exec gosu app "$@" 
+exec gosu app "$@"

@@ -1,0 +1,47 @@
+repos:
+  # Хуки для фронтенда (Next.js/TypeScript)
+  - repo: local
+    hooks:
+      - id: frontend-lint
+        name: Frontend ESLint
+        entry: bash -c 'cd front && npm run lint'
+        language: system
+        files: ^front/.*\.(ts|tsx|js|jsx)$
+        pass_filenames: false
+
+      - id: frontend-type-check
+        name: Frontend TypeScript Check
+        entry: bash -c 'cd front && npm run type-check'
+        language: system
+        files: ^front/.*\.(ts|tsx)$
+        pass_filenames: false
+
+  # Хуки для бэкенда (Python/Ruff)
+  - repo: local
+    hooks:
+      - id: backend-ruff-check
+        name: Backend Ruff Lint
+        entry: bash -c 'cd back && poetry run ruff check .'
+        language: system
+        files: ^back/.*\.py$
+        pass_filenames: false
+
+      - id: backend-ruff-format
+        name: Backend Ruff Format
+        entry: bash -c 'cd back && poetry run ruff format .'
+        language: system
+        files: ^back/.*\.py$
+        pass_filenames: false
+
+  # Общие хуки
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: ^(front/.*\.md|back/.*\.md)$
+      - id: end-of-file-fixer
+        exclude: ^(front/.*\.md|back/.*\.md)$
+      - id: check-yaml
+      - id: check-json
+        exclude: ^front/.*\.json$ # Next.js может иметь специфичные JSON файлы
+      - id: check-merge-conflict

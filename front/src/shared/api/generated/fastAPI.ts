@@ -77,8 +77,8 @@ export const signupApiAuthSignupPost = (
     signUpSchema: SignUpSchema,
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
-      
-      
+
+
       return customInstance<CustomUser>(
       {url: `/api/auth/signup`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
@@ -86,7 +86,7 @@ export const signupApiAuthSignupPost = (
     },
       options);
     }
-  
+
 
 
 export const getSignupApiAuthSignupPostMutationOptions = <TError = HTTPValidationError,
@@ -100,7 +100,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {...options, mutation: {...options.mutation, mutationKey}}
       : {mutation: { mutationKey, }, request: undefined};
 
-      
+
 
 
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof signupApiAuthSignupPost>>, {data: SignUpSchema}> = (props) => {
@@ -109,7 +109,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
           return  signupApiAuthSignupPost(data,requestOptions)
         }
 
-        
+
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -134,7 +134,7 @@ export const useSignupApiAuthSignupPost = <TError = HTTPValidationError,
 
       return useMutation(mutationOptions , queryClient);
     }
-    
+
 /**
  * @summary Signin
  */
@@ -142,8 +142,8 @@ export const signinApiAuthSigninPost = (
     signInSchema: SignInSchema,
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
-      
-      
+
+
       return customInstance<Token>(
       {url: `/api/auth/signin`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
@@ -151,7 +151,7 @@ export const signinApiAuthSigninPost = (
     },
       options);
     }
-  
+
 
 
 export const getSigninApiAuthSigninPostMutationOptions = <TError = HTTPValidationError,
@@ -165,7 +165,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {...options, mutation: {...options.mutation, mutationKey}}
       : {mutation: { mutationKey, }, request: undefined};
 
-      
+
 
 
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof signinApiAuthSigninPost>>, {data: SignInSchema}> = (props) => {
@@ -174,7 +174,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
           return  signinApiAuthSigninPost(data,requestOptions)
         }
 
-        
+
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -199,22 +199,22 @@ export const useSigninApiAuthSigninPost = <TError = HTTPValidationError,
 
       return useMutation(mutationOptions , queryClient);
     }
-    
+
 /**
  * @summary Logout
  */
 export const logoutApiAuthLogoutPost = (
-    
+
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
-      
-      
+
+
       return customInstance<unknown>(
       {url: `/api/auth/logout`, method: 'POST', signal
     },
       options);
     }
-  
+
 
 
 export const getLogoutApiAuthLogoutPostMutationOptions = <TError = unknown,
@@ -228,22 +228,22 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {...options, mutation: {...options.mutation, mutationKey}}
       : {mutation: { mutationKey, }, request: undefined};
 
-      
+
 
 
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof logoutApiAuthLogoutPost>>, void> = () => {
-          
+
 
           return  logoutApiAuthLogoutPost(requestOptions)
         }
 
-        
+
 
 
   return  { mutationFn, ...mutationOptions }}
 
     export type LogoutApiAuthLogoutPostMutationResult = NonNullable<Awaited<ReturnType<typeof logoutApiAuthLogoutPost>>>
-    
+
     export type LogoutApiAuthLogoutPostMutationError = unknown
 
     /**
@@ -262,7 +262,7 @@ export const useLogoutApiAuthLogoutPost = <TError = unknown,
 
       return useMutation(mutationOptions , queryClient);
     }
-    
+
 /**
  * @summary Reset Password
  */
@@ -270,8 +270,8 @@ export const resetPasswordApiAuthResetPasswordPost = (
     resetPasswordSchema: ResetPasswordSchema,
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
-      
-      
+
+
       return customInstance<unknown>(
       {url: `/api/auth/reset-password`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
@@ -279,7 +279,7 @@ export const resetPasswordApiAuthResetPasswordPost = (
     },
       options);
     }
-  
+
 
 
 export const getResetPasswordApiAuthResetPasswordPostMutationOptions = <TError = HTTPValidationError,
@@ -293,7 +293,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {...options, mutation: {...options.mutation, mutationKey}}
       : {mutation: { mutationKey, }, request: undefined};
 
-      
+
 
 
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof resetPasswordApiAuthResetPasswordPost>>, {data: ResetPasswordSchema}> = (props) => {
@@ -302,7 +302,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
           return  resetPasswordApiAuthResetPasswordPost(data,requestOptions)
         }
 
-        
+
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -327,7 +327,7 @@ export const useResetPasswordApiAuthResetPasswordPost = <TError = HTTPValidation
 
       return useMutation(mutationOptions , queryClient);
     }
-    
+
 /**
  * @summary Update Password
  */
@@ -335,8 +335,8 @@ export const updatePasswordApiAuthUpdatePasswordPost = (
     updatePasswordSchema: UpdatePasswordSchema,
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
-      
-      
+
+
       return customInstance<unknown>(
       {url: `/api/auth/update-password`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
@@ -344,7 +344,7 @@ export const updatePasswordApiAuthUpdatePasswordPost = (
     },
       options);
     }
-  
+
 
 
 export const getUpdatePasswordApiAuthUpdatePasswordPostMutationOptions = <TError = HTTPValidationError,
@@ -358,7 +358,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {...options, mutation: {...options.mutation, mutationKey}}
       : {mutation: { mutationKey, }, request: undefined};
 
-      
+
 
 
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof updatePasswordApiAuthUpdatePasswordPost>>, {data: UpdatePasswordSchema}> = (props) => {
@@ -367,7 +367,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
           return  updatePasswordApiAuthUpdatePasswordPost(data,requestOptions)
         }
 
-        
+
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -392,29 +392,29 @@ export const useUpdatePasswordApiAuthUpdatePasswordPost = <TError = HTTPValidati
 
       return useMutation(mutationOptions , queryClient);
     }
-    
+
 /**
  * Получить информацию о текущем пользователе
  * @summary Get Current User Info
  */
 export const getCurrentUserInfoApiAuthMeGet = (
-    
+
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
-      
-      
+
+
       return customInstance<CustomUser>(
       {url: `/api/auth/me`, method: 'GET', signal
     },
       options);
     }
-  
+
 
 export const getGetCurrentUserInfoApiAuthMeGetQueryKey = () => {
     return [`/api/auth/me`] as const;
     }
 
-    
+
 export const getGetCurrentUserInfoApiAuthMeGetQueryOptions = <TData = Awaited<ReturnType<typeof getCurrentUserInfoApiAuthMeGet>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCurrentUserInfoApiAuthMeGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
@@ -422,13 +422,13 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetCurrentUserInfoApiAuthMeGetQueryKey();
 
-  
+
 
     const queryFn: QueryFunction<Awaited<ReturnType<typeof getCurrentUserInfoApiAuthMeGet>>> = ({ signal }) => getCurrentUserInfoApiAuthMeGet(requestOptions, signal);
 
-      
 
-      
+
+
 
    return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCurrentUserInfoApiAuthMeGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
@@ -467,7 +467,7 @@ export function useGetCurrentUserInfoApiAuthMeGet<TData = Awaited<ReturnType<typ
 
 export function useGetCurrentUserInfoApiAuthMeGet<TData = Awaited<ReturnType<typeof getCurrentUserInfoApiAuthMeGet>>, TError = unknown>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCurrentUserInfoApiAuthMeGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient 
+ , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getGetCurrentUserInfoApiAuthMeGetQueryOptions(options)
@@ -486,23 +486,23 @@ export function useGetCurrentUserInfoApiAuthMeGet<TData = Awaited<ReturnType<typ
  * @summary Get Admin Categories
  */
 export const getAdminCategoriesApiAdminCategoriesGet = (
-    
+
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
-      
-      
+
+
       return customInstance<CategoryInDB[]>(
       {url: `/api/admin/categories`, method: 'GET', signal
     },
       options);
     }
-  
+
 
 export const getGetAdminCategoriesApiAdminCategoriesGetQueryKey = () => {
     return [`/api/admin/categories`] as const;
     }
 
-    
+
 export const getGetAdminCategoriesApiAdminCategoriesGetQueryOptions = <TData = Awaited<ReturnType<typeof getAdminCategoriesApiAdminCategoriesGet>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminCategoriesApiAdminCategoriesGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
@@ -510,13 +510,13 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetAdminCategoriesApiAdminCategoriesGetQueryKey();
 
-  
+
 
     const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminCategoriesApiAdminCategoriesGet>>> = ({ signal }) => getAdminCategoriesApiAdminCategoriesGet(requestOptions, signal);
 
-      
 
-      
+
+
 
    return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminCategoriesApiAdminCategoriesGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
@@ -555,7 +555,7 @@ export function useGetAdminCategoriesApiAdminCategoriesGet<TData = Awaited<Retur
 
 export function useGetAdminCategoriesApiAdminCategoriesGet<TData = Awaited<ReturnType<typeof getAdminCategoriesApiAdminCategoriesGet>>, TError = unknown>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminCategoriesApiAdminCategoriesGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient 
+ , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getGetAdminCategoriesApiAdminCategoriesGetQueryOptions(options)
@@ -577,8 +577,8 @@ export const createAdminCategoryApiAdminCategoriesPost = (
     categoryCreate: CategoryCreate,
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
-      
-      
+
+
       return customInstance<CategoryInDB>(
       {url: `/api/admin/categories`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
@@ -586,7 +586,7 @@ export const createAdminCategoryApiAdminCategoriesPost = (
     },
       options);
     }
-  
+
 
 
 export const getCreateAdminCategoryApiAdminCategoriesPostMutationOptions = <TError = HTTPValidationError,
@@ -600,7 +600,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {...options, mutation: {...options.mutation, mutationKey}}
       : {mutation: { mutationKey, }, request: undefined};
 
-      
+
 
 
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAdminCategoryApiAdminCategoriesPost>>, {data: CategoryCreate}> = (props) => {
@@ -609,7 +609,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
           return  createAdminCategoryApiAdminCategoriesPost(data,requestOptions)
         }
 
-        
+
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -634,7 +634,7 @@ export const useCreateAdminCategoryApiAdminCategoriesPost = <TError = HTTPValida
 
       return useMutation(mutationOptions , queryClient);
     }
-    
+
 /**
  * @summary Update Admin Category
  */
@@ -642,8 +642,8 @@ export const updateAdminCategoryApiAdminCategoriesCategoryIdPatch = (
     categoryId: string,
     categoryUpdate: CategoryUpdate,
  options?: SecondParameter<typeof customInstance>,) => {
-      
-      
+
+
       return customInstance<CategoryInDB>(
       {url: `/api/admin/categories/${categoryId}`, method: 'PATCH',
       headers: {'Content-Type': 'application/json', },
@@ -651,7 +651,7 @@ export const updateAdminCategoryApiAdminCategoriesCategoryIdPatch = (
     },
       options);
     }
-  
+
 
 
 export const getUpdateAdminCategoryApiAdminCategoriesCategoryIdPatchMutationOptions = <TError = HTTPValidationError,
@@ -665,7 +665,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {...options, mutation: {...options.mutation, mutationKey}}
       : {mutation: { mutationKey, }, request: undefined};
 
-      
+
 
 
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateAdminCategoryApiAdminCategoriesCategoryIdPatch>>, {categoryId: string;data: CategoryUpdate}> = (props) => {
@@ -674,7 +674,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
           return  updateAdminCategoryApiAdminCategoriesCategoryIdPatch(categoryId,data,requestOptions)
         }
 
-        
+
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -699,21 +699,21 @@ export const useUpdateAdminCategoryApiAdminCategoriesCategoryIdPatch = <TError =
 
       return useMutation(mutationOptions , queryClient);
     }
-    
+
 /**
  * @summary Delete Admin Category
  */
 export const deleteAdminCategoryApiAdminCategoriesCategoryIdDelete = (
     categoryId: string,
  options?: SecondParameter<typeof customInstance>,) => {
-      
-      
+
+
       return customInstance<void>(
       {url: `/api/admin/categories/${categoryId}`, method: 'DELETE'
     },
       options);
     }
-  
+
 
 
 export const getDeleteAdminCategoryApiAdminCategoriesCategoryIdDeleteMutationOptions = <TError = HTTPValidationError,
@@ -727,7 +727,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {...options, mutation: {...options.mutation, mutationKey}}
       : {mutation: { mutationKey, }, request: undefined};
 
-      
+
 
 
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteAdminCategoryApiAdminCategoriesCategoryIdDelete>>, {categoryId: string}> = (props) => {
@@ -736,13 +736,13 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
           return  deleteAdminCategoryApiAdminCategoriesCategoryIdDelete(categoryId,requestOptions)
         }
 
-        
+
 
 
   return  { mutationFn, ...mutationOptions }}
 
     export type DeleteAdminCategoryApiAdminCategoriesCategoryIdDeleteMutationResult = NonNullable<Awaited<ReturnType<typeof deleteAdminCategoryApiAdminCategoriesCategoryIdDelete>>>
-    
+
     export type DeleteAdminCategoryApiAdminCategoriesCategoryIdDeleteMutationError = HTTPValidationError
 
     /**
@@ -761,7 +761,7 @@ export const useDeleteAdminCategoryApiAdminCategoriesCategoryIdDelete = <TError 
 
       return useMutation(mutationOptions , queryClient);
     }
-    
+
 /**
  * @summary Get Admin Category
  */
@@ -769,20 +769,20 @@ export const getAdminCategoryApiAdminCategoriesCategoryIdGet = (
     categoryId: string,
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
-      
-      
+
+
       return customInstance<CategoryInDB>(
       {url: `/api/admin/categories/${categoryId}`, method: 'GET', signal
     },
       options);
     }
-  
+
 
 export const getGetAdminCategoryApiAdminCategoriesCategoryIdGetQueryKey = (categoryId: string,) => {
     return [`/api/admin/categories/${categoryId}`] as const;
     }
 
-    
+
 export const getGetAdminCategoryApiAdminCategoriesCategoryIdGetQueryOptions = <TData = Awaited<ReturnType<typeof getAdminCategoryApiAdminCategoriesCategoryIdGet>>, TError = HTTPValidationError>(categoryId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminCategoryApiAdminCategoriesCategoryIdGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
@@ -790,13 +790,13 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetAdminCategoryApiAdminCategoriesCategoryIdGetQueryKey(categoryId);
 
-  
+
 
     const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminCategoryApiAdminCategoriesCategoryIdGet>>> = ({ signal }) => getAdminCategoryApiAdminCategoriesCategoryIdGet(categoryId, requestOptions, signal);
 
-      
 
-      
+
+
 
    return  { queryKey, queryFn, enabled: !!(categoryId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminCategoryApiAdminCategoriesCategoryIdGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
@@ -835,7 +835,7 @@ export function useGetAdminCategoryApiAdminCategoriesCategoryIdGet<TData = Await
 
 export function useGetAdminCategoryApiAdminCategoriesCategoryIdGet<TData = Awaited<ReturnType<typeof getAdminCategoryApiAdminCategoriesCategoryIdGet>>, TError = HTTPValidationError>(
  categoryId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminCategoryApiAdminCategoriesCategoryIdGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient 
+ , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getGetAdminCategoryApiAdminCategoriesCategoryIdGetQueryOptions(categoryId,options)
@@ -854,23 +854,23 @@ export function useGetAdminCategoryApiAdminCategoriesCategoryIdGet<TData = Await
  * @summary Get Admin Products
  */
 export const getAdminProductsApiAdminProductsGet = (
-    
+
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
-      
-      
+
+
       return customInstance<ProductInDB[]>(
       {url: `/api/admin/products`, method: 'GET', signal
     },
       options);
     }
-  
+
 
 export const getGetAdminProductsApiAdminProductsGetQueryKey = () => {
     return [`/api/admin/products`] as const;
     }
 
-    
+
 export const getGetAdminProductsApiAdminProductsGetQueryOptions = <TData = Awaited<ReturnType<typeof getAdminProductsApiAdminProductsGet>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminProductsApiAdminProductsGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
@@ -878,13 +878,13 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetAdminProductsApiAdminProductsGetQueryKey();
 
-  
+
 
     const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminProductsApiAdminProductsGet>>> = ({ signal }) => getAdminProductsApiAdminProductsGet(requestOptions, signal);
 
-      
 
-      
+
+
 
    return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminProductsApiAdminProductsGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
@@ -923,7 +923,7 @@ export function useGetAdminProductsApiAdminProductsGet<TData = Awaited<ReturnTyp
 
 export function useGetAdminProductsApiAdminProductsGet<TData = Awaited<ReturnType<typeof getAdminProductsApiAdminProductsGet>>, TError = unknown>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminProductsApiAdminProductsGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient 
+ , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getGetAdminProductsApiAdminProductsGetQueryOptions(options)
@@ -945,8 +945,8 @@ export const createAdminProductApiAdminProductsPost = (
     productCreate: ProductCreate,
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
-      
-      
+
+
       return customInstance<ProductInDB>(
       {url: `/api/admin/products`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
@@ -954,7 +954,7 @@ export const createAdminProductApiAdminProductsPost = (
     },
       options);
     }
-  
+
 
 
 export const getCreateAdminProductApiAdminProductsPostMutationOptions = <TError = HTTPValidationError,
@@ -968,7 +968,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {...options, mutation: {...options.mutation, mutationKey}}
       : {mutation: { mutationKey, }, request: undefined};
 
-      
+
 
 
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAdminProductApiAdminProductsPost>>, {data: ProductCreate}> = (props) => {
@@ -977,7 +977,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
           return  createAdminProductApiAdminProductsPost(data,requestOptions)
         }
 
-        
+
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -1002,7 +1002,7 @@ export const useCreateAdminProductApiAdminProductsPost = <TError = HTTPValidatio
 
       return useMutation(mutationOptions , queryClient);
     }
-    
+
 /**
  * @summary Get Admin Product
  */
@@ -1010,20 +1010,20 @@ export const getAdminProductApiAdminProductsProductIdGet = (
     productId: string,
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
-      
-      
+
+
       return customInstance<ProductInDB>(
       {url: `/api/admin/products/${productId}`, method: 'GET', signal
     },
       options);
     }
-  
+
 
 export const getGetAdminProductApiAdminProductsProductIdGetQueryKey = (productId: string,) => {
     return [`/api/admin/products/${productId}`] as const;
     }
 
-    
+
 export const getGetAdminProductApiAdminProductsProductIdGetQueryOptions = <TData = Awaited<ReturnType<typeof getAdminProductApiAdminProductsProductIdGet>>, TError = HTTPValidationError>(productId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminProductApiAdminProductsProductIdGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
@@ -1031,13 +1031,13 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetAdminProductApiAdminProductsProductIdGetQueryKey(productId);
 
-  
+
 
     const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminProductApiAdminProductsProductIdGet>>> = ({ signal }) => getAdminProductApiAdminProductsProductIdGet(productId, requestOptions, signal);
 
-      
 
-      
+
+
 
    return  { queryKey, queryFn, enabled: !!(productId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminProductApiAdminProductsProductIdGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
@@ -1076,7 +1076,7 @@ export function useGetAdminProductApiAdminProductsProductIdGet<TData = Awaited<R
 
 export function useGetAdminProductApiAdminProductsProductIdGet<TData = Awaited<ReturnType<typeof getAdminProductApiAdminProductsProductIdGet>>, TError = HTTPValidationError>(
  productId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminProductApiAdminProductsProductIdGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient 
+ , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getGetAdminProductApiAdminProductsProductIdGetQueryOptions(productId,options)
@@ -1097,14 +1097,14 @@ export function useGetAdminProductApiAdminProductsProductIdGet<TData = Awaited<R
 export const deleteAdminProductApiAdminProductsProductIdDelete = (
     productId: string,
  options?: SecondParameter<typeof customInstance>,) => {
-      
-      
+
+
       return customInstance<void>(
       {url: `/api/admin/products/${productId}`, method: 'DELETE'
     },
       options);
     }
-  
+
 
 
 export const getDeleteAdminProductApiAdminProductsProductIdDeleteMutationOptions = <TError = HTTPValidationError,
@@ -1118,7 +1118,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {...options, mutation: {...options.mutation, mutationKey}}
       : {mutation: { mutationKey, }, request: undefined};
 
-      
+
 
 
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteAdminProductApiAdminProductsProductIdDelete>>, {productId: string}> = (props) => {
@@ -1127,13 +1127,13 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
           return  deleteAdminProductApiAdminProductsProductIdDelete(productId,requestOptions)
         }
 
-        
+
 
 
   return  { mutationFn, ...mutationOptions }}
 
     export type DeleteAdminProductApiAdminProductsProductIdDeleteMutationResult = NonNullable<Awaited<ReturnType<typeof deleteAdminProductApiAdminProductsProductIdDelete>>>
-    
+
     export type DeleteAdminProductApiAdminProductsProductIdDeleteMutationError = HTTPValidationError
 
     /**
@@ -1152,7 +1152,7 @@ export const useDeleteAdminProductApiAdminProductsProductIdDelete = <TError = HT
 
       return useMutation(mutationOptions , queryClient);
     }
-    
+
 /**
  * @summary Update Admin Product
  */
@@ -1160,8 +1160,8 @@ export const updateAdminProductApiAdminProductsProductIdPatch = (
     productId: string,
     productUpdate: ProductUpdate,
  options?: SecondParameter<typeof customInstance>,) => {
-      
-      
+
+
       return customInstance<ProductInDB>(
       {url: `/api/admin/products/${productId}`, method: 'PATCH',
       headers: {'Content-Type': 'application/json', },
@@ -1169,7 +1169,7 @@ export const updateAdminProductApiAdminProductsProductIdPatch = (
     },
       options);
     }
-  
+
 
 
 export const getUpdateAdminProductApiAdminProductsProductIdPatchMutationOptions = <TError = HTTPValidationError,
@@ -1183,7 +1183,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {...options, mutation: {...options.mutation, mutationKey}}
       : {mutation: { mutationKey, }, request: undefined};
 
-      
+
 
 
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateAdminProductApiAdminProductsProductIdPatch>>, {productId: string;data: ProductUpdate}> = (props) => {
@@ -1192,7 +1192,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
           return  updateAdminProductApiAdminProductsProductIdPatch(productId,data,requestOptions)
         }
 
-        
+
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -1217,7 +1217,7 @@ export const useUpdateAdminProductApiAdminProductsProductIdPatch = <TError = HTT
 
       return useMutation(mutationOptions , queryClient);
     }
-    
+
 /**
  * Обновить количество оффлайн покупок и заказов продукта
  * @summary Update Product Offline Purchases
@@ -1226,8 +1226,8 @@ export const updateProductOfflinePurchasesApiAdminProductsProductIdOfflinePatch 
     productId: string,
     productOfflineUpdate: ProductOfflineUpdate,
  options?: SecondParameter<typeof customInstance>,) => {
-      
-      
+
+
       return customInstance<ProductInDB>(
       {url: `/api/admin/products/${productId}/offline`, method: 'PATCH',
       headers: {'Content-Type': 'application/json', },
@@ -1235,7 +1235,7 @@ export const updateProductOfflinePurchasesApiAdminProductsProductIdOfflinePatch 
     },
       options);
     }
-  
+
 
 
 export const getUpdateProductOfflinePurchasesApiAdminProductsProductIdOfflinePatchMutationOptions = <TError = HTTPValidationError,
@@ -1249,7 +1249,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {...options, mutation: {...options.mutation, mutationKey}}
       : {mutation: { mutationKey, }, request: undefined};
 
-      
+
 
 
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateProductOfflinePurchasesApiAdminProductsProductIdOfflinePatch>>, {productId: string;data: ProductOfflineUpdate}> = (props) => {
@@ -1258,7 +1258,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
           return  updateProductOfflinePurchasesApiAdminProductsProductIdOfflinePatch(productId,data,requestOptions)
         }
 
-        
+
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -1283,28 +1283,28 @@ export const useUpdateProductOfflinePurchasesApiAdminProductsProductIdOfflinePat
 
       return useMutation(mutationOptions , queryClient);
     }
-    
+
 /**
  * @summary Get Admin Orders
  */
 export const getAdminOrdersApiAdminOrdersGet = (
-    
+
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
-      
-      
+
+
       return customInstance<OrderInDB[]>(
       {url: `/api/admin/orders`, method: 'GET', signal
     },
       options);
     }
-  
+
 
 export const getGetAdminOrdersApiAdminOrdersGetQueryKey = () => {
     return [`/api/admin/orders`] as const;
     }
 
-    
+
 export const getGetAdminOrdersApiAdminOrdersGetQueryOptions = <TData = Awaited<ReturnType<typeof getAdminOrdersApiAdminOrdersGet>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminOrdersApiAdminOrdersGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
@@ -1312,13 +1312,13 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetAdminOrdersApiAdminOrdersGetQueryKey();
 
-  
+
 
     const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminOrdersApiAdminOrdersGet>>> = ({ signal }) => getAdminOrdersApiAdminOrdersGet(requestOptions, signal);
 
-      
 
-      
+
+
 
    return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminOrdersApiAdminOrdersGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
@@ -1357,7 +1357,7 @@ export function useGetAdminOrdersApiAdminOrdersGet<TData = Awaited<ReturnType<ty
 
 export function useGetAdminOrdersApiAdminOrdersGet<TData = Awaited<ReturnType<typeof getAdminOrdersApiAdminOrdersGet>>, TError = unknown>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminOrdersApiAdminOrdersGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient 
+ , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getGetAdminOrdersApiAdminOrdersGetQueryOptions(options)
@@ -1379,8 +1379,8 @@ export const updateAdminOrderStatusApiAdminOrdersOrderIdPatch = (
     orderId: string,
     orderUpdateStatus: OrderUpdateStatus,
  options?: SecondParameter<typeof customInstance>,) => {
-      
-      
+
+
       return customInstance<OrderInDB>(
       {url: `/api/admin/orders/${orderId}`, method: 'PATCH',
       headers: {'Content-Type': 'application/json', },
@@ -1388,7 +1388,7 @@ export const updateAdminOrderStatusApiAdminOrdersOrderIdPatch = (
     },
       options);
     }
-  
+
 
 
 export const getUpdateAdminOrderStatusApiAdminOrdersOrderIdPatchMutationOptions = <TError = HTTPValidationError,
@@ -1402,7 +1402,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {...options, mutation: {...options.mutation, mutationKey}}
       : {mutation: { mutationKey, }, request: undefined};
 
-      
+
 
 
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateAdminOrderStatusApiAdminOrdersOrderIdPatch>>, {orderId: string;data: OrderUpdateStatus}> = (props) => {
@@ -1411,7 +1411,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
           return  updateAdminOrderStatusApiAdminOrdersOrderIdPatch(orderId,data,requestOptions)
         }
 
-        
+
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -1436,7 +1436,7 @@ export const useUpdateAdminOrderStatusApiAdminOrdersOrderIdPatch = <TError = HTT
 
       return useMutation(mutationOptions , queryClient);
     }
-    
+
 /**
  * Удалить заказ (только для админа)
  * @summary Delete Admin Order
@@ -1444,14 +1444,14 @@ export const useUpdateAdminOrderStatusApiAdminOrdersOrderIdPatch = <TError = HTT
 export const deleteAdminOrderApiAdminOrdersOrderIdDelete = (
     orderId: string,
  options?: SecondParameter<typeof customInstance>,) => {
-      
-      
+
+
       return customInstance<void>(
       {url: `/api/admin/orders/${orderId}`, method: 'DELETE'
     },
       options);
     }
-  
+
 
 
 export const getDeleteAdminOrderApiAdminOrdersOrderIdDeleteMutationOptions = <TError = HTTPValidationError,
@@ -1465,7 +1465,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {...options, mutation: {...options.mutation, mutationKey}}
       : {mutation: { mutationKey, }, request: undefined};
 
-      
+
 
 
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteAdminOrderApiAdminOrdersOrderIdDelete>>, {orderId: string}> = (props) => {
@@ -1474,13 +1474,13 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
           return  deleteAdminOrderApiAdminOrdersOrderIdDelete(orderId,requestOptions)
         }
 
-        
+
 
 
   return  { mutationFn, ...mutationOptions }}
 
     export type DeleteAdminOrderApiAdminOrdersOrderIdDeleteMutationResult = NonNullable<Awaited<ReturnType<typeof deleteAdminOrderApiAdminOrdersOrderIdDelete>>>
-    
+
     export type DeleteAdminOrderApiAdminOrdersOrderIdDeleteMutationError = HTTPValidationError
 
     /**
@@ -1499,7 +1499,7 @@ export const useDeleteAdminOrderApiAdminOrdersOrderIdDelete = <TError = HTTPVali
 
       return useMutation(mutationOptions , queryClient);
     }
-    
+
 /**
  * Редактировать состав заказа (только для админа)
  * @summary Edit Admin Order
@@ -1508,8 +1508,8 @@ export const editAdminOrderApiAdminOrdersOrderIdEditPatch = (
     orderId: string,
     orderEdit: OrderEdit,
  options?: SecondParameter<typeof customInstance>,) => {
-      
-      
+
+
       return customInstance<OrderInDB>(
       {url: `/api/admin/orders/${orderId}/edit`, method: 'PATCH',
       headers: {'Content-Type': 'application/json', },
@@ -1517,7 +1517,7 @@ export const editAdminOrderApiAdminOrdersOrderIdEditPatch = (
     },
       options);
     }
-  
+
 
 
 export const getEditAdminOrderApiAdminOrdersOrderIdEditPatchMutationOptions = <TError = HTTPValidationError,
@@ -1531,7 +1531,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {...options, mutation: {...options.mutation, mutationKey}}
       : {mutation: { mutationKey, }, request: undefined};
 
-      
+
 
 
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof editAdminOrderApiAdminOrdersOrderIdEditPatch>>, {orderId: string;data: OrderEdit}> = (props) => {
@@ -1540,7 +1540,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
           return  editAdminOrderApiAdminOrdersOrderIdEditPatch(orderId,data,requestOptions)
         }
 
-        
+
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -1565,29 +1565,29 @@ export const useEditAdminOrderApiAdminOrdersOrderIdEditPatch = <TError = HTTPVal
 
       return useMutation(mutationOptions , queryClient);
     }
-    
+
 /**
  * Получить список всех пользователей (только для админа)
  * @summary Get Admin Users
  */
 export const getAdminUsersApiAdminUsersGet = (
-    
+
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
-      
-      
+
+
       return customInstance<UserInDB[]>(
       {url: `/api/admin/users`, method: 'GET', signal
     },
       options);
     }
-  
+
 
 export const getGetAdminUsersApiAdminUsersGetQueryKey = () => {
     return [`/api/admin/users`] as const;
     }
 
-    
+
 export const getGetAdminUsersApiAdminUsersGetQueryOptions = <TData = Awaited<ReturnType<typeof getAdminUsersApiAdminUsersGet>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminUsersApiAdminUsersGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
@@ -1595,13 +1595,13 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetAdminUsersApiAdminUsersGetQueryKey();
 
-  
+
 
     const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminUsersApiAdminUsersGet>>> = ({ signal }) => getAdminUsersApiAdminUsersGet(requestOptions, signal);
 
-      
 
-      
+
+
 
    return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminUsersApiAdminUsersGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
@@ -1640,7 +1640,7 @@ export function useGetAdminUsersApiAdminUsersGet<TData = Awaited<ReturnType<type
 
 export function useGetAdminUsersApiAdminUsersGet<TData = Awaited<ReturnType<typeof getAdminUsersApiAdminUsersGet>>, TError = unknown>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminUsersApiAdminUsersGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient 
+ , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getGetAdminUsersApiAdminUsersGetQueryOptions(options)
@@ -1663,8 +1663,8 @@ export const createAdminUserApiAdminUsersPost = (
     userCreate: UserCreate,
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
-      
-      
+
+
       return customInstance<UserInDB>(
       {url: `/api/admin/users`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
@@ -1672,7 +1672,7 @@ export const createAdminUserApiAdminUsersPost = (
     },
       options);
     }
-  
+
 
 
 export const getCreateAdminUserApiAdminUsersPostMutationOptions = <TError = HTTPValidationError,
@@ -1686,7 +1686,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {...options, mutation: {...options.mutation, mutationKey}}
       : {mutation: { mutationKey, }, request: undefined};
 
-      
+
 
 
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAdminUserApiAdminUsersPost>>, {data: UserCreate}> = (props) => {
@@ -1695,7 +1695,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
           return  createAdminUserApiAdminUsersPost(data,requestOptions)
         }
 
-        
+
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -1720,7 +1720,7 @@ export const useCreateAdminUserApiAdminUsersPost = <TError = HTTPValidationError
 
       return useMutation(mutationOptions , queryClient);
     }
-    
+
 /**
  * Получить информацию о пользователе (только для админа)
  * @summary Get Admin User
@@ -1729,20 +1729,20 @@ export const getAdminUserApiAdminUsersUserIdGet = (
     userId: string,
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
-      
-      
+
+
       return customInstance<UserInDB>(
       {url: `/api/admin/users/${userId}`, method: 'GET', signal
     },
       options);
     }
-  
+
 
 export const getGetAdminUserApiAdminUsersUserIdGetQueryKey = (userId: string,) => {
     return [`/api/admin/users/${userId}`] as const;
     }
 
-    
+
 export const getGetAdminUserApiAdminUsersUserIdGetQueryOptions = <TData = Awaited<ReturnType<typeof getAdminUserApiAdminUsersUserIdGet>>, TError = HTTPValidationError>(userId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminUserApiAdminUsersUserIdGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
@@ -1750,13 +1750,13 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetAdminUserApiAdminUsersUserIdGetQueryKey(userId);
 
-  
+
 
     const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminUserApiAdminUsersUserIdGet>>> = ({ signal }) => getAdminUserApiAdminUsersUserIdGet(userId, requestOptions, signal);
 
-      
 
-      
+
+
 
    return  { queryKey, queryFn, enabled: !!(userId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminUserApiAdminUsersUserIdGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
@@ -1795,7 +1795,7 @@ export function useGetAdminUserApiAdminUsersUserIdGet<TData = Awaited<ReturnType
 
 export function useGetAdminUserApiAdminUsersUserIdGet<TData = Awaited<ReturnType<typeof getAdminUserApiAdminUsersUserIdGet>>, TError = HTTPValidationError>(
  userId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAdminUserApiAdminUsersUserIdGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient 
+ , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getGetAdminUserApiAdminUsersUserIdGetQueryOptions(userId,options)
@@ -1818,8 +1818,8 @@ export const updateAdminUserApiAdminUsersUserIdPatch = (
     userId: string,
     userUpdate: UserUpdate,
  options?: SecondParameter<typeof customInstance>,) => {
-      
-      
+
+
       return customInstance<UserInDB>(
       {url: `/api/admin/users/${userId}`, method: 'PATCH',
       headers: {'Content-Type': 'application/json', },
@@ -1827,7 +1827,7 @@ export const updateAdminUserApiAdminUsersUserIdPatch = (
     },
       options);
     }
-  
+
 
 
 export const getUpdateAdminUserApiAdminUsersUserIdPatchMutationOptions = <TError = HTTPValidationError,
@@ -1841,7 +1841,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {...options, mutation: {...options.mutation, mutationKey}}
       : {mutation: { mutationKey, }, request: undefined};
 
-      
+
 
 
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateAdminUserApiAdminUsersUserIdPatch>>, {userId: string;data: UserUpdate}> = (props) => {
@@ -1850,7 +1850,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
           return  updateAdminUserApiAdminUsersUserIdPatch(userId,data,requestOptions)
         }
 
-        
+
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -1875,7 +1875,7 @@ export const useUpdateAdminUserApiAdminUsersUserIdPatch = <TError = HTTPValidati
 
       return useMutation(mutationOptions , queryClient);
     }
-    
+
 /**
  * Удалить пользователя (только для админа)
  * @summary Delete Admin User
@@ -1883,14 +1883,14 @@ export const useUpdateAdminUserApiAdminUsersUserIdPatch = <TError = HTTPValidati
 export const deleteAdminUserApiAdminUsersUserIdDelete = (
     userId: string,
  options?: SecondParameter<typeof customInstance>,) => {
-      
-      
+
+
       return customInstance<void>(
       {url: `/api/admin/users/${userId}`, method: 'DELETE'
     },
       options);
     }
-  
+
 
 
 export const getDeleteAdminUserApiAdminUsersUserIdDeleteMutationOptions = <TError = HTTPValidationError,
@@ -1904,7 +1904,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {...options, mutation: {...options.mutation, mutationKey}}
       : {mutation: { mutationKey, }, request: undefined};
 
-      
+
 
 
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteAdminUserApiAdminUsersUserIdDelete>>, {userId: string}> = (props) => {
@@ -1913,13 +1913,13 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
           return  deleteAdminUserApiAdminUsersUserIdDelete(userId,requestOptions)
         }
 
-        
+
 
 
   return  { mutationFn, ...mutationOptions }}
 
     export type DeleteAdminUserApiAdminUsersUserIdDeleteMutationResult = NonNullable<Awaited<ReturnType<typeof deleteAdminUserApiAdminUsersUserIdDelete>>>
-    
+
     export type DeleteAdminUserApiAdminUsersUserIdDeleteMutationError = HTTPValidationError
 
     /**
@@ -1938,29 +1938,29 @@ export const useDeleteAdminUserApiAdminUsersUserIdDelete = <TError = HTTPValidat
 
       return useMutation(mutationOptions , queryClient);
     }
-    
+
 /**
  * Получить корзину текущего пользователя
  * @summary Get Cart
  */
 export const getCartApiCartGet = (
-    
+
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
-      
-      
+
+
       return customInstance<CartItemWithProduct[]>(
       {url: `/api/cart`, method: 'GET', signal
     },
       options);
     }
-  
+
 
 export const getGetCartApiCartGetQueryKey = () => {
     return [`/api/cart`] as const;
     }
 
-    
+
 export const getGetCartApiCartGetQueryOptions = <TData = Awaited<ReturnType<typeof getCartApiCartGet>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCartApiCartGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
@@ -1968,13 +1968,13 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetCartApiCartGetQueryKey();
 
-  
+
 
     const queryFn: QueryFunction<Awaited<ReturnType<typeof getCartApiCartGet>>> = ({ signal }) => getCartApiCartGet(requestOptions, signal);
 
-      
 
-      
+
+
 
    return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCartApiCartGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
@@ -2013,7 +2013,7 @@ export function useGetCartApiCartGet<TData = Awaited<ReturnType<typeof getCartAp
 
 export function useGetCartApiCartGet<TData = Awaited<ReturnType<typeof getCartApiCartGet>>, TError = unknown>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCartApiCartGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient 
+ , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getGetCartApiCartGetQueryOptions(options)
@@ -2033,16 +2033,16 @@ export function useGetCartApiCartGet<TData = Awaited<ReturnType<typeof getCartAp
  * @summary Clear Cart
  */
 export const clearCartApiCartDelete = (
-    
+
  options?: SecondParameter<typeof customInstance>,) => {
-      
-      
+
+
       return customInstance<void>(
       {url: `/api/cart`, method: 'DELETE'
     },
       options);
     }
-  
+
 
 
 export const getClearCartApiCartDeleteMutationOptions = <TError = unknown,
@@ -2056,22 +2056,22 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {...options, mutation: {...options.mutation, mutationKey}}
       : {mutation: { mutationKey, }, request: undefined};
 
-      
+
 
 
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof clearCartApiCartDelete>>, void> = () => {
-          
+
 
           return  clearCartApiCartDelete(requestOptions)
         }
 
-        
+
 
 
   return  { mutationFn, ...mutationOptions }}
 
     export type ClearCartApiCartDeleteMutationResult = NonNullable<Awaited<ReturnType<typeof clearCartApiCartDelete>>>
-    
+
     export type ClearCartApiCartDeleteMutationError = unknown
 
     /**
@@ -2090,7 +2090,7 @@ export const useClearCartApiCartDelete = <TError = unknown,
 
       return useMutation(mutationOptions , queryClient);
     }
-    
+
 /**
  * Добавить товар в корзину
  * @summary Add To Cart
@@ -2099,8 +2099,8 @@ export const addToCartApiCartAddPost = (
     cartItemAdd: CartItemAdd,
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
-      
-      
+
+
       return customInstance<CartItemInDB>(
       {url: `/api/cart/add`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
@@ -2108,7 +2108,7 @@ export const addToCartApiCartAddPost = (
     },
       options);
     }
-  
+
 
 
 export const getAddToCartApiCartAddPostMutationOptions = <TError = HTTPValidationError,
@@ -2122,7 +2122,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {...options, mutation: {...options.mutation, mutationKey}}
       : {mutation: { mutationKey, }, request: undefined};
 
-      
+
 
 
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof addToCartApiCartAddPost>>, {data: CartItemAdd}> = (props) => {
@@ -2131,7 +2131,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
           return  addToCartApiCartAddPost(data,requestOptions)
         }
 
-        
+
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -2156,7 +2156,7 @@ export const useAddToCartApiCartAddPost = <TError = HTTPValidationError,
 
       return useMutation(mutationOptions , queryClient);
     }
-    
+
 /**
  * Изменить количество товара в корзине
  * @summary Update Cart Item
@@ -2165,8 +2165,8 @@ export const updateCartItemApiCartItemIdPatch = (
     itemId: string,
     cartItemUpdate: CartItemUpdate,
  options?: SecondParameter<typeof customInstance>,) => {
-      
-      
+
+
       return customInstance<CartItemInDB>(
       {url: `/api/cart/${itemId}`, method: 'PATCH',
       headers: {'Content-Type': 'application/json', },
@@ -2174,7 +2174,7 @@ export const updateCartItemApiCartItemIdPatch = (
     },
       options);
     }
-  
+
 
 
 export const getUpdateCartItemApiCartItemIdPatchMutationOptions = <TError = HTTPValidationError,
@@ -2188,7 +2188,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {...options, mutation: {...options.mutation, mutationKey}}
       : {mutation: { mutationKey, }, request: undefined};
 
-      
+
 
 
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateCartItemApiCartItemIdPatch>>, {itemId: string;data: CartItemUpdate}> = (props) => {
@@ -2197,7 +2197,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
           return  updateCartItemApiCartItemIdPatch(itemId,data,requestOptions)
         }
 
-        
+
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -2222,7 +2222,7 @@ export const useUpdateCartItemApiCartItemIdPatch = <TError = HTTPValidationError
 
       return useMutation(mutationOptions , queryClient);
     }
-    
+
 /**
  * Удалить товар из корзины
  * @summary Remove From Cart
@@ -2230,14 +2230,14 @@ export const useUpdateCartItemApiCartItemIdPatch = <TError = HTTPValidationError
 export const removeFromCartApiCartItemIdDelete = (
     itemId: string,
  options?: SecondParameter<typeof customInstance>,) => {
-      
-      
+
+
       return customInstance<void>(
       {url: `/api/cart/${itemId}`, method: 'DELETE'
     },
       options);
     }
-  
+
 
 
 export const getRemoveFromCartApiCartItemIdDeleteMutationOptions = <TError = HTTPValidationError,
@@ -2251,7 +2251,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {...options, mutation: {...options.mutation, mutationKey}}
       : {mutation: { mutationKey, }, request: undefined};
 
-      
+
 
 
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof removeFromCartApiCartItemIdDelete>>, {itemId: string}> = (props) => {
@@ -2260,13 +2260,13 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
           return  removeFromCartApiCartItemIdDelete(itemId,requestOptions)
         }
 
-        
+
 
 
   return  { mutationFn, ...mutationOptions }}
 
     export type RemoveFromCartApiCartItemIdDeleteMutationResult = NonNullable<Awaited<ReturnType<typeof removeFromCartApiCartItemIdDelete>>>
-    
+
     export type RemoveFromCartApiCartItemIdDeleteMutationError = HTTPValidationError
 
     /**
@@ -2285,7 +2285,7 @@ export const useRemoveFromCartApiCartItemIdDelete = <TError = HTTPValidationErro
 
       return useMutation(mutationOptions , queryClient);
     }
-    
+
 /**
  * @summary Merge Cart
  */
@@ -2293,8 +2293,8 @@ export const mergeCartApiCartMergePost = (
     cartMergeRequest: CartMergeRequest,
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
-      
-      
+
+
       return customInstance<CartItemInDB[]>(
       {url: `/api/cart/merge`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
@@ -2302,7 +2302,7 @@ export const mergeCartApiCartMergePost = (
     },
       options);
     }
-  
+
 
 
 export const getMergeCartApiCartMergePostMutationOptions = <TError = HTTPValidationError,
@@ -2316,7 +2316,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {...options, mutation: {...options.mutation, mutationKey}}
       : {mutation: { mutationKey, }, request: undefined};
 
-      
+
 
 
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof mergeCartApiCartMergePost>>, {data: CartMergeRequest}> = (props) => {
@@ -2325,7 +2325,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
           return  mergeCartApiCartMergePost(data,requestOptions)
         }
 
-        
+
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -2350,7 +2350,7 @@ export const useMergeCartApiCartMergePost = <TError = HTTPValidationError,
 
       return useMutation(mutationOptions , queryClient);
     }
-    
+
 /**
  * @summary Get Categories
  */
@@ -2358,21 +2358,21 @@ export const getCategoriesApiCategoriesGet = (
     params?: GetCategoriesApiCategoriesGetParams,
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
-      
-      
+
+
       return customInstance<CategoryInDB[]>(
       {url: `/api/categories`, method: 'GET',
         params, signal
     },
       options);
     }
-  
+
 
 export const getGetCategoriesApiCategoriesGetQueryKey = (params?: GetCategoriesApiCategoriesGetParams,) => {
     return [`/api/categories`, ...(params ? [params]: [])] as const;
     }
 
-    
+
 export const getGetCategoriesApiCategoriesGetQueryOptions = <TData = Awaited<ReturnType<typeof getCategoriesApiCategoriesGet>>, TError = HTTPValidationError>(params?: GetCategoriesApiCategoriesGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCategoriesApiCategoriesGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
@@ -2380,13 +2380,13 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetCategoriesApiCategoriesGetQueryKey(params);
 
-  
+
 
     const queryFn: QueryFunction<Awaited<ReturnType<typeof getCategoriesApiCategoriesGet>>> = ({ signal }) => getCategoriesApiCategoriesGet(params, requestOptions, signal);
 
-      
 
-      
+
+
 
    return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCategoriesApiCategoriesGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
@@ -2425,7 +2425,7 @@ export function useGetCategoriesApiCategoriesGet<TData = Awaited<ReturnType<type
 
 export function useGetCategoriesApiCategoriesGet<TData = Awaited<ReturnType<typeof getCategoriesApiCategoriesGet>>, TError = HTTPValidationError>(
  params?: GetCategoriesApiCategoriesGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCategoriesApiCategoriesGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient 
+ , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getGetCategoriesApiCategoriesGetQueryOptions(params,options)
@@ -2447,21 +2447,21 @@ export const getBestsellersApiProductsBestsellersGet = (
     params?: GetBestsellersApiProductsBestsellersGetParams,
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
-      
-      
+
+
       return customInstance<ProductInDB[]>(
       {url: `/api/products/bestsellers`, method: 'GET',
         params, signal
     },
       options);
     }
-  
+
 
 export const getGetBestsellersApiProductsBestsellersGetQueryKey = (params?: GetBestsellersApiProductsBestsellersGetParams,) => {
     return [`/api/products/bestsellers`, ...(params ? [params]: [])] as const;
     }
 
-    
+
 export const getGetBestsellersApiProductsBestsellersGetQueryOptions = <TData = Awaited<ReturnType<typeof getBestsellersApiProductsBestsellersGet>>, TError = HTTPValidationError>(params?: GetBestsellersApiProductsBestsellersGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBestsellersApiProductsBestsellersGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
@@ -2469,13 +2469,13 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetBestsellersApiProductsBestsellersGetQueryKey(params);
 
-  
+
 
     const queryFn: QueryFunction<Awaited<ReturnType<typeof getBestsellersApiProductsBestsellersGet>>> = ({ signal }) => getBestsellersApiProductsBestsellersGet(params, requestOptions, signal);
 
-      
 
-      
+
+
 
    return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getBestsellersApiProductsBestsellersGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
@@ -2514,7 +2514,7 @@ export function useGetBestsellersApiProductsBestsellersGet<TData = Awaited<Retur
 
 export function useGetBestsellersApiProductsBestsellersGet<TData = Awaited<ReturnType<typeof getBestsellersApiProductsBestsellersGet>>, TError = HTTPValidationError>(
  params?: GetBestsellersApiProductsBestsellersGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBestsellersApiProductsBestsellersGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient 
+ , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getGetBestsellersApiProductsBestsellersGetQueryOptions(params,options)
@@ -2536,20 +2536,20 @@ export const getProductBySlugApiProductsSlugProductSlugGet = (
     productSlug: string,
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
-      
-      
+
+
       return customInstance<ProductInDB>(
       {url: `/api/products/slug/${productSlug}`, method: 'GET', signal
     },
       options);
     }
-  
+
 
 export const getGetProductBySlugApiProductsSlugProductSlugGetQueryKey = (productSlug: string,) => {
     return [`/api/products/slug/${productSlug}`] as const;
     }
 
-    
+
 export const getGetProductBySlugApiProductsSlugProductSlugGetQueryOptions = <TData = Awaited<ReturnType<typeof getProductBySlugApiProductsSlugProductSlugGet>>, TError = HTTPValidationError>(productSlug: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductBySlugApiProductsSlugProductSlugGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
@@ -2557,13 +2557,13 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetProductBySlugApiProductsSlugProductSlugGetQueryKey(productSlug);
 
-  
+
 
     const queryFn: QueryFunction<Awaited<ReturnType<typeof getProductBySlugApiProductsSlugProductSlugGet>>> = ({ signal }) => getProductBySlugApiProductsSlugProductSlugGet(productSlug, requestOptions, signal);
 
-      
 
-      
+
+
 
    return  { queryKey, queryFn, enabled: !!(productSlug), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getProductBySlugApiProductsSlugProductSlugGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
@@ -2602,7 +2602,7 @@ export function useGetProductBySlugApiProductsSlugProductSlugGet<TData = Awaited
 
 export function useGetProductBySlugApiProductsSlugProductSlugGet<TData = Awaited<ReturnType<typeof getProductBySlugApiProductsSlugProductSlugGet>>, TError = HTTPValidationError>(
  productSlug: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductBySlugApiProductsSlugProductSlugGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient 
+ , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getGetProductBySlugApiProductsSlugProductSlugGetQueryOptions(productSlug,options)
@@ -2625,22 +2625,22 @@ export const getProductsByCategorySlugApiProductsCategoryCategorySlugGet = (
     params?: GetProductsByCategorySlugApiProductsCategoryCategorySlugGetParams,
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
-      
-      
+
+
       return customInstance<ProductInDB[]>(
       {url: `/api/products/category/${categorySlug}`, method: 'GET',
         params, signal
     },
       options);
     }
-  
+
 
 export const getGetProductsByCategorySlugApiProductsCategoryCategorySlugGetQueryKey = (categorySlug: string,
     params?: GetProductsByCategorySlugApiProductsCategoryCategorySlugGetParams,) => {
     return [`/api/products/category/${categorySlug}`, ...(params ? [params]: [])] as const;
     }
 
-    
+
 export const getGetProductsByCategorySlugApiProductsCategoryCategorySlugGetQueryOptions = <TData = Awaited<ReturnType<typeof getProductsByCategorySlugApiProductsCategoryCategorySlugGet>>, TError = HTTPValidationError>(categorySlug: string,
     params?: GetProductsByCategorySlugApiProductsCategoryCategorySlugGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductsByCategorySlugApiProductsCategoryCategorySlugGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
 ) => {
@@ -2649,13 +2649,13 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetProductsByCategorySlugApiProductsCategoryCategorySlugGetQueryKey(categorySlug,params);
 
-  
+
 
     const queryFn: QueryFunction<Awaited<ReturnType<typeof getProductsByCategorySlugApiProductsCategoryCategorySlugGet>>> = ({ signal }) => getProductsByCategorySlugApiProductsCategoryCategorySlugGet(categorySlug,params, requestOptions, signal);
 
-      
 
-      
+
+
 
    return  { queryKey, queryFn, enabled: !!(categorySlug), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getProductsByCategorySlugApiProductsCategoryCategorySlugGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
@@ -2698,7 +2698,7 @@ export function useGetProductsByCategorySlugApiProductsCategoryCategorySlugGet<T
 export function useGetProductsByCategorySlugApiProductsCategoryCategorySlugGet<TData = Awaited<ReturnType<typeof getProductsByCategorySlugApiProductsCategoryCategorySlugGet>>, TError = HTTPValidationError>(
  categorySlug: string,
     params?: GetProductsByCategorySlugApiProductsCategoryCategorySlugGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductsByCategorySlugApiProductsCategoryCategorySlugGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient 
+ , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getGetProductsByCategorySlugApiProductsCategoryCategorySlugGetQueryOptions(categorySlug,params,options)
@@ -2720,20 +2720,20 @@ export const getProductByIdApiProductsProductIdGet = (
     productId: string,
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
-      
-      
+
+
       return customInstance<ProductInDB>(
       {url: `/api/products/${productId}`, method: 'GET', signal
     },
       options);
     }
-  
+
 
 export const getGetProductByIdApiProductsProductIdGetQueryKey = (productId: string,) => {
     return [`/api/products/${productId}`] as const;
     }
 
-    
+
 export const getGetProductByIdApiProductsProductIdGetQueryOptions = <TData = Awaited<ReturnType<typeof getProductByIdApiProductsProductIdGet>>, TError = HTTPValidationError>(productId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductByIdApiProductsProductIdGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
@@ -2741,13 +2741,13 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetProductByIdApiProductsProductIdGetQueryKey(productId);
 
-  
+
 
     const queryFn: QueryFunction<Awaited<ReturnType<typeof getProductByIdApiProductsProductIdGet>>> = ({ signal }) => getProductByIdApiProductsProductIdGet(productId, requestOptions, signal);
 
-      
 
-      
+
+
 
    return  { queryKey, queryFn, enabled: !!(productId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getProductByIdApiProductsProductIdGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
@@ -2786,7 +2786,7 @@ export function useGetProductByIdApiProductsProductIdGet<TData = Awaited<ReturnT
 
 export function useGetProductByIdApiProductsProductIdGet<TData = Awaited<ReturnType<typeof getProductByIdApiProductsProductIdGet>>, TError = HTTPValidationError>(
  productId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getProductByIdApiProductsProductIdGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient 
+ , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getGetProductByIdApiProductsProductIdGetQueryOptions(productId,options)
@@ -2806,23 +2806,23 @@ export function useGetProductByIdApiProductsProductIdGet<TData = Awaited<ReturnT
  * @summary Get User Orders
  */
 export const getUserOrdersApiOrdersGet = (
-    
+
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
-      
-      
+
+
       return customInstance<OrderInDB[]>(
       {url: `/api/orders`, method: 'GET', signal
     },
       options);
     }
-  
+
 
 export const getGetUserOrdersApiOrdersGetQueryKey = () => {
     return [`/api/orders`] as const;
     }
 
-    
+
 export const getGetUserOrdersApiOrdersGetQueryOptions = <TData = Awaited<ReturnType<typeof getUserOrdersApiOrdersGet>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserOrdersApiOrdersGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
@@ -2830,13 +2830,13 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetUserOrdersApiOrdersGetQueryKey();
 
-  
+
 
     const queryFn: QueryFunction<Awaited<ReturnType<typeof getUserOrdersApiOrdersGet>>> = ({ signal }) => getUserOrdersApiOrdersGet(requestOptions, signal);
 
-      
 
-      
+
+
 
    return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getUserOrdersApiOrdersGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
@@ -2875,7 +2875,7 @@ export function useGetUserOrdersApiOrdersGet<TData = Awaited<ReturnType<typeof g
 
 export function useGetUserOrdersApiOrdersGet<TData = Awaited<ReturnType<typeof getUserOrdersApiOrdersGet>>, TError = unknown>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserOrdersApiOrdersGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient 
+ , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getGetUserOrdersApiOrdersGetQueryOptions(options)
@@ -2897,8 +2897,8 @@ export const createOrderApiOrdersPost = (
     orderCreate: OrderCreate,
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
-      
-      
+
+
       return customInstance<OrderInDB>(
       {url: `/api/orders`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
@@ -2906,7 +2906,7 @@ export const createOrderApiOrdersPost = (
     },
       options);
     }
-  
+
 
 
 export const getCreateOrderApiOrdersPostMutationOptions = <TError = HTTPValidationError,
@@ -2920,7 +2920,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {...options, mutation: {...options.mutation, mutationKey}}
       : {mutation: { mutationKey, }, request: undefined};
 
-      
+
 
 
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof createOrderApiOrdersPost>>, {data: OrderCreate}> = (props) => {
@@ -2929,7 +2929,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
           return  createOrderApiOrdersPost(data,requestOptions)
         }
 
-        
+
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -2954,15 +2954,15 @@ export const useCreateOrderApiOrdersPost = <TError = HTTPValidationError,
 
       return useMutation(mutationOptions , queryClient);
     }
-    
+
 /**
  * @summary Delete Order
  */
 export const deleteOrderApiOrdersDelete = (
     orderDelete: OrderDelete,
  options?: SecondParameter<typeof customInstance>,) => {
-      
-      
+
+
       return customInstance<void>(
       {url: `/api/orders`, method: 'DELETE',
       headers: {'Content-Type': 'application/json', },
@@ -2970,7 +2970,7 @@ export const deleteOrderApiOrdersDelete = (
     },
       options);
     }
-  
+
 
 
 export const getDeleteOrderApiOrdersDeleteMutationOptions = <TError = HTTPValidationError,
@@ -2984,7 +2984,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {...options, mutation: {...options.mutation, mutationKey}}
       : {mutation: { mutationKey, }, request: undefined};
 
-      
+
 
 
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteOrderApiOrdersDelete>>, {data: OrderDelete}> = (props) => {
@@ -2993,7 +2993,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
           return  deleteOrderApiOrdersDelete(data,requestOptions)
         }
 
-        
+
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -3018,7 +3018,7 @@ export const useDeleteOrderApiOrdersDelete = <TError = HTTPValidationError,
 
       return useMutation(mutationOptions , queryClient);
     }
-    
+
 /**
  * Получить конкретный заказ пользователя
  * @summary Get User Order
@@ -3027,20 +3027,20 @@ export const getUserOrderApiOrdersOrderIdGet = (
     orderId: string,
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
-      
-      
+
+
       return customInstance<OrderInDB>(
       {url: `/api/orders/${orderId}`, method: 'GET', signal
     },
       options);
     }
-  
+
 
 export const getGetUserOrderApiOrdersOrderIdGetQueryKey = (orderId: string,) => {
     return [`/api/orders/${orderId}`] as const;
     }
 
-    
+
 export const getGetUserOrderApiOrdersOrderIdGetQueryOptions = <TData = Awaited<ReturnType<typeof getUserOrderApiOrdersOrderIdGet>>, TError = HTTPValidationError>(orderId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserOrderApiOrdersOrderIdGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
@@ -3048,13 +3048,13 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetUserOrderApiOrdersOrderIdGetQueryKey(orderId);
 
-  
+
 
     const queryFn: QueryFunction<Awaited<ReturnType<typeof getUserOrderApiOrdersOrderIdGet>>> = ({ signal }) => getUserOrderApiOrdersOrderIdGet(orderId, requestOptions, signal);
 
-      
 
-      
+
+
 
    return  { queryKey, queryFn, enabled: !!(orderId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getUserOrderApiOrdersOrderIdGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
@@ -3093,7 +3093,7 @@ export function useGetUserOrderApiOrdersOrderIdGet<TData = Awaited<ReturnType<ty
 
 export function useGetUserOrderApiOrdersOrderIdGet<TData = Awaited<ReturnType<typeof getUserOrderApiOrdersOrderIdGet>>, TError = HTTPValidationError>(
  orderId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserOrderApiOrdersOrderIdGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient 
+ , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getGetUserOrderApiOrdersOrderIdGetQueryOptions(orderId,options)
@@ -3113,23 +3113,23 @@ export function useGetUserOrderApiOrdersOrderIdGet<TData = Awaited<ReturnType<ty
  * @summary Get Favorites
  */
 export const getFavoritesApiFavoritesGet = (
-    
+
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
-      
-      
+
+
       return customInstance<FavouriteInDB[]>(
       {url: `/api/favorites`, method: 'GET', signal
     },
       options);
     }
-  
+
 
 export const getGetFavoritesApiFavoritesGetQueryKey = () => {
     return [`/api/favorites`] as const;
     }
 
-    
+
 export const getGetFavoritesApiFavoritesGetQueryOptions = <TData = Awaited<ReturnType<typeof getFavoritesApiFavoritesGet>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getFavoritesApiFavoritesGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
@@ -3137,13 +3137,13 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetFavoritesApiFavoritesGetQueryKey();
 
-  
+
 
     const queryFn: QueryFunction<Awaited<ReturnType<typeof getFavoritesApiFavoritesGet>>> = ({ signal }) => getFavoritesApiFavoritesGet(requestOptions, signal);
 
-      
 
-      
+
+
 
    return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getFavoritesApiFavoritesGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
@@ -3182,7 +3182,7 @@ export function useGetFavoritesApiFavoritesGet<TData = Awaited<ReturnType<typeof
 
 export function useGetFavoritesApiFavoritesGet<TData = Awaited<ReturnType<typeof getFavoritesApiFavoritesGet>>, TError = unknown>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getFavoritesApiFavoritesGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient 
+ , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getGetFavoritesApiFavoritesGetQueryOptions(options)
@@ -3205,14 +3205,14 @@ export const addToFavoritesApiFavoritesProductIdPost = (
     productId: string,
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
-      
-      
+
+
       return customInstance<FavouriteInDB>(
       {url: `/api/favorites/${productId}`, method: 'POST', signal
     },
       options);
     }
-  
+
 
 
 export const getAddToFavoritesApiFavoritesProductIdPostMutationOptions = <TError = HTTPValidationError,
@@ -3226,7 +3226,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {...options, mutation: {...options.mutation, mutationKey}}
       : {mutation: { mutationKey, }, request: undefined};
 
-      
+
 
 
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof addToFavoritesApiFavoritesProductIdPost>>, {productId: string}> = (props) => {
@@ -3235,13 +3235,13 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
           return  addToFavoritesApiFavoritesProductIdPost(productId,requestOptions)
         }
 
-        
+
 
 
   return  { mutationFn, ...mutationOptions }}
 
     export type AddToFavoritesApiFavoritesProductIdPostMutationResult = NonNullable<Awaited<ReturnType<typeof addToFavoritesApiFavoritesProductIdPost>>>
-    
+
     export type AddToFavoritesApiFavoritesProductIdPostMutationError = HTTPValidationError
 
     /**
@@ -3260,7 +3260,7 @@ export const useAddToFavoritesApiFavoritesProductIdPost = <TError = HTTPValidati
 
       return useMutation(mutationOptions , queryClient);
     }
-    
+
 /**
  * Удалить товар из избранного
  * @summary Remove From Favorites
@@ -3268,14 +3268,14 @@ export const useAddToFavoritesApiFavoritesProductIdPost = <TError = HTTPValidati
 export const removeFromFavoritesApiFavoritesProductIdDelete = (
     productId: string,
  options?: SecondParameter<typeof customInstance>,) => {
-      
-      
+
+
       return customInstance<void>(
       {url: `/api/favorites/${productId}`, method: 'DELETE'
     },
       options);
     }
-  
+
 
 
 export const getRemoveFromFavoritesApiFavoritesProductIdDeleteMutationOptions = <TError = HTTPValidationError,
@@ -3289,7 +3289,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {...options, mutation: {...options.mutation, mutationKey}}
       : {mutation: { mutationKey, }, request: undefined};
 
-      
+
 
 
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof removeFromFavoritesApiFavoritesProductIdDelete>>, {productId: string}> = (props) => {
@@ -3298,13 +3298,13 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
           return  removeFromFavoritesApiFavoritesProductIdDelete(productId,requestOptions)
         }
 
-        
+
 
 
   return  { mutationFn, ...mutationOptions }}
 
     export type RemoveFromFavoritesApiFavoritesProductIdDeleteMutationResult = NonNullable<Awaited<ReturnType<typeof removeFromFavoritesApiFavoritesProductIdDelete>>>
-    
+
     export type RemoveFromFavoritesApiFavoritesProductIdDeleteMutationError = HTTPValidationError
 
     /**
@@ -3323,7 +3323,7 @@ export const useRemoveFromFavoritesApiFavoritesProductIdDelete = <TError = HTTPV
 
       return useMutation(mutationOptions , queryClient);
     }
-    
+
 /**
  * Получить уведомления пользователя
  * @summary Get User Notifications
@@ -3332,21 +3332,21 @@ export const getUserNotificationsApiNotificationsGet = (
     params?: GetUserNotificationsApiNotificationsGetParams,
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
-      
-      
+
+
       return customInstance<NotificationInDB[]>(
       {url: `/api/notifications`, method: 'GET',
         params, signal
     },
       options);
     }
-  
+
 
 export const getGetUserNotificationsApiNotificationsGetQueryKey = (params?: GetUserNotificationsApiNotificationsGetParams,) => {
     return [`/api/notifications`, ...(params ? [params]: [])] as const;
     }
 
-    
+
 export const getGetUserNotificationsApiNotificationsGetQueryOptions = <TData = Awaited<ReturnType<typeof getUserNotificationsApiNotificationsGet>>, TError = HTTPValidationError>(params?: GetUserNotificationsApiNotificationsGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserNotificationsApiNotificationsGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
@@ -3354,13 +3354,13 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetUserNotificationsApiNotificationsGetQueryKey(params);
 
-  
+
 
     const queryFn: QueryFunction<Awaited<ReturnType<typeof getUserNotificationsApiNotificationsGet>>> = ({ signal }) => getUserNotificationsApiNotificationsGet(params, requestOptions, signal);
 
-      
 
-      
+
+
 
    return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getUserNotificationsApiNotificationsGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
@@ -3399,7 +3399,7 @@ export function useGetUserNotificationsApiNotificationsGet<TData = Awaited<Retur
 
 export function useGetUserNotificationsApiNotificationsGet<TData = Awaited<ReturnType<typeof getUserNotificationsApiNotificationsGet>>, TError = HTTPValidationError>(
  params?: GetUserNotificationsApiNotificationsGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserNotificationsApiNotificationsGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient 
+ , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getGetUserNotificationsApiNotificationsGetQueryOptions(params,options)
@@ -3422,8 +3422,8 @@ export const markNotificationReadApiNotificationsNotificationIdPatch = (
     notificationId: string,
     notificationUpdate: NotificationUpdate,
  options?: SecondParameter<typeof customInstance>,) => {
-      
-      
+
+
       return customInstance<NotificationInDB>(
       {url: `/api/notifications/${notificationId}`, method: 'PATCH',
       headers: {'Content-Type': 'application/json', },
@@ -3431,7 +3431,7 @@ export const markNotificationReadApiNotificationsNotificationIdPatch = (
     },
       options);
     }
-  
+
 
 
 export const getMarkNotificationReadApiNotificationsNotificationIdPatchMutationOptions = <TError = HTTPValidationError,
@@ -3445,7 +3445,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {...options, mutation: {...options.mutation, mutationKey}}
       : {mutation: { mutationKey, }, request: undefined};
 
-      
+
 
 
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof markNotificationReadApiNotificationsNotificationIdPatch>>, {notificationId: string;data: NotificationUpdate}> = (props) => {
@@ -3454,7 +3454,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
           return  markNotificationReadApiNotificationsNotificationIdPatch(notificationId,data,requestOptions)
         }
 
-        
+
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -3479,23 +3479,23 @@ export const useMarkNotificationReadApiNotificationsNotificationIdPatch = <TErro
 
       return useMutation(mutationOptions , queryClient);
     }
-    
+
 /**
  * Отметить все уведомления пользователя как прочитанные
  * @summary Mark All Notifications Read
  */
 export const markAllNotificationsReadApiNotificationsMarkAllReadPost = (
-    
+
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
-      
-      
+
+
       return customInstance<unknown>(
       {url: `/api/notifications/mark-all-read`, method: 'POST', signal
     },
       options);
     }
-  
+
 
 
 export const getMarkAllNotificationsReadApiNotificationsMarkAllReadPostMutationOptions = <TError = unknown,
@@ -3509,22 +3509,22 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {...options, mutation: {...options.mutation, mutationKey}}
       : {mutation: { mutationKey, }, request: undefined};
 
-      
+
 
 
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof markAllNotificationsReadApiNotificationsMarkAllReadPost>>, void> = () => {
-          
+
 
           return  markAllNotificationsReadApiNotificationsMarkAllReadPost(requestOptions)
         }
 
-        
+
 
 
   return  { mutationFn, ...mutationOptions }}
 
     export type MarkAllNotificationsReadApiNotificationsMarkAllReadPostMutationResult = NonNullable<Awaited<ReturnType<typeof markAllNotificationsReadApiNotificationsMarkAllReadPost>>>
-    
+
     export type MarkAllNotificationsReadApiNotificationsMarkAllReadPostMutationError = unknown
 
     /**
@@ -3543,29 +3543,29 @@ export const useMarkAllNotificationsReadApiNotificationsMarkAllReadPost = <TErro
 
       return useMutation(mutationOptions , queryClient);
     }
-    
+
 /**
  * Получить количество непрочитанных уведомлений
  * @summary Get Unread Count
  */
 export const getUnreadCountApiNotificationsUnreadCountGet = (
-    
+
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
-      
-      
+
+
       return customInstance<unknown>(
       {url: `/api/notifications/unread-count`, method: 'GET', signal
     },
       options);
     }
-  
+
 
 export const getGetUnreadCountApiNotificationsUnreadCountGetQueryKey = () => {
     return [`/api/notifications/unread-count`] as const;
     }
 
-    
+
 export const getGetUnreadCountApiNotificationsUnreadCountGetQueryOptions = <TData = Awaited<ReturnType<typeof getUnreadCountApiNotificationsUnreadCountGet>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUnreadCountApiNotificationsUnreadCountGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
@@ -3573,13 +3573,13 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetUnreadCountApiNotificationsUnreadCountGetQueryKey();
 
-  
+
 
     const queryFn: QueryFunction<Awaited<ReturnType<typeof getUnreadCountApiNotificationsUnreadCountGet>>> = ({ signal }) => getUnreadCountApiNotificationsUnreadCountGet(requestOptions, signal);
 
-      
 
-      
+
+
 
    return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getUnreadCountApiNotificationsUnreadCountGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
@@ -3618,7 +3618,7 @@ export function useGetUnreadCountApiNotificationsUnreadCountGet<TData = Awaited<
 
 export function useGetUnreadCountApiNotificationsUnreadCountGet<TData = Awaited<ReturnType<typeof getUnreadCountApiNotificationsUnreadCountGet>>, TError = unknown>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUnreadCountApiNotificationsUnreadCountGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient 
+ , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getGetUnreadCountApiNotificationsUnreadCountGetQueryOptions(options)
@@ -3638,23 +3638,23 @@ export function useGetUnreadCountApiNotificationsUnreadCountGet<TData = Awaited<
  * @summary Get User Chats
  */
 export const getUserChatsApiChatsGet = (
-    
+
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
-      
-      
+
+
       return customInstance<ChatInDB[]>(
       {url: `/api/chats`, method: 'GET', signal
     },
       options);
     }
-  
+
 
 export const getGetUserChatsApiChatsGetQueryKey = () => {
     return [`/api/chats`] as const;
     }
 
-    
+
 export const getGetUserChatsApiChatsGetQueryOptions = <TData = Awaited<ReturnType<typeof getUserChatsApiChatsGet>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserChatsApiChatsGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
@@ -3662,13 +3662,13 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetUserChatsApiChatsGetQueryKey();
 
-  
+
 
     const queryFn: QueryFunction<Awaited<ReturnType<typeof getUserChatsApiChatsGet>>> = ({ signal }) => getUserChatsApiChatsGet(requestOptions, signal);
 
-      
 
-      
+
+
 
    return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getUserChatsApiChatsGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
@@ -3707,7 +3707,7 @@ export function useGetUserChatsApiChatsGet<TData = Awaited<ReturnType<typeof get
 
 export function useGetUserChatsApiChatsGet<TData = Awaited<ReturnType<typeof getUserChatsApiChatsGet>>, TError = unknown>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getUserChatsApiChatsGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient 
+ , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getGetUserChatsApiChatsGetQueryOptions(options)
@@ -3727,17 +3727,17 @@ export function useGetUserChatsApiChatsGet<TData = Awaited<ReturnType<typeof get
  * @summary Create Or Get Chat
  */
 export const createOrGetChatApiChatsPost = (
-    
+
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
-      
-      
+
+
       return customInstance<ChatInDB>(
       {url: `/api/chats`, method: 'POST', signal
     },
       options);
     }
-  
+
 
 
 export const getCreateOrGetChatApiChatsPostMutationOptions = <TError = unknown,
@@ -3751,22 +3751,22 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {...options, mutation: {...options.mutation, mutationKey}}
       : {mutation: { mutationKey, }, request: undefined};
 
-      
+
 
 
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof createOrGetChatApiChatsPost>>, void> = () => {
-          
+
 
           return  createOrGetChatApiChatsPost(requestOptions)
         }
 
-        
+
 
 
   return  { mutationFn, ...mutationOptions }}
 
     export type CreateOrGetChatApiChatsPostMutationResult = NonNullable<Awaited<ReturnType<typeof createOrGetChatApiChatsPost>>>
-    
+
     export type CreateOrGetChatApiChatsPostMutationError = unknown
 
     /**
@@ -3785,7 +3785,7 @@ export const useCreateOrGetChatApiChatsPost = <TError = unknown,
 
       return useMutation(mutationOptions , queryClient);
     }
-    
+
 /**
  * Получить детали чата с сообщениями
  * @summary Get Chat Detail
@@ -3794,20 +3794,20 @@ export const getChatDetailApiChatsChatIdGet = (
     chatId: string,
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
-      
-      
+
+
       return customInstance<ChatInDB>(
       {url: `/api/chats/${chatId}`, method: 'GET', signal
     },
       options);
     }
-  
+
 
 export const getGetChatDetailApiChatsChatIdGetQueryKey = (chatId: string,) => {
     return [`/api/chats/${chatId}`] as const;
     }
 
-    
+
 export const getGetChatDetailApiChatsChatIdGetQueryOptions = <TData = Awaited<ReturnType<typeof getChatDetailApiChatsChatIdGet>>, TError = HTTPValidationError>(chatId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getChatDetailApiChatsChatIdGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
@@ -3815,13 +3815,13 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetChatDetailApiChatsChatIdGetQueryKey(chatId);
 
-  
+
 
     const queryFn: QueryFunction<Awaited<ReturnType<typeof getChatDetailApiChatsChatIdGet>>> = ({ signal }) => getChatDetailApiChatsChatIdGet(chatId, requestOptions, signal);
 
-      
 
-      
+
+
 
    return  { queryKey, queryFn, enabled: !!(chatId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getChatDetailApiChatsChatIdGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
@@ -3860,7 +3860,7 @@ export function useGetChatDetailApiChatsChatIdGet<TData = Awaited<ReturnType<typ
 
 export function useGetChatDetailApiChatsChatIdGet<TData = Awaited<ReturnType<typeof getChatDetailApiChatsChatIdGet>>, TError = HTTPValidationError>(
  chatId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getChatDetailApiChatsChatIdGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient 
+ , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getGetChatDetailApiChatsChatIdGetQueryOptions(chatId,options)
@@ -3884,8 +3884,8 @@ export const sendMessageApiChatsChatIdMessagesPost = (
     chatMessageSend: ChatMessageSend,
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
-      
-      
+
+
       return customInstance<ChatMessageInDB>(
       {url: `/api/chats/${chatId}/messages`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
@@ -3893,7 +3893,7 @@ export const sendMessageApiChatsChatIdMessagesPost = (
     },
       options);
     }
-  
+
 
 
 export const getSendMessageApiChatsChatIdMessagesPostMutationOptions = <TError = HTTPValidationError,
@@ -3907,7 +3907,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {...options, mutation: {...options.mutation, mutationKey}}
       : {mutation: { mutationKey, }, request: undefined};
 
-      
+
 
 
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof sendMessageApiChatsChatIdMessagesPost>>, {chatId: string;data: ChatMessageSend}> = (props) => {
@@ -3916,7 +3916,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
           return  sendMessageApiChatsChatIdMessagesPost(chatId,data,requestOptions)
         }
 
-        
+
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -3941,29 +3941,29 @@ export const useSendMessageApiChatsChatIdMessagesPost = <TError = HTTPValidation
 
       return useMutation(mutationOptions , queryClient);
     }
-    
+
 /**
  * Получить все чаты (только для админов)
  * @summary Get All Chats
  */
 export const getAllChatsApiAdminChatsGet = (
-    
+
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
-      
-      
+
+
       return customInstance<ChatInDB[]>(
       {url: `/api/admin/chats`, method: 'GET', signal
     },
       options);
     }
-  
+
 
 export const getGetAllChatsApiAdminChatsGetQueryKey = () => {
     return [`/api/admin/chats`] as const;
     }
 
-    
+
 export const getGetAllChatsApiAdminChatsGetQueryOptions = <TData = Awaited<ReturnType<typeof getAllChatsApiAdminChatsGet>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllChatsApiAdminChatsGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
@@ -3971,13 +3971,13 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetAllChatsApiAdminChatsGetQueryKey();
 
-  
+
 
     const queryFn: QueryFunction<Awaited<ReturnType<typeof getAllChatsApiAdminChatsGet>>> = ({ signal }) => getAllChatsApiAdminChatsGet(requestOptions, signal);
 
-      
 
-      
+
+
 
    return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAllChatsApiAdminChatsGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
@@ -4016,7 +4016,7 @@ export function useGetAllChatsApiAdminChatsGet<TData = Awaited<ReturnType<typeof
 
 export function useGetAllChatsApiAdminChatsGet<TData = Awaited<ReturnType<typeof getAllChatsApiAdminChatsGet>>, TError = unknown>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAllChatsApiAdminChatsGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient 
+ , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getGetAllChatsApiAdminChatsGetQueryOptions(options)
@@ -4035,23 +4035,23 @@ export function useGetAllChatsApiAdminChatsGet<TData = Awaited<ReturnType<typeof
  * @summary Health Check
  */
 export const healthCheckHealthGet = (
-    
+
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
-      
-      
+
+
       return customInstance<unknown>(
       {url: `/health`, method: 'GET', signal
     },
       options);
     }
-  
+
 
 export const getHealthCheckHealthGetQueryKey = () => {
     return [`/health`] as const;
     }
 
-    
+
 export const getHealthCheckHealthGetQueryOptions = <TData = Awaited<ReturnType<typeof healthCheckHealthGet>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof healthCheckHealthGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
@@ -4059,13 +4059,13 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getHealthCheckHealthGetQueryKey();
 
-  
+
 
     const queryFn: QueryFunction<Awaited<ReturnType<typeof healthCheckHealthGet>>> = ({ signal }) => healthCheckHealthGet(requestOptions, signal);
 
-      
 
-      
+
+
 
    return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof healthCheckHealthGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
@@ -4104,7 +4104,7 @@ export function useHealthCheckHealthGet<TData = Awaited<ReturnType<typeof health
 
 export function useHealthCheckHealthGet<TData = Awaited<ReturnType<typeof healthCheckHealthGet>>, TError = unknown>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof healthCheckHealthGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient 
+ , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getHealthCheckHealthGetQueryOptions(options)
@@ -4115,7 +4115,3 @@ export function useHealthCheckHealthGet<TData = Awaited<ReturnType<typeof health
 
   return query;
 }
-
-
-
-

@@ -47,4 +47,4 @@ logs/
 tests/
 
 # Development tools
-alembic.ini 
+alembic.ini

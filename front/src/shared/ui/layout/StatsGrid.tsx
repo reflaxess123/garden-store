@@ -1,10 +1,16 @@
 "use client";
 
-import { LucideIcon } from "lucide-react";
+import { Award, ShoppingBag, Users } from "lucide-react";
 import { ReactNode } from "react";
 
+const iconMap = {
+  users: Users,
+  "shopping-bag": ShoppingBag,
+  award: Award,
+};
+
 export interface StatItem {
-  icon: LucideIcon;
+  iconName: "users" | "shopping-bag" | "award";
   value: string | number;
   label: string;
   color?: string;
@@ -58,9 +64,14 @@ export default function StatsGrid({
         <div className={`grid ${gridCols[columns]} gap-8`}>
           {stats.map((stat, index) => (
             <div key={index} className={`text-center ${textColor}`}>
-              <stat.icon
-                className={`${sizeClasses[size].icon} mx-auto mb-4 opacity-80`}
-              />
+              {(() => {
+                const Icon = iconMap[stat.iconName];
+                return (
+                  <Icon
+                    className={`${sizeClasses[size].icon} mx-auto mb-4 opacity-80`}
+                  />
+                );
+              })()}
               <div
                 className={`${sizeClasses[size].value} font-bold mb-2 ${
                   stat.color || ""

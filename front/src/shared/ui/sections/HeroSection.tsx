@@ -2,15 +2,23 @@
 
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
-import { LucideIcon } from "lucide-react";
+import { ArrowRight, Heart, Search, ShoppingBag, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { ReactNode } from "react";
 
+const iconMap = {
+  "arrow-right": ArrowRight,
+  "shopping-bag": ShoppingBag,
+  search: Search,
+  user: User,
+  heart: Heart,
+};
+
 export interface ActionProps {
   label: string;
   href: string;
-  icon?: LucideIcon;
+  iconName?: "arrow-right" | "shopping-bag" | "search" | "user" | "heart";
   variant?: "default" | "outline" | "secondary";
   size?: "sm" | "default" | "lg";
 }
@@ -95,9 +103,11 @@ export default function HeroSection({
                   className="flex items-center gap-2"
                 >
                   {primaryAction.label}
-                  {primaryAction.icon && (
-                    <primaryAction.icon className="h-5 w-5" />
-                  )}
+                  {primaryAction.iconName &&
+                    (() => {
+                      const Icon = iconMap[primaryAction.iconName];
+                      return <Icon className="h-5 w-5" />;
+                    })()}
                 </Link>
               </Button>
 
@@ -112,9 +122,11 @@ export default function HeroSection({
                     className="flex items-center gap-2"
                   >
                     {secondaryAction.label}
-                    {secondaryAction.icon && (
-                      <secondaryAction.icon className="h-5 w-5" />
-                    )}
+                    {secondaryAction.iconName &&
+                      (() => {
+                        const Icon = iconMap[secondaryAction.iconName];
+                        return <Icon className="h-5 w-5" />;
+                      })()}
                   </Link>
                 </Button>
               )}

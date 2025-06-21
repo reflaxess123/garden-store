@@ -4,15 +4,7 @@ import { getBestsellers } from "@/entities/product/api";
 import { ProductCard } from "@/entities/product/ui/ProductCard";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
-import {
-  ArrowRight,
-  Award,
-  Headphones,
-  Shield,
-  ShoppingBag,
-  Truck,
-  Users,
-} from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 // Импортируем новые компоненты
@@ -51,14 +43,14 @@ const heroStats: StatProps[] = [
 
 const features: FeatureItem[] = [
   {
-    icon: Truck,
+    iconName: "truck",
     title: "Быстрая доставка",
     description: "Доставим ваш заказ в течение 1-3 рабочих дней по всей России",
     color: "text-blue-600",
     bg: "bg-blue-50",
   },
   {
-    icon: Shield,
+    iconName: "shield",
     title: "Гарантия качества",
     description:
       "Все товары проходят строгий контроль качества перед отправкой",
@@ -66,14 +58,14 @@ const features: FeatureItem[] = [
     bg: "bg-green-50",
   },
   {
-    icon: Headphones,
+    iconName: "headphones",
     title: "Поддержка 24/7",
     description: "Наши эксперты готовы помочь вам в любое время дня и ночи",
     color: "text-purple-600",
     bg: "bg-purple-50",
   },
   {
-    icon: Award,
+    iconName: "award",
     title: "Лучшие цены",
     description: "Конкурентные цены и регулярные скидки для наших клиентов",
     color: "text-orange-600",
@@ -111,22 +103,22 @@ const testimonials: TestimonialItem[] = [
 // Данные для статистики
 const statsData: StatItem[] = [
   {
-    icon: Users,
+    iconName: "users",
     value: "1,000+",
     label: "Довольных клиентов",
   },
   {
-    icon: ShoppingBag,
+    iconName: "shopping-bag",
     value: "5,000+",
     label: "Выполненных заказов",
   },
   {
-    icon: Award,
+    iconName: "award",
     value: "99%",
     label: "Положительных отзывов",
   },
   {
-    icon: Award,
+    iconName: "award",
     value: "3",
     label: "Года на рынке",
   },
@@ -151,12 +143,12 @@ export default async function Home() {
         primaryAction={{
           label: "Начать покупки",
           href: "/catalog",
-          icon: ArrowRight,
+          iconName: "arrow-right",
         }}
         secondaryAction={{
           label: "Смотреть каталог",
           href: "/catalog",
-          icon: ShoppingBag,
+          iconName: "shopping-bag",
           variant: "outline",
         }}
         image={{
@@ -272,12 +264,12 @@ export default async function Home() {
         primaryAction={{
           label: "Начать покупки",
           href: "/catalog",
-          icon: ArrowRight,
+          iconName: "arrow-right",
         }}
         secondaryAction={{
           label: "Создать аккаунт",
           href: "/register",
-          icon: Users,
+          iconName: "user",
         }}
       />
     </main>

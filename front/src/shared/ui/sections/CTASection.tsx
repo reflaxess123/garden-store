@@ -1,9 +1,18 @@
 "use client";
 
 import { Button } from "@/shared/ui/button";
+import { ArrowRight, Heart, Search, ShoppingBag, User } from "lucide-react";
 import Link from "next/link";
 import { ReactNode } from "react";
 import { ActionProps } from "./HeroSection";
+
+const iconMap = {
+  "arrow-right": ArrowRight,
+  "shopping-bag": ShoppingBag,
+  search: Search,
+  user: User,
+  heart: Heart,
+};
 
 export interface CTASectionProps {
   title: string;
@@ -43,9 +52,11 @@ export default function CTASection({
                 className="flex items-center gap-2"
               >
                 {primaryAction.label}
-                {primaryAction.icon && (
-                  <primaryAction.icon className="h-5 w-5" />
-                )}
+                {primaryAction.iconName &&
+                  (() => {
+                    const Icon = iconMap[primaryAction.iconName];
+                    return <Icon className="h-5 w-5" />;
+                  })()}
               </Link>
             </Button>
 
@@ -61,9 +72,11 @@ export default function CTASection({
                   className="flex items-center gap-2"
                 >
                   {secondaryAction.label}
-                  {secondaryAction.icon && (
-                    <secondaryAction.icon className="h-5 w-5" />
-                  )}
+                  {secondaryAction.iconName &&
+                    (() => {
+                      const Icon = iconMap[secondaryAction.iconName];
+                      return <Icon className="h-5 w-5" />;
+                    })()}
                 </Link>
               </Button>
             )}

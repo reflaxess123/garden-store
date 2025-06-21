@@ -1,11 +1,18 @@
 "use client";
 
 import { Card, CardContent } from "@/shared/ui/card";
-import { LucideIcon } from "lucide-react";
+import { Award, Headphones, Shield, Truck } from "lucide-react";
 import { ReactNode } from "react";
 
+const iconMap = {
+  truck: Truck,
+  shield: Shield,
+  headphones: Headphones,
+  award: Award,
+};
+
 export interface FeatureItem {
-  icon: LucideIcon;
+  iconName: "truck" | "shield" | "headphones" | "award";
   title: string;
   description: string;
   color?: string;
@@ -51,9 +58,14 @@ export default function FeaturesSection({
                     feature.bg || "bg-primary/10"
                   } mb-6`}
                 >
-                  <feature.icon
-                    className={`h-8 w-8 ${feature.color || "text-primary"}`}
-                  />
+                  {(() => {
+                    const Icon = iconMap[feature.iconName];
+                    return (
+                      <Icon
+                        className={`h-8 w-8 ${feature.color || "text-primary"}`}
+                      />
+                    );
+                  })()}
                 </div>
                 <h3 className="text-xl font-semibold mb-3 text-foreground">
                   {feature.title}

@@ -1,16 +1,9 @@
+import { FileText, Package, Search, ShoppingCart, Users } from "lucide-react";
 import { cn } from "../lib/utils";
-import {
-  FileText,
-  LucideIcon,
-  Package,
-  Search,
-  ShoppingCart,
-  Users,
-} from "lucide-react";
 import { Button } from "./button";
 
 interface EmptyStateProps {
-  icon?: LucideIcon;
+  iconName?: "cart" | "package" | "search" | "users" | "orders";
   title: string;
   description?: string;
   action?: {
@@ -20,13 +13,23 @@ interface EmptyStateProps {
   className?: string;
 }
 
+const iconMap = {
+  cart: ShoppingCart,
+  package: Package,
+  search: Search,
+  users: Users,
+  orders: FileText,
+};
+
 export function EmptyState({
-  icon: Icon,
+  iconName,
   title,
   description,
   action,
   className,
 }: EmptyStateProps) {
+  const Icon = iconName ? iconMap[iconName] : null;
+
   return (
     <div
       className={cn(
@@ -57,7 +60,7 @@ export function EmptyState({
 export function EmptyCart({ onGoShopping }: { onGoShopping?: () => void }) {
   return (
     <EmptyState
-      icon={ShoppingCart}
+      iconName="cart"
       title="Корзина пуста"
       description="Добавьте товары в корзину, чтобы сделать заказ"
       action={
@@ -75,7 +78,7 @@ export function EmptyCart({ onGoShopping }: { onGoShopping?: () => void }) {
 export function EmptyProducts({ onAddProduct }: { onAddProduct?: () => void }) {
   return (
     <EmptyState
-      icon={Package}
+      iconName="package"
       title="Товары не найдены"
       description="В данной категории пока нет товаров"
       action={
@@ -99,7 +102,7 @@ export function EmptySearch({
 }) {
   return (
     <EmptyState
-      icon={Search}
+      iconName="search"
       title="Ничего не найдено"
       description={
         searchQuery
@@ -121,7 +124,7 @@ export function EmptySearch({
 export function EmptyUsers({ onInviteUser }: { onInviteUser?: () => void }) {
   return (
     <EmptyState
-      icon={Users}
+      iconName="users"
       title="Пользователи не найдены"
       description="Пока нет зарегистрированных пользователей"
       action={
@@ -139,7 +142,7 @@ export function EmptyUsers({ onInviteUser }: { onInviteUser?: () => void }) {
 export function EmptyOrders() {
   return (
     <EmptyState
-      icon={FileText}
+      iconName="orders"
       title="Заказы не найдены"
       description="У вас пока нет заказов"
     />

@@ -7,14 +7,15 @@ import {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { "category-slug": string } }
+  { params }: { params: Promise<{ "category-slug": string }> }
 ) {
   try {
-    logApiRequest("GET", `/api/products/category/${params["category-slug"]}`);
+    const { "category-slug": categorySlug } = await params;
+    logApiRequest("GET", `/api/products/category/${categorySlug}`);
 
     if (!process.env.BACKEND_URL) {
       logError("BACKEND_URL environment variable is not set", null, {
-        endpoint: `/products/category/${params["category-slug"]}`,
+        endpoint: `/products/category/${categorySlug}`,
       });
       return NextResponse.json(
         { error: "Server configuration error" },
@@ -36,7 +37,7 @@ export async function GET(
     });
 
     const response = await fetch(
-      `${process.env.BACKEND_URL}/products/category/${params["category-slug"]}?${queryParams}`,
+      `${process.env.BACKEND_URL}/products/category/${categorySlug}?${queryParams}`,
       {
         headers: {
           "Content-Type": "application/json",
@@ -46,9 +47,9 @@ export async function GET(
 
     if (!response.ok) {
       logError("Backend responded with error", null, {
-        endpoint: `/products/category/${params["category-slug"]}`,
+        endpoint: `/products/category/${categorySlug}`,
         status: response.status,
-        categorySlug: params["category-slug"],
+        categorySlug: categorySlug,
       });
       return NextResponse.json(
         { error: "Failed to fetch products" },
@@ -60,7 +61,7 @@ export async function GET(
     return NextResponse.json(data);
   } catch (error) {
     const { error: errorMsg, status } = handleApiError(error, {
-      endpoint: `/products/category/${params["category-slug"]}`,
+      endpoint: `/products/category/[category-slug]`,
       method: "GET",
     });
     return NextResponse.json({ error: errorMsg }, { status });

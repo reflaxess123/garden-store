@@ -1,3 +1,5 @@
+"use client";
+
 import { useCallback, useMemo, useState } from "react";
 import { logger } from "../lib/logger";
 import { FormField, FormState } from "../types/common";

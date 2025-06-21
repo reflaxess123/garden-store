@@ -1,3 +1,5 @@
+"use client";
+
 import { useMemo } from "react";
 import { getUrlParam, updateUrlParams } from "../lib/navigation";
 

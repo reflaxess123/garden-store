@@ -1,3 +1,5 @@
+"use client";
+
 import { useCallback, useState } from "react";
 import { logger } from "../lib/logger";
 import { AsyncState, OperationState, OperationStatus } from "../types/common";

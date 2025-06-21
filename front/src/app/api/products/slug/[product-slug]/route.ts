@@ -5,7 +5,6 @@ import {
   logError,
 } from "../../../_utils/logger";
 
-
 interface ProductBySlugProps {
   params: Promise<{
     "product-slug": string;
@@ -14,13 +13,14 @@ interface ProductBySlugProps {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { "product-slug": string } }
+  { params }: { params: Promise<{ "product-slug": string }> }
 ) {
   try {
-    logApiRequest("GET", `/api/products/slug/${params["product-slug"]}`);
+    const { "product-slug": productSlug } = await params;
+    logApiRequest("GET", `/api/products/slug/${productSlug}`);
 
     const response = await fetch(
-      `${process.env.BACKEND_URL}/products/slug/${params["product-slug"]}`,
+      `${process.env.BACKEND_URL}/products/slug/${productSlug}`,
       {
         headers: {
           "Content-Type": "application/json",
@@ -31,10 +31,10 @@ export async function GET(
     if (!response.ok) {
       const errorText = await response.text();
       logError("Failed to fetch product by slug", null, {
-        endpoint: `/products/slug/${params["product-slug"]}`,
+        endpoint: `/products/slug/${productSlug}`,
         status: response.status,
         errorText,
-        slug: params["product-slug"],
+        slug: productSlug,
       });
       return NextResponse.json(
         { error: "Product not found" },
@@ -46,7 +46,7 @@ export async function GET(
     return NextResponse.json(data);
   } catch (error) {
     const { error: errorMsg, status } = handleApiError(error, {
-      endpoint: `/products/slug/${params["product-slug"]}`,
+      endpoint: `/products/slug/[product-slug]`,
       method: "GET",
     });
     return NextResponse.json({ error: errorMsg }, { status });

@@ -67,25 +67,27 @@ export default function CheckoutPage() {
       return;
     }
 
-    try {
-      const orderItems = items.map((item) => ({
-        productId: item.productId,
-        quantity: item.quantity,
-        priceSnapshot: item.priceSnapshot,
-        name: item.name,
-        imageUrl: item.imageUrl,
-      }));
+    const orderItems = items.map((item) => ({
+      productId: item.productId,
+      quantity: item.quantity,
+      priceSnapshot: item.priceSnapshot,
+      name: item.name,
+      imageUrl: item.imageUrl,
+    }));
 
-      const result = await createOrder(
-        values.fullName,
-        values.email,
-        values.address,
-        values.city,
-        values.postalCode,
-        values.phone,
-        orderItems,
-        totalAmount
-      );
+    try {
+      const orderData = {
+        fullName: values.fullName,
+        email: values.email,
+        address: values.address,
+        city: values.city,
+        postalCode: values.postalCode,
+        phone: values.phone,
+        items: orderItems,
+        totalAmount: totalAmount,
+      };
+
+      const result = await createOrder(orderData);
 
       if (result && result.id) {
         clearCart();

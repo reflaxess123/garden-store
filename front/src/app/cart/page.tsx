@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { useCart } from "@/features/cart/useCart";
-import { formatPrice } from "@/shared/lib/utils";
+import { formatPrice } from "@/shared";
 import { Button } from "@/shared/ui/button";
 import { Separator } from "@/shared/ui/separator";
 import { Breadcrumbs } from "@/widgets/Breadcrumbs";

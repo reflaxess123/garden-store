@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuth } from "@/features/auth/AuthContext";
+import { logger } from "@/shared";
 import {
   FavouriteInDB,
   useAddtofavoritesapifavoritesproductidpost,
@@ -39,7 +40,11 @@ export const useFavourites = () => {
 
   const toggleFavourite = async (productId: string) => {
     if (!isAuthenticated) {
-      console.warn("User not logged in. Cannot toggle favourite.");
+      logger.warn("User not logged in. Cannot toggle favourite.", {
+        component: "useFavourites",
+        action: "toggleFavourite",
+        productId,
+      });
       return;
     }
 

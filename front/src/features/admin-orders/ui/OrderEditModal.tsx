@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import FormModal from "@/features/admin-common/ui/FormModal";
-import { formatPrice } from "@/shared/lib/utils";
+import { formatPrice, logger } from "@/shared";
 
 interface OrderItem {
   id: string;
@@ -90,7 +90,11 @@ export default function OrderEditModal({
       onOpenChange(false);
       toast.success("Заказ успешно обновлен!");
     } catch (error) {
-      console.error("Error saving order:", error);
+      logger.error("Error saving order", error, {
+        component: "OrderEditModal",
+        orderId: order.id,
+        itemsCount: items.length,
+      });
       toast.error("Ошибка при сохранении заказа");
     } finally {
       setIsSaving(false);

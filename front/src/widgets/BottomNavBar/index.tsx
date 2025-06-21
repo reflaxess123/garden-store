@@ -1,7 +1,7 @@
 "use client";
 
 import { useCart } from "@/features/cart/useCart";
-import { cn } from "@/shared/lib/utils";
+import { cn } from "@/shared";
 import { Badge } from "@/shared/ui/badge";
 import { Home, ShoppingBag, Store } from "lucide-react";
 import Link from "next/link";

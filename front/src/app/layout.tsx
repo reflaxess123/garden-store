@@ -1,6 +1,7 @@
 import { AuthProvider } from "@/features/auth/AuthContext";
 import { WebSocketProvider } from "@/features/chat/WebSocketContext";
 import { NotificationProvider } from "@/features/notifications/NotificationProvider";
+import { ErrorBoundary } from "@/shared";
 import { QueryProvider } from "@/shared/lib/QueryProvider";
 import { ThemeProvider } from "@/shared/lib/ThemeProvider";
 import { Toaster } from "@/shared/ui/sonner";
@@ -34,27 +35,33 @@ export default function RootLayout({
       <body
         className={`${inter.className} ${onest.variable} font-sans flex flex-col min-h-screen`}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <QueryProvider>
-            <AuthProvider>
-              <WebSocketProvider>
-                <NotificationProvider>
-                  <Header />
-                  <main className="flex-grow pb-20 md:pb-0">{children}</main>
-                  <Footer />
-                  <BottomNavBar />
-                  <ChatWidget />
-                </NotificationProvider>
-              </WebSocketProvider>
-            </AuthProvider>
-          </QueryProvider>
-          <Toaster />
-        </ThemeProvider>
+        <ErrorBoundary fallback="Произошла ошибка при загрузке приложения">
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <QueryProvider>
+              <AuthProvider>
+                <WebSocketProvider>
+                  <NotificationProvider>
+                    <Header />
+                    <main className="flex-grow pb-20 md:pb-0">
+                      <ErrorBoundary fallback="Произошла ошибка при загрузке страницы">
+                        {children}
+                      </ErrorBoundary>
+                    </main>
+                    <Footer />
+                    <BottomNavBar />
+                    <ChatWidget />
+                  </NotificationProvider>
+                </WebSocketProvider>
+              </AuthProvider>
+            </QueryProvider>
+            <Toaster />
+          </ThemeProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );

@@ -1,5 +1,6 @@
 "use client";
 
+import { logger } from "@/shared";
 import {
   createContext,
   useCallback,
@@ -59,11 +60,15 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
   );
 
   const handleConnect = useCallback(() => {
-    console.log("WebSocket подключен через контекст");
+    logger.debug("WebSocket подключен через контекст", {
+      component: "WebSocketContext",
+    });
   }, []);
 
   const handleDisconnect = useCallback(() => {
-    console.log("WebSocket отключен через контекст");
+    logger.debug("WebSocket отключен через контекст", {
+      component: "WebSocketContext",
+    });
   }, []);
 
   const { isConnected, connectionError, sendMessage, connect, disconnect } =

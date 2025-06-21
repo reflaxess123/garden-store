@@ -1,5 +1,6 @@
 "use client";
 
+import { logger } from "@/shared";
 import { Button } from "@/shared/ui/button";
 import {
   Dialog,
@@ -59,7 +60,10 @@ export default function DeleteConfirmDialog({
       setOpen(false);
     } catch (error) {
       // Ошибка должна быть обработана в onConfirm
-      console.error("Delete operation failed:", error);
+      logger.error("Delete operation failed", error, {
+        component: "DeleteConfirmDialog",
+        itemName,
+      });
     }
   };
 

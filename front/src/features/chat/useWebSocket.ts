@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuth } from "@/features/auth/AuthContext";
+import { logger } from "@/shared";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 export interface WebSocketMessage {
@@ -77,8 +78,12 @@ export function useWebSocket({
 
   const connect = useCallback(() => {
     if (!isAuthenticated || !user) {
-      console.log(
-        "Пользователь не авторизован, WebSocket подключение отменено"
+      logger.debug(
+        "Пользователь не авторизован, WebSocket подключение отменено",
+        {
+          component: "useWebSocket",
+          action: "connect",
+        }
       );
       return;
     }
@@ -89,7 +94,10 @@ export function useWebSocket({
       (ws.current.readyState === WebSocket.OPEN ||
         ws.current.readyState === WebSocket.CONNECTING)
     ) {
-      console.log("WebSocket уже подключен или подключается");
+      logger.debug("WebSocket уже подключен или подключается", {
+        component: "useWebSocket",
+        readyState: ws.current.readyState,
+      });
       return;
     }
 
@@ -100,17 +108,26 @@ export function useWebSocket({
     }
 
     try {
-      const wsUrl = process.env.NEXT_PUBLIC_WS_URL || "wss://server.sadovnick.store";
+      const wsUrl =
+        process.env.NEXT_PUBLIC_WS_URL || "wss://server.sadovnick.store";
       const endpoint = user.isAdmin
         ? `${wsUrl}/ws/admin/${user.id}`
         : `${wsUrl}/ws/chat/${user.id}`;
 
-      console.log("Подключение к WebSocket:", endpoint);
+      logger.info("Подключение к WebSocket", {
+        component: "useWebSocket",
+        endpoint,
+        userId: user.id,
+        isAdmin: user.isAdmin,
+      });
 
       ws.current = new WebSocket(endpoint);
 
       ws.current.onopen = () => {
-        console.log("WebSocket подключен");
+        logger.info("WebSocket подключен", {
+          component: "useWebSocket",
+          userId: user.id,
+        });
         setIsConnected(true);
         setConnectionError(null);
         reconnectAttempts.current = 0;
@@ -128,15 +145,26 @@ export function useWebSocket({
       ws.current.onmessage = (event) => {
         try {
           const message: WebSocketMessage = JSON.parse(event.data);
-          console.log("Получено сообщение WebSocket:", message);
+          logger.debug("Получено сообщение WebSocket", {
+            component: "useWebSocket",
+            messageType: message.type,
+            chatId: message.chatId,
+          });
           onMessageRef.current?.(message);
         } catch (error) {
-          console.error("Ошибка парсинга WebSocket сообщения:", error);
+          logger.error("Ошибка парсинга WebSocket сообщения", error, {
+            component: "useWebSocket",
+            eventData: event.data,
+          });
         }
       };
 
       ws.current.onclose = (event) => {
-        console.log("WebSocket отключен", event.code, event.reason);
+        logger.info("WebSocket отключен", {
+          component: "useWebSocket",
+          code: event.code,
+          reason: event.reason,
+        });
         setIsConnected(false);
 
         // Очищаем ping интервал
@@ -156,11 +184,12 @@ export function useWebSocket({
           user
         ) {
           const delay = Math.pow(2, reconnectAttempts.current) * 1000; // Экспоненциальная задержка
-          console.log(
-            `Переподключение через ${delay}ms (попытка ${
-              reconnectAttempts.current + 1
-            })`
-          );
+          logger.info("Планируется переподключение WebSocket", {
+            component: "useWebSocket",
+            delay,
+            attempt: reconnectAttempts.current + 1,
+            maxAttempts: maxReconnectAttempts,
+          });
 
           reconnectTimeout.current = setTimeout(() => {
             reconnectAttempts.current++;
@@ -168,16 +197,26 @@ export function useWebSocket({
             connectRef.current?.();
           }, delay);
         } else if (reconnectAttempts.current >= maxReconnectAttempts) {
+          logger.error("Не удалось восстановить WebSocket соединение", null, {
+            component: "useWebSocket",
+            attempts: reconnectAttempts.current,
+          });
           setConnectionError("Не удалось восстановить соединение");
         }
       };
 
       ws.current.onerror = (error) => {
-        console.error("Ошибка WebSocket:", error);
+        logger.error("Ошибка WebSocket", error, {
+          component: "useWebSocket",
+          userId: user.id,
+        });
         setConnectionError("Ошибка подключения");
       };
     } catch (error) {
-      console.error("Ошибка создания WebSocket:", error);
+      logger.error("Ошибка создания WebSocket", error, {
+        component: "useWebSocket",
+        userId: user.id,
+      });
       setConnectionError("Ошибка создания подключения");
     }
   }, [isAuthenticated, user]);
@@ -215,7 +254,10 @@ export function useWebSocket({
         user &&
         !isConnected
       ) {
-        console.log("Страница снова видна, переподключение к WebSocket");
+        logger.info("Страница снова видна, переподключение к WebSocket", {
+          component: "useWebSocket",
+          userId: user.id,
+        });
         connectRef.current?.();
       }
     };
@@ -230,13 +272,24 @@ export function useWebSocket({
     if (ws.current && ws.current.readyState === WebSocket.OPEN) {
       try {
         ws.current.send(JSON.stringify(message));
-        console.log("Отправлено WebSocket сообщение:", message);
+        logger.debug("Отправлено WebSocket сообщение", {
+          component: "useWebSocket",
+          messageType: message.type,
+          chatId: message.chatId,
+        });
       } catch (error) {
-        console.error("Ошибка отправки WebSocket сообщения:", error);
+        logger.error("Ошибка отправки WebSocket сообщения", error, {
+          component: "useWebSocket",
+          messageType: message.type,
+          chatId: message.chatId,
+        });
         setConnectionError("Ошибка отправки сообщения");
       }
     } else {
-      console.warn("WebSocket не подключен, сообщение не отправлено");
+      logger.warn("WebSocket не подключен, сообщение не отправлено", {
+        component: "useWebSocket",
+        userId: user?.id,
+      });
       setConnectionError("Соединение не установлено");
     }
   }, []);

@@ -13,6 +13,18 @@ export async function middleware(request: NextRequest, event: NextFetchEvent) {
   const protectedRoutes = ["/profile", "/favourites", "/cart", "/checkout"];
   const isAdminRoute = request.nextUrl.pathname.startsWith("/admin");
 
+  // Редирект старых ссылок категорий на объединенный каталог
+  const categoryRouteMatch = request.nextUrl.pathname.match(
+    /^\/catalog\/([^\/]+)$/
+  );
+  if (categoryRouteMatch) {
+    // Перенаправляем все старые ссылки категорий на общий каталог
+    const url = request.nextUrl.clone();
+    url.pathname = "/catalog";
+    // Сохраняем существующие query параметры
+    return NextResponse.redirect(url, 301); // Permanent redirect
+  }
+
   // Если пользователь не авторизован и пытается получить доступ к защищенному маршруту
   if (
     !isAuthenticated &&

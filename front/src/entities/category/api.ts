@@ -23,16 +23,3 @@ export async function getAllCategories(): Promise<Category[]> {
   const data = await response.json();
   return data as Category[];
 }
-
-export async function getCategoryBySlug(
-  slug: string
-): Promise<Category | null> {
-  const baseUrl = getBaseUrl();
-  const response = await fetch(`${baseUrl}/api/categories?slug=${slug}`);
-  if (!response.ok) {
-    console.error("Error fetching category by slug:", response.statusText);
-    return null;
-  }
-  const data = await response.json();
-  return data as Category;
-}

@@ -23,7 +23,7 @@ export default async function ProductPage({
           { label: "Каталог", href: "/catalog" },
           {
             label: product.category?.name || "",
-            href: `/catalog/${product.category?.slug || ""}`,
+            href: `/catalog?categories=${product.category?.id || ""}`,
           },
           { label: product.name, href: `/product/${product.slug}` },
         ]}

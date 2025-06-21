@@ -54,7 +54,7 @@ const Header = () => {
                     variant="ghost"
                     className="relative h-8 w-8 rounded-full p-0"
                   >
-                    <UserCircle2 className="h-6 w-6" />
+                    <UserCircle2 className="h-5 w-5" />
                     {user?.isAdmin && (
                       <Badge
                         variant="destructive"
@@ -106,7 +106,7 @@ const Header = () => {
         {/* Desktop Header */}
         <div className="hidden md:flex items-center justify-between px-4 py-4">
           <Link href="/" className="text-xl font-bold text-foreground">
-            Магаз Мамаши
+            Садовый рай
           </Link>
 
           <div className="flex-1 flex justify-center">
@@ -119,7 +119,7 @@ const Header = () => {
             <ChatButton />
             <Link href="/favourites">
               <BadgeIcon count={isMounted ? favoriteItemCount : 0}>
-                <Heart className="h-6 w-6" />
+                <Heart className="h-5 w-5" />
               </BadgeIcon>
             </Link>
             <CartPanel />
@@ -129,7 +129,7 @@ const Header = () => {
                   variant="ghost"
                   className="relative h-10 w-10 rounded-full"
                 >
-                  <UserCircle2 className="h-8 w-8" />
+                  <UserCircle2 className="h-5 w-5" />
                   {user?.isAdmin && (
                     <Badge
                       variant="destructive"

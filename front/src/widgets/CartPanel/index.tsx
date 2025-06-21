@@ -37,7 +37,7 @@ const CartPanel = () => {
     <Sheet>
       <SheetTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">
-          <ShoppingCart className="h-6 w-6" />
+          <ShoppingCart className="h-5 w-5" />
           {mounted && items.length > 0 && (
             <Badge className="absolute -right-2 -top-2 h-5 w-5 p-0 flex items-center justify-center text-xs bg-red-500 hover:bg-red-600">
               {items.length}

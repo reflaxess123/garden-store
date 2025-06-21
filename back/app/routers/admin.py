@@ -4,7 +4,12 @@ from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import select, func
 from app.db.database import get_db
 from app.db import models
-from app.schemas import CategoryInDB, CategoryCreate, CategoryUpdate, ProductInDB, ProductCreate, ProductUpdate, OrderInDB, OrderUpdateStatus, CustomUser, UserInDB, UserCreate, UserUpdate
+from app.schemas import (
+    CategoryCreate, CategoryUpdate, CategoryInDB,
+    ProductCreate, ProductUpdate, ProductInDB, ProductOfflineUpdate,
+    OrderInDB, OrderUpdateStatus, OrderEdit,
+    UserCreate, UserUpdate, UserInDB, CustomUser
+)
 from app.auth import get_current_admin_user, pwd_context
 from typing import List, Optional
 import uuid
@@ -191,6 +196,36 @@ async def update_admin_product(
     )
     db_product_with_category = result.scalars().first()
     return ProductInDB.model_validate(db_product_with_category, from_attributes=True)
+
+@router.patch("/admin/products/{product_id}/offline", response_model=ProductInDB)
+async def update_product_offline_purchases(
+    product_id: uuid.UUID, 
+    offline_update: ProductOfflineUpdate, 
+    db: AsyncSession = Depends(get_db),
+    current_user: CustomUser = Depends(get_current_admin_user)
+):
+    """Обновить количество оффлайн покупок и заказов продукта"""
+    result = await db.execute(select(models.Product).filter(models.Product.id == product_id))
+    db_product = result.scalars().first()
+    if not db_product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    
+    db_product.offline_purchases = offline_update.offlinePurchases
+    if offline_update.timesOrdered is not None:
+        db_product.times_ordered = offline_update.timesOrdered
+    
+    db.add(db_product)
+    await db.commit()
+    await db.refresh(db_product)
+    
+    # Загружаем продукт с категорией для корректной сериализации
+    result = await db.execute(
+        select(models.Product)
+        .options(joinedload(models.Product.category))
+        .filter(models.Product.id == product_id)
+    )
+    db_product_with_category = result.scalars().first()
+    return ProductInDB.model_validate(db_product_with_category, from_attributes=True)
 # endregion
 
 # region Admin Orders
@@ -280,6 +315,69 @@ async def delete_admin_order(
     await db.delete(db_order)
     await db.commit()
     return
+
+@router.patch("/admin/orders/{order_id}/edit", response_model=OrderInDB)
+async def edit_admin_order(
+    order_id: uuid.UUID, 
+    order_edit: OrderEdit, 
+    db: AsyncSession = Depends(get_db),
+    current_user: CustomUser = Depends(get_current_admin_user)
+):
+    """Редактировать состав заказа (только для админа)"""
+    # Получаем заказ
+    result = await db.execute(select(models.Order).filter(models.Order.id == order_id))
+    db_order = result.scalars().first()
+    if not db_order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    
+    # Удаляем старые элементы заказа
+    order_items_result = await db.execute(
+        select(models.OrderItem).filter(models.OrderItem.order_id == order_id)
+    )
+    old_order_items = order_items_result.scalars().all()
+    
+    for item in old_order_items:
+        await db.delete(item)
+    
+    # Создаем новые элементы заказа
+    for item_data in order_edit.orderItems:
+        db_order_item = models.OrderItem(
+            order_id=order_id,
+            product_id=item_data.productId,
+            quantity=item_data.quantity,
+            price_snapshot=item_data.priceSnapshot,
+            name=item_data.name,
+            image_url=item_data.imageUrl
+        )
+        db.add(db_order_item)
+    
+    # Обновляем общую сумму заказа
+    db_order.total_amount = order_edit.totalAmount
+    db.add(db_order)
+    
+    await db.commit()
+    
+    # Создаем уведомление для пользователя об изменении заказа
+    await create_notification(
+        db=db,
+        user_id=str(db_order.user_id),
+        title="Изменение заказа",
+        message="Состав вашего заказа был изменен администратором",
+        notification_type="order_status",
+        notification_data={
+            "order_id": str(order_id),
+            "action": "order_edited"
+        }
+    )
+    
+    # Загружаем заказ заново с order_items для корректной сериализации
+    result = await db.execute(
+        select(models.Order)
+        .options(joinedload(models.Order.order_items))
+        .filter(models.Order.id == order_id)
+    )
+    db_order_with_items = result.scalars().first()
+    return OrderInDB.model_validate(db_order_with_items, from_attributes=True)
 # endregion
 
 # region Admin Users

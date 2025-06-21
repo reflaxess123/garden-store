@@ -34,6 +34,7 @@ class Product(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     times_ordered = Column(Integer, default=0)
+    offline_purchases = Column(Integer, default=0)
 
     category = relationship("Category", back_populates="products")
     favourites = relationship("Favourite", back_populates="product")

@@ -239,12 +239,12 @@ export default function OrdersPage() {
 
   if (authLoading || isLoading) {
     return (
-      <main className="min-h-screen bg-gray-50">
+      <main className="min-h-screen bg-background">
         <div className="container mx-auto p-4 md:p-8">
           {/* Заголовок с загрузкой */}
           <div className="mb-8">
-            <div className="h-8 bg-gray-200 rounded-lg w-48 mb-2 animate-pulse"></div>
-            <div className="h-4 bg-gray-200 rounded w-96 animate-pulse"></div>
+            <div className="h-8 bg-muted rounded-lg w-48 mb-2 animate-pulse"></div>
+            <div className="h-4 bg-muted rounded w-96 animate-pulse"></div>
           </div>
 
           {/* Статистика с загрузкой */}

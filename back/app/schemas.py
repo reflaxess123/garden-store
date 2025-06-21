@@ -100,6 +100,10 @@ class ProductUpdate(ProductBase):
     price: Optional[Decimal] = Field(None, decimal_places=2)
     categoryId: Optional[uuid.UUID] = None
 
+class ProductOfflineUpdate(BaseModel):
+    offlinePurchases: int = Field(..., ge=0)
+    timesOrdered: Optional[int] = Field(None, ge=0)
+
 class ProductInDB(ProductBase):
     id: uuid.UUID
     categoryId: uuid.UUID = Field(..., alias="category_id", serialization_alias="categoryId")
@@ -107,6 +111,7 @@ class ProductInDB(ProductBase):
     createdAt: datetime = Field(..., alias="created_at", serialization_alias="createdAt")
     updatedAt: Optional[datetime] = Field(None, alias="updated_at", serialization_alias="updatedAt")
     timesOrdered: int = Field(..., alias="times_ordered", serialization_alias="timesOrdered")
+    offlinePurchases: int = Field(0, alias="offline_purchases", serialization_alias="offlinePurchases")
 
     model_config = {"from_attributes": True, "populate_by_name": True}
 
@@ -187,6 +192,10 @@ class OrderInDB(OrderBase):
 
 class OrderDelete(BaseModel):
     orderId: uuid.UUID
+
+class OrderEdit(BaseModel):
+    orderItems: List[OrderItemCreate]
+    totalAmount: Decimal = Field(..., decimal_places=2)
 # endregion
 
 # region Favourite Schemas

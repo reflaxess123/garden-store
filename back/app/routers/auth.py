@@ -7,9 +7,14 @@ from app.auth import get_password_hash, verify_password, create_access_token, ge
 from datetime import timedelta
 from app.auth import ACCESS_TOKEN_EXPIRE_MINUTES # Import the constant
 import uuid
+import os
 from sqlalchemy import select
 
 router = APIRouter()
+
+# Определяем окружение для настройки cookies
+IS_PRODUCTION = os.getenv("DEBUG", "true").lower() == "false"
+COOKIE_DOMAIN = ".sadovnick.store" if IS_PRODUCTION else None
 
 @router.post("/auth/signup", response_model=CustomUser, status_code=201, response_model_by_alias=True)
 async def signup(
@@ -59,7 +64,15 @@ async def signin(
         data={"sub": str(user.id), "is_admin": user.is_admin},
         expires_delta=access_token_expires,
     )
-    response.set_cookie(key="access_token", value=access_token, httponly=True, max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60)
+    response.set_cookie(
+        key="access_token", 
+        value=access_token, 
+        httponly=True, 
+        secure=IS_PRODUCTION,  # Secure только для продакшена (HTTPS)
+        samesite="lax",  # Защита от CSRF
+        domain=COOKIE_DOMAIN,  # Позволяет работать между поддоменами
+        max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60
+    )
     return {"access_token": access_token, "token_type": "bearer"}
 
 @router.post("/auth/logout")
@@ -69,7 +82,12 @@ async def logout(response: Response, request: Request, db: Session = Depends(get
         # In a real application, you might invalidate the token in a blacklist/revocation list in DB/Redis
         # For this example, we just delete the cookie.
         revoke_token(token) # Assuming revoke_token might do something if implemented
-    response.delete_cookie(key="access_token")
+    response.delete_cookie(
+        key="access_token",
+        secure=IS_PRODUCTION,  # Secure только для продакшена (HTTPS)
+        samesite="lax",
+        domain=COOKIE_DOMAIN  # Позволяет работать между поддоменами
+    )
     return {"message": "Successfully logged out"}
 
 @router.post("/auth/reset-password")

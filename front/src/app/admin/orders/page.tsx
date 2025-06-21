@@ -33,10 +33,13 @@ import {
   ChevronLeft,
   ChevronRight,
   Filter,
+  Grid,
+  List,
   Loader2,
   TrendingUp,
   X,
 } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -276,11 +279,16 @@ function OrderFilters({
 interface OrderAnalyticsModalProps {
   orders: Order[];
   isLoading: boolean;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
-function OrderAnalyticsModal({ orders, isLoading }: OrderAnalyticsModalProps) {
-  const [open, setOpen] = useState(false);
-
+function OrderAnalyticsModal({
+  orders,
+  isLoading,
+  open,
+  onOpenChange,
+}: OrderAnalyticsModalProps) {
   const analyticsData = useMemo(() => {
     if (!orders.length) return null;
 
@@ -342,7 +350,7 @@ function OrderAnalyticsModal({ orders, isLoading }: OrderAnalyticsModalProps) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
         <Button variant="outline" className="flex items-center gap-2">
           <TrendingUp className="h-4 w-4" />
@@ -369,42 +377,42 @@ function OrderAnalyticsModal({ orders, isLoading }: OrderAnalyticsModalProps) {
           <div className="space-y-6">
             {/* Сводная статистика */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+              <Card className="bg-primary/10 border-primary/20">
                 <CardContent className="pt-6">
-                  <div className="text-3xl font-bold text-blue-700">
+                  <div className="text-3xl font-bold text-primary">
                     {analyticsData.totalOrders}
                   </div>
-                  <p className="text-sm text-blue-600 font-medium">
+                  <p className="text-sm text-primary/80 font-medium">
                     Всего заказов
                   </p>
                 </CardContent>
               </Card>
-              <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+              <Card className="bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800">
                 <CardContent className="pt-6">
-                  <div className="text-3xl font-bold text-green-700">
+                  <div className="text-3xl font-bold text-emerald-700 dark:text-emerald-400">
                     {formatPrice(analyticsData.totalRevenue)}
                   </div>
-                  <p className="text-sm text-green-600 font-medium">
+                  <p className="text-sm text-emerald-600 dark:text-emerald-400/80 font-medium">
                     Общая выручка
                   </p>
                 </CardContent>
               </Card>
-              <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+              <Card className="bg-violet-50 dark:bg-violet-950/20 border-violet-200 dark:border-violet-800">
                 <CardContent className="pt-6">
-                  <div className="text-3xl font-bold text-purple-700">
+                  <div className="text-3xl font-bold text-violet-700 dark:text-violet-400">
                     {formatPrice(analyticsData.avgOrderValue)}
                   </div>
-                  <p className="text-sm text-purple-600 font-medium">
+                  <p className="text-sm text-violet-600 dark:text-violet-400/80 font-medium">
                     Средний чек
                   </p>
                 </CardContent>
               </Card>
-              <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
+              <Card className="bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800">
                 <CardContent className="pt-6">
-                  <div className="text-3xl font-bold text-orange-700">
+                  <div className="text-3xl font-bold text-amber-700 dark:text-amber-400">
                     {Object.keys(analyticsData.statusStats).length}
                   </div>
-                  <p className="text-sm text-orange-600 font-medium">
+                  <p className="text-sm text-amber-600 dark:text-amber-400/80 font-medium">
                     Статусов
                   </p>
                 </CardContent>
@@ -617,15 +625,34 @@ function Pagination({
 }
 
 export default function AdminOrdersPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState<boolean>(false);
 
+  // URL синхронизация для модалки аналитики
+  const isAnalyticsModalOpen = searchParams.get("showAnalytics") === "true";
+
+  const handleAnalyticsModalChange = (open: boolean) => {
+    const params = new URLSearchParams(searchParams);
+    if (open) {
+      params.set("showAnalytics", "true");
+    } else {
+      params.delete("showAnalytics");
+    }
+    router.replace(`?${params.toString()}`, { scroll: false });
+  };
+
+  // Состояние отображения (таблица или плитка)
+  const [viewMode, setViewMode] = useState<"table" | "grid">("table");
+
   // Состояние фильтров
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [sortBy, setSortBy] = useState("default");
+  const [sortBy, setSortBy] = useState("createdAt");
   const [sortOrder, setSortOrder] = useState("desc");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
@@ -769,7 +796,7 @@ export default function AdminOrdersPage() {
   const handleClearFilters = () => {
     setSearchQuery("");
     setStatusFilter("all");
-    setSortBy("default");
+    setSortBy("createdAt");
     setSortOrder("desc");
     setDateFrom("");
     setDateTo("");
@@ -816,7 +843,12 @@ export default function AdminOrdersPage() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
         <h1 className="text-3xl font-bold mb-4 sm:mb-0">Управление заказами</h1>
         <div className="flex flex-wrap gap-2">
-          <OrderAnalyticsModal orders={orders} isLoading={loading} />
+          <OrderAnalyticsModal
+            orders={orders}
+            isLoading={loading}
+            open={isAnalyticsModalOpen}
+            onOpenChange={handleAnalyticsModalChange}
+          />
         </div>
       </div>
 
@@ -824,7 +856,7 @@ export default function AdminOrdersPage() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
         <Card>
           <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-blue-600">
+            <div className="text-2xl font-bold text-primary">
               {stats.totalOrders}
             </div>
             <p className="text-sm text-muted-foreground">Всего заказов</p>
@@ -832,7 +864,7 @@ export default function AdminOrdersPage() {
         </Card>
         <Card>
           <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-green-600">
+            <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
               {stats.filteredCount}
             </div>
             <p className="text-sm text-muted-foreground">После фильтрации</p>
@@ -840,7 +872,7 @@ export default function AdminOrdersPage() {
         </Card>
         <Card>
           <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-purple-600">
+            <div className="text-2xl font-bold text-violet-600 dark:text-violet-400">
               {formatPrice(stats.totalRevenue)}
             </div>
             <p className="text-sm text-muted-foreground">Общая выручка</p>
@@ -848,7 +880,7 @@ export default function AdminOrdersPage() {
         </Card>
         <Card>
           <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-orange-600">
+            <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">
               {formatPrice(stats.avgOrderValue)}
             </div>
             <p className="text-sm text-muted-foreground">Средний чек</p>
@@ -857,6 +889,27 @@ export default function AdminOrdersPage() {
       </div>
 
       {/* Фильтры */}
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-semibold">Фильтры и поиск</h2>
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">Отображение:</span>
+          <Button
+            variant={viewMode === "table" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setViewMode("table")}
+          >
+            <List className="h-4 w-4" />
+          </Button>
+          <Button
+            variant={viewMode === "grid" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setViewMode("grid")}
+          >
+            <Grid className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+
       <OrderFilters
         searchQuery={searchQuery}
         statusFilter={statusFilter}
@@ -900,32 +953,67 @@ export default function AdminOrdersPage() {
             </p>
           </CardContent>
         </Card>
-      ) : (
-        <div className="space-y-6">
-          {paginatedOrders.map((order) => (
-            <Card key={order.id}>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-lg font-medium flex items-center gap-2">
-                  Заказ #{order.id.slice(0, 8)}
-                  <Badge
-                    variant={
-                      order.status === "delivered"
-                        ? "default"
-                        : order.status === "cancelled"
-                        ? "destructive"
-                        : order.status === "processing"
-                        ? "secondary"
-                        : "outline"
-                    }
-                  >
-                    {order.status === "pending" && "В ожидании"}
-                    {order.status === "processing" && "В обработке"}
-                    {order.status === "shipped" && "Отправлен"}
-                    {order.status === "delivered" && "Доставлен"}
-                    {order.status === "cancelled" && "Отменен"}
-                  </Badge>
-                </CardTitle>
-                <div className="flex items-center gap-2">
+      ) : viewMode === "grid" ? (
+        <>
+          {/* Плиточное отображение */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {paginatedOrders.map((order) => (
+              <Card
+                key={order.id}
+                className="hover:shadow-lg transition-shadow"
+              >
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-lg">
+                      #{order.id.slice(0, 8)}
+                    </CardTitle>
+                    <Badge
+                      variant={
+                        order.status === "delivered"
+                          ? "default"
+                          : order.status === "cancelled"
+                          ? "destructive"
+                          : order.status === "processing"
+                          ? "secondary"
+                          : "outline"
+                      }
+                    >
+                      {order.status === "pending" && "В ожидании"}
+                      {order.status === "processing" && "В обработке"}
+                      {order.status === "shipped" && "Отправлен"}
+                      {order.status === "delivered" && "Доставлен"}
+                      {order.status === "cancelled" && "Отменен"}
+                    </Badge>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    {new Date(order.createdAt).toLocaleDateString("ru-RU")}
+                  </p>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="space-y-1">
+                    <p className="font-medium">{order.fullName}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {order.email}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {order.phone}
+                    </p>
+                  </div>
+
+                  <div className="space-y-1">
+                    <p className="text-sm">
+                      <span className="font-medium">Адрес:</span> {order.city}
+                    </p>
+                    <p className="text-sm">
+                      <span className="font-medium">Сумма:</span>{" "}
+                      {formatPrice(order.totalAmount)}
+                    </p>
+                    <p className="text-sm">
+                      <span className="font-medium">Товаров:</span>{" "}
+                      {order.orderItems?.length || 0}
+                    </p>
+                  </div>
+
                   <Select
                     onValueChange={(newStatus) =>
                       handleStatusChange(order.id, newStatus)
@@ -933,7 +1021,7 @@ export default function AdminOrdersPage() {
                     value={order.status}
                     disabled={isUpdatingStatus}
                   >
-                    <SelectTrigger className="w-[180px]">
+                    <SelectTrigger className="w-full">
                       <SelectValue placeholder="Изменить статус" />
                     </SelectTrigger>
                     <SelectContent>
@@ -944,68 +1032,120 @@ export default function AdminOrdersPage() {
                       <SelectItem value="cancelled">Отменен</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <p>
-                      <strong>Пользователь:</strong> {order.fullName} (
-                      {order.email})
-                    </p>
-                    <p>
-                      <strong>ID пользователя:</strong> {order.userId}
-                    </p>
-                    <p>
-                      <strong>Дата:</strong>{" "}
-                      {new Date(order.createdAt).toLocaleDateString("ru-RU", {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </p>
-                    <p>
-                      <strong>Итого:</strong> {formatPrice(order.totalAmount)}
-                    </p>
-                    <p>
-                      <strong>Телефон:</strong> {order.phone}
-                    </p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </>
+      ) : (
+        <>
+          {/* Списочное отображение */}
+          <div className="space-y-6">
+            {paginatedOrders.map((order) => (
+              <Card key={order.id}>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-lg font-medium flex items-center gap-2">
+                    Заказ #{order.id.slice(0, 8)}
+                    <Badge
+                      variant={
+                        order.status === "delivered"
+                          ? "default"
+                          : order.status === "cancelled"
+                          ? "destructive"
+                          : order.status === "processing"
+                          ? "secondary"
+                          : "outline"
+                      }
+                    >
+                      {order.status === "pending" && "В ожидании"}
+                      {order.status === "processing" && "В обработке"}
+                      {order.status === "shipped" && "Отправлен"}
+                      {order.status === "delivered" && "Доставлен"}
+                      {order.status === "cancelled" && "Отменен"}
+                    </Badge>
+                  </CardTitle>
+                  <div className="flex items-center gap-2">
+                    <Select
+                      onValueChange={(newStatus) =>
+                        handleStatusChange(order.id, newStatus)
+                      }
+                      value={order.status}
+                      disabled={isUpdatingStatus}
+                    >
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Изменить статус" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="pending">В ожидании</SelectItem>
+                        <SelectItem value="processing">В обработке</SelectItem>
+                        <SelectItem value="shipped">Отправлен</SelectItem>
+                        <SelectItem value="delivered">Доставлен</SelectItem>
+                        <SelectItem value="cancelled">Отменен</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
-                  <div>
-                    <p>
-                      <strong>Адрес:</strong> {order.address}, {order.city},{" "}
-                      {order.postalCode}
-                    </p>
-                    <h3 className="font-semibold mt-2 mb-1">Товары:</h3>
-                    <ul className="space-y-1">
-                      {order.orderItems &&
-                        order.orderItems.map((item, index) => (
-                          <li
-                            key={index}
-                            className="flex items-center space-x-2"
-                          >
-                            {item.imageUrl && (
-                              <img
-                                src={item.imageUrl}
-                                alt={item.name}
-                                className="h-10 w-10 object-cover rounded-md"
-                              />
-                            )}
-                            <span>
-                              {item.name} x {item.quantity} (
-                              {formatPrice(item.priceSnapshot)})
-                            </span>
-                          </li>
-                        ))}
-                    </ul>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <p>
+                        <strong>Пользователь:</strong> {order.fullName} (
+                        {order.email})
+                      </p>
+                      <p>
+                        <strong>ID пользователя:</strong> {order.userId}
+                      </p>
+                      <p>
+                        <strong>Дата:</strong>{" "}
+                        {new Date(order.createdAt).toLocaleDateString("ru-RU", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </p>
+                      <p>
+                        <strong>Итого:</strong> {formatPrice(order.totalAmount)}
+                      </p>
+                      <p>
+                        <strong>Телефон:</strong> {order.phone}
+                      </p>
+                    </div>
+                    <div>
+                      <p>
+                        <strong>Адрес:</strong> {order.address}, {order.city},{" "}
+                        {order.postalCode}
+                      </p>
+                      <h3 className="font-semibold mt-2 mb-1">Товары:</h3>
+                      <ul className="space-y-1">
+                        {order.orderItems &&
+                          order.orderItems.map((item, index) => (
+                            <li
+                              key={index}
+                              className="flex items-center space-x-2"
+                            >
+                              {item.imageUrl && (
+                                <img
+                                  src={item.imageUrl}
+                                  alt={item.name}
+                                  className="h-10 w-10 object-cover rounded-md"
+                                />
+                              )}
+                              <span>
+                                {item.name} x {item.quantity} (
+                                {formatPrice(item.priceSnapshot)})
+                              </span>
+                            </li>
+                          ))}
+                      </ul>
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </>
       )}
 
       {/* Пагинация снизу */}

@@ -4,6 +4,12 @@ import { AuthGuard } from "@/features/auth/ui/AuthGuard";
 import { cn } from "@/shared/lib/utils";
 import { Toaster } from "@/shared/ui/sonner";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/shared/ui/tooltip";
+import {
   Home,
   MessageCircle,
   Package,
@@ -13,28 +19,48 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 
 interface AdminNavLinkProps {
   href: string;
   children: React.ReactNode;
+  isCollapsed?: boolean;
+  label?: string;
 }
 
-function AdminNavLink({ href, children }: AdminNavLinkProps) {
+function AdminNavLink({
+  href,
+  children,
+  isCollapsed = false,
+  label,
+}: AdminNavLinkProps) {
   const pathname = usePathname();
   const isActive =
     pathname === href || (href !== "/admin" && pathname.startsWith(href));
 
-  return (
+  const linkContent = (
     <Link
       href={href}
       className={cn(
         "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary",
-        isActive && "bg-muted text-primary"
+        isActive && "bg-muted text-primary",
+        isCollapsed && "justify-center px-2"
       )}
     >
       {children}
     </Link>
   );
+
+  if (isCollapsed && label) {
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>{linkContent}</TooltipTrigger>
+        <TooltipContent side="right">{label}</TooltipContent>
+      </Tooltip>
+    );
+  }
+
+  return linkContent;
 }
 
 export default function AdminLayout({
@@ -43,48 +69,86 @@ export default function AdminLayout({
   children: React.ReactNode;
 }>) {
   const pathname = usePathname();
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  const toggleSidebar = () => {
+    setIsCollapsed(!isCollapsed);
+  };
 
   return (
     <AuthGuard adminOnly={true}>
-      <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
+      <div
+        className={cn(
+          "grid min-h-screen w-full transition-all duration-300",
+          isCollapsed
+            ? "md:grid-cols-[80px_1fr] lg:grid-cols-[80px_1fr]"
+            : "md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]"
+        )}
+      >
         <div className="hidden border-r bg-muted/40 md:block">
           <div className="flex h-full max-h-screen flex-col gap-2">
             <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
-              <Link
-                href="/admin"
-                className="flex items-center gap-2 font-semibold"
+              <button
+                onClick={toggleSidebar}
+                className="flex items-center gap-2 font-semibold hover:text-primary transition-colors"
               >
                 <Home className="h-6 w-6" />
-                <span>Админ-панель</span>
-              </Link>
+                {!isCollapsed && <span>Админ-панель</span>}
+              </button>
             </div>
             <div className="flex-1">
-              <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
-                <AdminNavLink href="/admin">
-                  <Home className="h-4 w-4" />
-                  Обзор
-                </AdminNavLink>
-                <AdminNavLink href="/admin/products">
-                  <Package className="h-4 w-4" />
-                  Продукты
-                </AdminNavLink>
-                <AdminNavLink href="/admin/categories">
-                  <Tags className="h-4 w-4" />
-                  Категории
-                </AdminNavLink>
-                <AdminNavLink href="/admin/orders">
-                  <ShoppingBag className="h-4 w-4" />
-                  Заказы
-                </AdminNavLink>
-                <AdminNavLink href="/admin/users">
-                  <Users className="h-4 w-4" />
-                  Пользователи
-                </AdminNavLink>
-                <AdminNavLink href="/admin/chats">
-                  <MessageCircle className="h-4 w-4" />
-                  Чаты
-                </AdminNavLink>
-              </nav>
+              <TooltipProvider>
+                <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
+                  <AdminNavLink
+                    href="/admin"
+                    isCollapsed={isCollapsed}
+                    label="Обзор"
+                  >
+                    <Home className="h-4 w-4" />
+                    {!isCollapsed && "Обзор"}
+                  </AdminNavLink>
+                  <AdminNavLink
+                    href="/admin/products"
+                    isCollapsed={isCollapsed}
+                    label="Продукты"
+                  >
+                    <Package className="h-4 w-4" />
+                    {!isCollapsed && "Продукты"}
+                  </AdminNavLink>
+                  <AdminNavLink
+                    href="/admin/categories"
+                    isCollapsed={isCollapsed}
+                    label="Категории"
+                  >
+                    <Tags className="h-4 w-4" />
+                    {!isCollapsed && "Категории"}
+                  </AdminNavLink>
+                  <AdminNavLink
+                    href="/admin/orders"
+                    isCollapsed={isCollapsed}
+                    label="Заказы"
+                  >
+                    <ShoppingBag className="h-4 w-4" />
+                    {!isCollapsed && "Заказы"}
+                  </AdminNavLink>
+                  <AdminNavLink
+                    href="/admin/users"
+                    isCollapsed={isCollapsed}
+                    label="Пользователи"
+                  >
+                    <Users className="h-4 w-4" />
+                    {!isCollapsed && "Пользователи"}
+                  </AdminNavLink>
+                  <AdminNavLink
+                    href="/admin/chats"
+                    isCollapsed={isCollapsed}
+                    label="Чаты"
+                  >
+                    <MessageCircle className="h-4 w-4" />
+                    {!isCollapsed && "Чаты"}
+                  </AdminNavLink>
+                </nav>
+              </TooltipProvider>
             </div>
           </div>
         </div>

@@ -252,8 +252,8 @@ export default function OrdersPage() {
             {[...Array(4)].map((_, i) => (
               <Card key={i} className="animate-pulse">
                 <CardContent className="p-6">
-                  <div className="h-4 bg-gray-200 rounded w-20 mb-2"></div>
-                  <div className="h-8 bg-gray-200 rounded w-16"></div>
+                  <div className="h-4 bg-muted rounded w-20 mb-2"></div>
+                  <div className="h-8 bg-muted rounded w-16"></div>
                 </CardContent>
               </Card>
             ))}
@@ -264,13 +264,13 @@ export default function OrdersPage() {
             {[...Array(3)].map((_, i) => (
               <Card key={i} className="animate-pulse">
                 <CardHeader>
-                  <div className="h-6 bg-gray-200 rounded w-32"></div>
+                  <div className="h-6 bg-muted rounded w-32"></div>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    <div className="h-4 bg-gray-200 rounded w-full"></div>
-                    <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                    <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                    <div className="h-4 bg-muted rounded w-full"></div>
+                    <div className="h-4 bg-muted rounded w-3/4"></div>
+                    <div className="h-4 bg-muted rounded w-1/2"></div>
                   </div>
                 </CardContent>
               </Card>
@@ -283,20 +283,20 @@ export default function OrdersPage() {
 
   if (!isAuthenticated) {
     return (
-      <main className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <main className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <div className="bg-red-100 rounded-full p-6 w-24 h-24 mx-auto mb-4 flex items-center justify-center">
-            <XCircle className="h-12 w-12 text-red-600" />
+          <div className="bg-destructive/10 rounded-full p-6 w-24 h-24 mx-auto mb-4 flex items-center justify-center">
+            <XCircle className="h-12 w-12 text-destructive" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+          <h1 className="text-2xl font-bold text-foreground mb-2">
             Требуется авторизация
           </h1>
-          <p className="text-gray-600 mb-6">
+          <p className="text-muted-foreground mb-6">
             Пожалуйста, войдите в систему, чтобы просмотреть свои заказы
           </p>
           <Button
             onClick={() => (window.location.href = "/login")}
-            className="bg-green-600 hover:bg-green-700"
+            className="bg-emerald-600 hover:bg-emerald-700 text-white"
           >
             Войти в систему
           </Button>
@@ -307,15 +307,15 @@ export default function OrdersPage() {
 
   if (error) {
     return (
-      <main className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <main className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <div className="bg-red-100 rounded-full p-6 w-24 h-24 mx-auto mb-4 flex items-center justify-center">
-            <AlertCircle className="h-12 w-12 text-red-600" />
+          <div className="bg-destructive/10 rounded-full p-6 w-24 h-24 mx-auto mb-4 flex items-center justify-center">
+            <AlertCircle className="h-12 w-12 text-destructive" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+          <h1 className="text-2xl font-bold text-foreground mb-2">
             Ошибка загрузки
           </h1>
-          <p className="text-gray-600 mb-6">
+          <p className="text-muted-foreground mb-6">
             Не удалось загрузить заказы. Пожалуйста, попробуйте еще раз
           </p>
           <Button onClick={() => window.location.reload()} variant="outline">
@@ -328,71 +328,71 @@ export default function OrdersPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-50">
+    <main className="min-h-screen bg-background">
       <div className="container mx-auto p-4 md:p-8">
         {/* Заголовок */}
         <div className="mb-8">
-          <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-2">
+          <h1 className="text-3xl lg:text-4xl font-bold text-foreground mb-2">
             Мои заказы
           </h1>
-          <p className="text-lg text-gray-600">
+          <p className="text-lg text-muted-foreground">
             Управляйте своими заказами и отслеживайте статус доставки
           </p>
         </div>
 
         {/* Статистика */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
+          <Card className="bg-primary text-primary-foreground">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-blue-100 text-sm font-medium">
+                  <p className="text-primary-foreground/80 text-sm font-medium">
                     Всего заказов
                   </p>
                   <p className="text-3xl font-bold">{orderStats.total}</p>
                 </div>
-                <ShoppingBag className="h-8 w-8 text-blue-200" />
+                <ShoppingBag className="h-8 w-8 text-primary-foreground/70" />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white">
+          <Card className="bg-emerald-500 dark:bg-emerald-600 text-white">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-green-100 text-sm font-medium">
+                  <p className="text-white/80 text-sm font-medium">
                     Общая сумма
                   </p>
                   <p className="text-2xl font-bold">
                     {formatPrice(orderStats.totalAmount)}
                   </p>
                 </div>
-                <CreditCard className="h-8 w-8 text-green-200" />
+                <CreditCard className="h-8 w-8 text-white/70" />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-r from-purple-500 to-purple-600 text-white">
+          <Card className="bg-violet-500 dark:bg-violet-600 text-white">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-purple-100 text-sm font-medium">
+                  <p className="text-white/80 text-sm font-medium">
                     Доставлено
                   </p>
                   <p className="text-3xl font-bold">
                     {orderStats.statusCounts["Доставлен"] || 0}
                   </p>
                 </div>
-                <CheckCircle className="h-8 w-8 text-purple-200" />
+                <CheckCircle className="h-8 w-8 text-white/70" />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-r from-orange-500 to-orange-600 text-white">
+          <Card className="bg-amber-500 dark:bg-amber-600 text-white">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-orange-100 text-sm font-medium">
+                  <p className="text-white/80 text-sm font-medium">
                     В обработке
                   </p>
                   <p className="text-3xl font-bold">
@@ -400,7 +400,7 @@ export default function OrdersPage() {
                       (orderStats.statusCounts["Обработка"] || 0)}
                   </p>
                 </div>
-                <Clock className="h-8 w-8 text-orange-200" />
+                <Clock className="h-8 w-8 text-white/70" />
               </div>
             </CardContent>
           </Card>
@@ -412,7 +412,7 @@ export default function OrdersPage() {
             <div className="flex flex-col lg:flex-row gap-4">
               <div className="flex-1">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                   <Input
                     placeholder="Поиск по номеру заказа, имени или email..."
                     value={searchQuery}
@@ -463,31 +463,31 @@ export default function OrdersPage() {
         {/* Результаты */}
         {!orders || orders.length === 0 ? (
           <div className="text-center py-16">
-            <div className="bg-gray-100 rounded-full p-6 w-24 h-24 mx-auto mb-4 flex items-center justify-center">
-              <ShoppingBag className="h-12 w-12 text-gray-400" />
+            <div className="bg-muted/50 rounded-full p-6 w-24 h-24 mx-auto mb-4 flex items-center justify-center">
+              <ShoppingBag className="h-12 w-12 text-muted-foreground" />
             </div>
-            <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+            <h2 className="text-2xl font-semibold text-foreground mb-2">
               Заказов пока нет
             </h2>
-            <p className="text-gray-600 mb-6">
+            <p className="text-muted-foreground mb-6">
               Когда вы сделаете первый заказ, он появится здесь
             </p>
             <Button
               onClick={() => (window.location.href = "/catalog")}
-              className="bg-green-600 hover:bg-green-700"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white"
             >
               Перейти в каталог
             </Button>
           </div>
         ) : filteredAndSortedOrders.length === 0 ? (
           <div className="text-center py-16">
-            <div className="bg-gray-100 rounded-full p-6 w-24 h-24 mx-auto mb-4 flex items-center justify-center">
-              <Search className="h-12 w-12 text-gray-400" />
+            <div className="bg-muted/50 rounded-full p-6 w-24 h-24 mx-auto mb-4 flex items-center justify-center">
+              <Search className="h-12 w-12 text-muted-foreground" />
             </div>
-            <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+            <h2 className="text-2xl font-semibold text-foreground mb-2">
               Ничего не найдено
             </h2>
-            <p className="text-gray-600 mb-6">
+            <p className="text-muted-foreground mb-6">
               Попробуйте изменить параметры поиска или фильтры
             </p>
             <Button
@@ -511,14 +511,14 @@ export default function OrdersPage() {
                 <CardHeader className="pb-4">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
-                      <div className="bg-green-100 rounded-full p-2">
-                        <Package className="h-5 w-5 text-green-600" />
+                      <div className="bg-emerald-100 dark:bg-emerald-900/20 rounded-full p-2">
+                        <Package className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                       </div>
                       <div>
                         <CardTitle className="text-xl font-semibold">
                           Заказ #{order.id.slice(0, 8)}
                         </CardTitle>
-                        <p className="text-sm text-gray-600 flex items-center gap-1 mt-1">
+                        <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
                           <Calendar className="h-4 w-4" />
                           {new Date(order.createdAt).toLocaleDateString(
                             "ru-RU",
@@ -543,7 +543,7 @@ export default function OrdersPage() {
                         {getReadableStatus(order.status)}
                       </Badge>
                       <div className="text-right">
-                        <p className="text-2xl font-bold text-green-600">
+                        <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
                           {formatPrice(parseFloat(order.totalAmount))}
                         </p>
                       </div>
@@ -555,25 +555,25 @@ export default function OrdersPage() {
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/* Информация о доставке */}
                     <div className="space-y-4">
-                      <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                      <h3 className="font-semibold text-foreground flex items-center gap-2">
                         <MapPin className="h-4 w-4" />
                         Информация о доставке
                       </h3>
-                      <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+                      <div className="bg-muted/50 rounded-lg p-4 space-y-2">
                         <p className="flex items-center gap-2 text-sm">
                           <span className="font-medium">Получатель:</span>
                           {order.fullName}
                         </p>
                         <p className="flex items-center gap-2 text-sm">
-                          <Mail className="h-4 w-4 text-gray-400" />
+                          <Mail className="h-4 w-4 text-muted-foreground" />
                           {order.email}
                         </p>
                         <p className="flex items-center gap-2 text-sm">
-                          <Phone className="h-4 w-4 text-gray-400" />
+                          <Phone className="h-4 w-4 text-muted-foreground" />
                           {order.phone}
                         </p>
                         <p className="flex items-start gap-2 text-sm">
-                          <MapPin className="h-4 w-4 text-gray-400 mt-0.5" />
+                          <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
                           <span>
                             {order.address}, {order.city}, {order.postalCode}
                           </span>
@@ -583,7 +583,7 @@ export default function OrdersPage() {
 
                     {/* Товары в заказе */}
                     <div className="space-y-4">
-                      <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                      <h3 className="font-semibold text-foreground flex items-center gap-2">
                         <ShoppingBag className="h-4 w-4" />
                         Товары в заказе ({order.orderItems?.length || 0})
                       </h3>
@@ -591,29 +591,29 @@ export default function OrdersPage() {
                         {order.orderItems?.map((item, index) => (
                           <div
                             key={index}
-                            className="flex items-center gap-3 bg-white border border-gray-200 rounded-lg p-3"
+                            className="flex items-center gap-3 bg-card border border-border rounded-lg p-3"
                           >
                             {item.imageUrl ? (
                               <img
                                 src={item.imageUrl}
                                 alt={item.name}
-                                className="h-12 w-12 object-cover rounded-lg border border-gray-200"
+                                className="h-12 w-12 object-cover rounded-lg border border-border"
                               />
                             ) : (
-                              <div className="h-12 w-12 bg-gray-100 rounded-lg flex items-center justify-center">
-                                <Package className="h-6 w-6 text-gray-400" />
+                              <div className="h-12 w-12 bg-muted/50 rounded-lg flex items-center justify-center">
+                                <Package className="h-6 w-6 text-muted-foreground" />
                               </div>
                             )}
                             <div className="flex-1 min-w-0">
-                              <p className="font-medium text-gray-900 truncate">
+                              <p className="font-medium text-foreground truncate">
                                 {item.name}
                               </p>
-                              <p className="text-sm text-gray-600">
+                              <p className="text-sm text-muted-foreground">
                                 {item.quantity} ×{" "}
                                 {formatPrice(parseFloat(item.priceSnapshot))}
                               </p>
                             </div>
-                            <p className="font-semibold text-gray-900">
+                            <p className="font-semibold text-foreground">
                               {formatPrice(
                                 parseFloat(item.priceSnapshot) * item.quantity
                               )}
@@ -625,7 +625,7 @@ export default function OrdersPage() {
                   </div>
 
                   {/* Действия */}
-                  <div className="mt-6 pt-4 border-t border-gray-200 flex flex-col sm:flex-row gap-3 justify-between">
+                  <div className="mt-6 pt-4 border-t border-border flex flex-col sm:flex-row gap-3 justify-between">
                     <div className="flex gap-2">
                       <Button variant="outline" size="sm">
                         <Eye className="h-4 w-4 mr-2" />
@@ -660,7 +660,7 @@ export default function OrdersPage() {
           <DialogContent>
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
-                <Trash2 className="h-5 w-5 text-red-600" />
+                <Trash2 className="h-5 w-5 text-destructive" />
                 Удалить заказ
               </DialogTitle>
               <DialogDescription>

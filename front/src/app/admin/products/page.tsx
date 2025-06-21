@@ -14,6 +14,7 @@ import {
   TrendingUp,
   X,
 } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -662,14 +663,16 @@ function AdminFilters({
 interface PopularProductsModalProps {
   products: Product[];
   isLoading: boolean;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
 function PopularProductsModal({
   products,
   isLoading,
+  open,
+  onOpenChange,
 }: PopularProductsModalProps) {
-  const [open, setOpen] = useState(false);
-
   // Данные для простого графика
   const chartData = useMemo(() => {
     return products.slice(0, 10).map((product, index) => ({
@@ -685,7 +688,7 @@ function PopularProductsModal({
   const maxOrders = Math.max(...chartData.map((item) => item.orders), 1);
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
         <Button variant="outline" className="flex items-center gap-2">
           <TrendingUp className="h-4 w-4" />
@@ -712,22 +715,22 @@ function PopularProductsModal({
           <div className="space-y-6">
             {/* Сводная статистика */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+              <Card className="bg-primary/10 border-primary/20">
                 <CardContent className="pt-6">
-                  <div className="text-3xl font-bold text-blue-700">
+                  <div className="text-3xl font-bold text-primary">
                     {products.reduce(
                       (sum, p) => sum + (p.timesOrdered || 0),
                       0
                     )}
                   </div>
-                  <p className="text-sm text-blue-600 font-medium">
+                  <p className="text-sm text-primary/80 font-medium">
                     Всего заказов
                   </p>
                 </CardContent>
               </Card>
-              <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+              <Card className="bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800">
                 <CardContent className="pt-6">
-                  <div className="text-3xl font-bold text-green-700">
+                  <div className="text-3xl font-bold text-emerald-700 dark:text-emerald-400">
                     {formatPrice(
                       products.reduce(
                         (sum, p) =>
@@ -736,14 +739,14 @@ function PopularProductsModal({
                       )
                     )}
                   </div>
-                  <p className="text-sm text-green-600 font-medium">
+                  <p className="text-sm text-emerald-600 dark:text-emerald-400/80 font-medium">
                     Общая выручка
                   </p>
                 </CardContent>
               </Card>
-              <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+              <Card className="bg-violet-50 dark:bg-violet-950/20 border-violet-200 dark:border-violet-800">
                 <CardContent className="pt-6">
-                  <div className="text-3xl font-bold text-purple-700">
+                  <div className="text-3xl font-bold text-violet-700 dark:text-violet-400">
                     {formatPrice(
                       products.reduce(
                         (sum, p) =>
@@ -759,17 +762,17 @@ function PopularProductsModal({
                         )
                     )}
                   </div>
-                  <p className="text-sm text-purple-600 font-medium">
+                  <p className="text-sm text-violet-600 dark:text-violet-400/80 font-medium">
                     Средний чек
                   </p>
                 </CardContent>
               </Card>
-              <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
+              <Card className="bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800">
                 <CardContent className="pt-6">
-                  <div className="text-3xl font-bold text-orange-700">
+                  <div className="text-3xl font-bold text-amber-700 dark:text-amber-400">
                     {products.length}
                   </div>
-                  <p className="text-sm text-orange-600 font-medium">
+                  <p className="text-sm text-amber-600 dark:text-amber-400/80 font-medium">
                     Товаров в топе
                   </p>
                 </CardContent>
@@ -1006,9 +1009,25 @@ function Pagination({
 
 export default function AdminProductsPage() {
   const queryClient = useQueryClient();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
   const [isNewProductDialogOpen, setIsNewProductDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] =
     useState<AdminProductClient | null>(null);
+
+  // URL синхронизация для модалки популярных товаров
+  const isPopularModalOpen = searchParams.get("showPopular") === "true";
+
+  const handlePopularModalChange = (open: boolean) => {
+    const params = new URLSearchParams(searchParams);
+    if (open) {
+      params.set("showPopular", "true");
+    } else {
+      params.delete("showPopular");
+    }
+    router.replace(`?${params.toString()}`, { scroll: false });
+  };
 
   // Состояние фильтров
   const [searchQuery, setSearchQuery] = useState("");
@@ -1196,6 +1215,8 @@ export default function AdminProductsPage() {
           <PopularProductsModal
             products={bestsellers || []}
             isLoading={isLoadingBestsellers}
+            open={isPopularModalOpen}
+            onOpenChange={handlePopularModalChange}
           />
           <ProductFormDialog
             onSuccess={handleSuccess}

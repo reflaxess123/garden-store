@@ -1,6 +1,6 @@
 "use client";
 
-import { Minus, Plus, ShoppingBag, ShoppingCart, Trash2 } from "lucide-react";
+import { ShoppingBag, ShoppingCart } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -9,6 +9,10 @@ import { formatPrice } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import { Separator } from "@/shared/ui/separator";
 import { Breadcrumbs } from "@/widgets/Breadcrumbs";
+
+// Импортируем новые компоненты
+import { CartItem, type CartItemData } from "@/shared/ui/ecommerce";
+import { EmptyState, LoadingState } from "@/shared/ui/states";
 
 export default function CartPage() {
   const {
@@ -26,6 +30,15 @@ export default function CartPage() {
     setMounted(true);
   }, []);
 
+  // Преобразуем items в нужный формат
+  const cartItems: CartItemData[] = items.map((item) => ({
+    id: item.cartId,
+    name: item.name,
+    priceSnapshot: item.priceSnapshot,
+    quantity: item.quantity,
+    imageUrl: item.imageUrl || undefined,
+  }));
+
   return (
     <main className="container mx-auto p-4 md:p-8">
       <Breadcrumbs items={[{ label: "Корзина", href: "/cart" }]} />
@@ -42,115 +55,33 @@ export default function CartPage() {
         </h1>
 
         {isLoading || isMerging ? (
-          <div className="flex flex-col items-center justify-center min-h-[400px] text-muted-foreground">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
-            <p className="text-lg font-medium">Загрузка корзины...</p>
-            <p className="text-sm text-muted-foreground">
-              Пожалуйста, подождите
-            </p>
-          </div>
+          <LoadingState
+            title="Загрузка корзины..."
+            description="Пожалуйста, подождите"
+          />
         ) : items.length === 0 ? (
-          <div className="flex flex-col items-center justify-center min-h-[400px] text-muted-foreground">
-            <div className="bg-muted/50 rounded-full p-8 mb-6">
-              <ShoppingCart className="h-16 w-16 text-muted-foreground" />
-            </div>
-            <h2 className="text-2xl font-semibold mb-2">Корзина пуста</h2>
-            <p className="text-center text-muted-foreground mb-6 max-w-md">
-              Добавьте товары из каталога, чтобы начать покупки
-            </p>
-            <Button
-              onClick={() => router.push("/catalog")}
-              className="bg-primary hover:bg-primary/90"
-              size="lg"
-            >
-              Перейти в каталог
-            </Button>
-          </div>
+          <EmptyState
+            icon={ShoppingCart}
+            title="Корзина пуста"
+            description="Добавьте товары из каталога, чтобы начать покупки"
+            action={{
+              label: "Перейти в каталог",
+              onClick: () => router.push("/catalog"),
+              variant: "default",
+              size: "lg",
+            }}
+          />
         ) : (
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Список товаров */}
             <div className="lg:col-span-2 space-y-4">
-              {items.map((item) => (
-                <div
-                  key={item.cartId}
-                  className="bg-card border rounded-lg p-4 md:p-6 shadow-sm hover:shadow-md transition-shadow"
-                >
-                  <div className="flex gap-4">
-                    {/* Изображение товара */}
-                    <div className="flex-shrink-0">
-                      {item.imageUrl ? (
-                        <img
-                          src={item.imageUrl}
-                          alt={item.name}
-                          className="h-20 w-20 md:h-24 md:w-24 object-cover rounded-lg border"
-                        />
-                      ) : (
-                        <div className="h-20 w-20 md:h-24 md:w-24 bg-muted rounded-lg border flex items-center justify-center">
-                          <ShoppingBag className="h-8 w-8 text-muted-foreground" />
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Информация о товаре */}
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-lg mb-2 line-clamp-2">
-                        {item.name}
-                      </h3>
-                      <p className="text-xl font-bold text-primary mb-4">
-                        {formatPrice(item.priceSnapshot)}
-                      </p>
-
-                      {/* Управление количеством и удаление */}
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() =>
-                              updateQuantity(item.cartId, item.quantity - 1)
-                            }
-                            disabled={item.quantity <= 1}
-                            className="h-8 w-8 p-0"
-                          >
-                            <Minus className="h-4 w-4" />
-                          </Button>
-                          <span className="w-12 text-center font-medium bg-muted border rounded px-3 py-1">
-                            {item.quantity}
-                          </span>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() =>
-                              updateQuantity(item.cartId, item.quantity + 1)
-                            }
-                            className="h-8 w-8 p-0"
-                          >
-                            <Plus className="h-4 w-4" />
-                          </Button>
-                        </div>
-
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeItem(item.cartId)}
-                          className="text-destructive hover:text-destructive hover:bg-destructive/10 h-8 w-8 p-0"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-
-                      {/* Общая стоимость за товар */}
-                      {item.quantity > 1 && (
-                        <div className="mt-3 text-sm text-muted-foreground">
-                          Итого за товар:{" "}
-                          <span className="font-semibold text-foreground">
-                            {formatPrice(item.priceSnapshot * item.quantity)}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
+              {cartItems.map((item) => (
+                <CartItem
+                  key={item.id}
+                  item={item}
+                  onUpdateQuantity={updateQuantity}
+                  onRemove={removeItem}
+                />
               ))}
             </div>
 
